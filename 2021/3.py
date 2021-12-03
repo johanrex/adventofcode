@@ -1,4 +1,3 @@
-from numpy import true_divide
 import pandas as pd
 
 def get_input():
