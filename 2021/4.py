@@ -1,4 +1,5 @@
 import common
+import copy
 
 def parse_board(lines):
     numbers = []
@@ -38,18 +39,24 @@ def is_winning_board(board, row_idx, col_idx):
 
     return win_row or win_col
 
-def find_winning_board(orders, boards):
+def mark_boards(orders, boards):
+
+    complete_boards = []
+    complete_board_idxs = []
+
     for order in orders:
-        for board in boards:
+        # for board in boards:
+        for board_idx, board in enumerate(boards):
             for row_idx in range(5):
                 for col_idx in range(5):
                     if order == board[row_idx][col_idx]:
                         board[row_idx][col_idx] = None
-                        if is_winning_board(board, row_idx, col_idx) == True:
-                            return order, board
+                        if is_winning_board(board, row_idx, col_idx) == True and board_idx not in complete_board_idxs:
+                            board_copy = copy.deepcopy(board)
+                            complete_boards.append( (order, board_copy) )
+                            complete_board_idxs.append(board_idx)
 
-    #Not expected to happen
-    return None
+    return complete_boards
 
 def score_board(order, board):
     numbers_left = []
@@ -62,21 +69,25 @@ def score_board(order, board):
     final_score = order * numbers_left_sum
     return final_score
 
-def part1(input_file):
+def challenge(input_file):
 
     input = common.read_file(input_file)
     orders = list(map(int, input[0].split(sep=',')))
 
     boards = parse_boards(input)
 
-    order, win_board = find_winning_board(orders, boards)
+    complete_boards = mark_boards(orders, boards)
+    order, win_board = complete_boards[0]
 
-    final_score = score_board(order, win_board)
+    win_final_score = score_board(order, win_board)
 
-    print(f'final score: {final_score}')
+    print(f'winning board final score: {win_final_score}')
 
-#find_score('2021/4_input_test.txt')
-part1('2021/4_input.txt')
+    order, lose_board = complete_boards[len(complete_boards) - 1]
 
+    lose_final_score = score_board(order, lose_board)
 
-i=0
+    print(f'losing board final score: {lose_final_score}')
+
+#challenge('2021/4_input_test.txt')
+challenge('2021/4_input.txt')
