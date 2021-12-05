@@ -23,7 +23,7 @@ def parse_input_df(lines):
     return df
 
 def create_ocean_floor_matrix(idf):
-    #input_df.shape
+
     max_x = idf[['x1', 'x2']].values.max()
     max_y = idf[['y1', 'y2']].values.max()
     
@@ -33,7 +33,7 @@ def create_ocean_floor_matrix(idf):
 
 def mark_vents(idf, mtx):
 
-    for i, vent in idf.iterrows():
+    for _, vent in idf.iterrows():
 
         inc_x = vent.x2 - vent.x1
         inc_x = inc_x if inc_x == 0 else inc_x // abs(inc_x)
@@ -61,8 +61,6 @@ def mark_vents(idf, mtx):
             if x == vent.x2 and y == vent.y2:
                 break
 
-    i = 0
-
 
 def challenge(filename):
     lines = common.read_file(filename)
@@ -81,8 +79,6 @@ def challenge(filename):
     mark_vents(idf, mtx)
     count = mtx[mtx>=2].shape[0]
     print(f'Nr of points where at least two lines overlap: {count}')
-
-    i = 0
 
 #challenge('2021/5_input_test.txt')
 challenge('2021/5_input.txt')
