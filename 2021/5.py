@@ -2,6 +2,7 @@ import common
 import pandas as pd
 import numpy as np
 import re
+from timeit import default_timer as timer
 
 p = re.compile(r'(\d*),(\d*) -> (\d*),(\d*)')
 
@@ -32,35 +33,37 @@ def create_ocean_floor_matrix(idf):
     return mtx
 
 def mark_vents(idf, mtx):
-
     for _, vent in idf.iterrows():
+        x1 = vent.x1
+        y1 = vent.y1
+        x2 = vent.x2
+        y2 = vent.y2
 
-        inc_x = vent.x2 - vent.x1
+        inc_x = x2 - x1
         inc_x = inc_x if inc_x == 0 else inc_x // abs(inc_x)
 
-        inc_y = vent.y2 - vent.y1 
+        inc_y = y2 - y1 
         inc_y = inc_y if inc_y == 0 else inc_y // abs(inc_y)
 
         first = True
 
-        x = vent.x1
-        y = vent.y1
+        x = x1
+        y = y1
 
         while True:
             if first == True:
                 first = False
             else:
-                if vent.x1 != vent.x2:
+                if x1 != x2:
                     x += inc_x
-                if vent.y1 != vent.y2:
+                if y1 != y2:
                     y += inc_y
                 
             #increment matrix
             mtx[x,y] = mtx[x,y] + 1
             
-            if x == vent.x2 and y == vent.y2:
+            if x == x2 and y == y2:
                 break
-
 
 def challenge(filename):
     lines = common.read_file(filename)
@@ -80,5 +83,8 @@ def challenge(filename):
     count = mtx[mtx>=2].shape[0]
     print(f'Nr of points where at least two lines overlap: {count}')
 
+start = timer()
 #challenge('2021/5_input_test.txt')
 challenge('2021/5_input.txt')
+end = timer()
+print(end - start) 
