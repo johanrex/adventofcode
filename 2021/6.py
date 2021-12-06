@@ -1,34 +1,47 @@
 import numpy as np
 from timeit import default_timer as timer
 
-def get_input_array(filename):
+def get_initial_state(filename):
     with open(filename) as f:
         line = f.readline()
     lst = line.split(',')
-    lst = list(map(int, lst))
-    arr = np.asarray(lst)
-    return arr
 
-def inc_day(current_arr):
-    next_arr = current_arr - 1
+    iarr = np.asarray(lst, np.int64)
+
+    pop_count = np.zeros(9, np.int64)
+
+    unique, counts = np.unique(iarr, return_counts=True)
+
+    for i,_ in enumerate(unique):
+        day = unique[i]
+        count = counts[i]
+
+        pop_count[day] = count
+
+    return pop_count
+
+def inc_day(pop_count):
     
-    count_new = (next_arr == -1).sum()
+    #shift everything 1 step to the left
+    next = np.append(pop_count[1:], pop_count[0])
+    next[6] = next[6] + pop_count[0]
 
-    next_arr = np.where(next_arr == -1, 6, next_arr)
-    next_arr = np.append(next_arr, np.full(count_new, 8) )
+    return next
 
-    return next_arr
+def challenge(filename, days):
+    pop_count = get_initial_state(filename)
 
+    for i in range(days):
+        pop_count = inc_day(pop_count)
 
-def challenge(filename):
-    arr = get_input_array(filename)
+    print(f'After\t{i+1} days, nr of fish: {pop_count.sum()}')
 
-    for i in range(256):
-        arr = inc_day(arr)
-        #print(f'Day {i+1}: {arr}')
+start = timer()
 
-    print(f'Nr of fish: {len(arr)}')
-    i = 0
+#part 1
+challenge('2021/6_input.txt', 80)
 
+#part 2
+challenge('2021/6_input.txt', 256)
 
-challenge('2021/6_input.txt')
+print(f'Execution time: {timer() - start}') 
