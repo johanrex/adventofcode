@@ -1,9 +1,7 @@
 
 import collections
-import itertools
 
 DisplayDataInput = collections.namedtuple('DisplayDataInput', ['unique_display_patterns', 'display_values'])
-DisplayDataOutput = collections.namedtuple('DisplayDataOutput', ['unmapped_patterns', 'mapped_patterns'])
 
 def read_input(filename):
 
