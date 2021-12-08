@@ -21,18 +21,30 @@ def read_input(filename):
 
     return inputs
 
-def pattern_mapper(inputs):
+def part1(inputs):
+
+    sum = 0
+    for input in inputs:
+        sum += len([item for item in input.display_values if len(item) == 2])
+        sum += len([item for item in input.display_values if len(item) == 4])
+        sum += len([item for item in input.display_values if len(item) == 3])
+        sum += len([item for item in input.display_values if len(item) == 7])
+
+    print(f'Part 1. Sum: {sum}.')
+
+
+def part2(inputs):
     sum = 0
 
     """
-    Number 1: length: 2 * 
+    Number 1: length: 2 *unique
     Number 2: length: 5
     Number 3: length: 5
-    Number 4: length: 4 * 
+    Number 4: length: 4 *unique 
     Number 5: length: 5
     Number 6: length: 6
-    Number 7: length: 3 * 
-    Number 8: length: 7 * 
+    Number 7: length: 3 *unique
+    Number 8: length: 7 *unique
     Number 9: length: 6
     Number 0: length: 6
     """
@@ -92,15 +104,5 @@ def pattern_mapper(inputs):
 
 inputs = read_input('2021/8_input.txt')
 
-pattern_mapper(inputs)
-
-
-
-for display_data_input in inputs:
-    parse_sensor(display_data_input)
-
-print(f'Part 1. Sum: {targets}')
-
-# det borde finnas någon av 1,4,7,8 på varje rad..
-
-i = 0
+part1(inputs)
+part2(inputs)
