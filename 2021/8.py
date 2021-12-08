@@ -1,4 +1,4 @@
-
+import common
 import collections
 
 DisplayDataInput = collections.namedtuple('DisplayDataInput', ['unique_display_patterns', 'display_values'])
@@ -19,6 +19,7 @@ def read_input(filename):
 
     return inputs
 
+@common.timed
 def part1(inputs):
 
     sum = 0
@@ -30,7 +31,7 @@ def part1(inputs):
 
     print(f'Part 1. Sum: {sum}.')
 
-
+@common.timed
 def part2(inputs):
     sum = 0
 
