@@ -86,7 +86,6 @@ def challenge(filename):
     #common input to both parts
     smallest_points = get_smallest_points(mtx)
 
-
     part1(smallest_points, mtx)
     part2(smallest_points, mtx)
 
