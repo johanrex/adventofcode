@@ -58,22 +58,31 @@ def flash(m):
 filename = '2021/11_input.txt'
 m = read_input(filename)
 
+part1_nr_of_flashes = 0
 nr_of_flashes = 0
+step_when_all_flash = 0
 
 print('Before any steps:')
 print_mtx(m)
 print('')
 
 #Steps
-for i in range(100):
+for i in range(1000):
+    step = i+1
     m = m + 1
 
     flash(m)
+    if step == 100:
+        part1_nr_of_flashes = nr_of_flashes
 
-    print(f'After step {i+1}:')
+    if np.sum(m) == 0:
+        step_when_all_flash = step
+        break
+
+    #print(f'After step {step}:')
     print_mtx(m)
     print('')
 i = 0
 
-print(f'Part 1. Nr of flashes: {nr_of_flashes}')
-
+print(f'Part 1. Nr of flashes: {part1_nr_of_flashes}')
+print(f'Part 2. step_when_all_flash ', step_when_all_flash)
