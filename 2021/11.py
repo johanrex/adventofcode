@@ -1,4 +1,6 @@
 import numpy as np
+from timeit import default_timer as timer
+t1 = timer()
 
 def read_input(filename):
     inputs = []
@@ -27,8 +29,7 @@ def flash(m):
 
     for row,col in zip(flashers[0], flashers[1]):
 
-        #points affected by flash, in all directions. 
-        points_affected = [
+        for pt in (
             (row-1, col-1),
             (row-1, col),
             (row-1, col+1),
@@ -37,20 +38,15 @@ def flash(m):
             (row+1, col-1),
             (row+1, col),
             (row+1, col+1)
-        ]
-
-        #Remove points outside matrix and those already flashed. 
-        points_affected = [
-            tpl for tpl in points_affected 
-            if 
-            (0 <= tpl[0] < m.shape[0]) and 
-            (0 <= tpl[1] < m.shape[1]) and 
-            (m[tpl[0], tpl[1]] != 0) 
-        ]
-
-        for pt in points_affected:
-            #+1 for all affected
-            m[ pt[0], pt[1] ] = m[ pt[0], pt[1] ] + 1
+        ):
+            #Skip points outside matrix and those already flashed.             
+            if (
+                (0 <= pt[0] < m.shape[0]) and 
+                (0 <= pt[1] < m.shape[1]) and 
+                (m[pt[0], pt[1]] != 0)
+            ):
+                #+1 for all affected
+                m[ pt[0], pt[1] ] = m[ pt[0], pt[1] ] + 1
     
     if np.any(m >= 10):
         flash(m)
@@ -86,3 +82,6 @@ i = 0
 
 print(f'Part 1. Nr of flashes: {part1_nr_of_flashes}')
 print(f'Part 2. step_when_all_flash ', step_when_all_flash)
+
+t2 = timer()
+print(f'time: {(t2-t1):.4f}s')
