@@ -44,7 +44,7 @@ class Graph(object):
                         self.__find_all_paths(traverse_option, node, node2, path, paths)
                     else:
                         #count, groupby lower
-                        lower_count = [(x,path.count(x)) for x in set(path) if x.islower()]
+                        lower_count = [(x,path.count(x)) for x in path if x.islower()]
                         any_more_than_1 =  any(tpl[1][1] > 1 for tpl in enumerate(lower_count))
 
                         if not any_more_than_1:
