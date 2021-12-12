@@ -33,10 +33,12 @@ class Graph(object):
         for node in self._graph[node1]:
 
             if traverse_option == 1:
-                if node.islower() and node not in path:
-                    self.__find_all_paths(traverse_option, node, node2, path, paths)
-                elif node.isupper() and node != path[len(path)-1]:
-                    self.__find_all_paths(traverse_option, node, node2, path, paths)
+                if node.islower():
+                    if node not in path:
+                        self.__find_all_paths(traverse_option, node, node2, path, paths)
+                else:
+                    if node != path[len(path)-1]:
+                        self.__find_all_paths(traverse_option, node, node2, path, paths)
             else:
                 if node.islower() and node != 'start':
 
