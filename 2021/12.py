@@ -26,7 +26,7 @@ class Graph(object):
 
         path = path + [node1]
         if node1 == node2:
-            paths.append(copy.deepcopy(path))
+            paths.append(path)
             return path
         if node1 not in self._graph:
             return None
@@ -67,8 +67,8 @@ with(open(filename, "r")) as f:
 for line in lines:
     g.add(line[0], line[1])
 
-pretty_print = pprint.PrettyPrinter()
-pretty_print.pprint(g._graph)
+# pretty_print = pprint.PrettyPrinter()
+# pretty_print.pprint(g._graph)
 
 lst = g.find_all_paths(1, 'start', 'end')
 print('Part 1. Nr of paths:', len(lst))
