@@ -1,5 +1,4 @@
 import numpy as np
-from pprint import pprint
 from timeit import default_timer as timer
 t1 = timer()
 
@@ -44,21 +43,15 @@ with(open(filename, "r")) as f:
             coord = line.split(',')
             m[int(coord[1]), int(coord[0])] = 1
 
-#resize matrix for convenient 
+#resize matrix for convenient folding
 max_fold_row = max([fold_index for fold_index, axis in instructions if axis == 0])
 max_fold_col = max([fold_index for fold_index, axis in instructions if axis == 1])
 
 m = m[0:1+max_fold_row*2, 0:1+max_fold_col*2]
 
-# print('Initial state. Shape:', m.shape)
-# print_matrix(m)
-
 for i, instruction in enumerate(instructions):
     fold_index, axis = instruction
     m = flip(m, axis, fold_index)
-
-    # print('After:', i+1, 'Shape:',m.shape)
-    # print_matrix(m)
 
     if i == 0:
         print('Part 1. Sum: ', m.sum())
