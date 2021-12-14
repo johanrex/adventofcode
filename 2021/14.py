@@ -1,5 +1,7 @@
 import string
 from datetime import datetime
+from collections import Counter
+from functools import lru_cache
 
 from timeit import default_timer as timer
 t1 = timer()
@@ -8,42 +10,38 @@ filename = '2021/14_input.txt'
 #filename = '2021/14_input_example.txt'
 
 polymer_template = []
-element_count = {}
 pair_insertion_rules = {}
-
-def difference():
-    vals = sorted(x for x in element_count.values() if x > 0)
-    return vals[len(vals)-1] - vals[0] 
 
 def polymerize(target_depth):
     depth = 0
 
-    for c in polymer_template:
-        element_count[c] += 1
+    sum = Counter(polymer_template)
 
     for i in range(len(polymer_template)-1):
         pair = polymer_template[i:i+2]
         pair = pair[0]+pair[1]
 
-        __polymerize(pair, depth, target_depth)
-    
-        # print(f'Done {((i+1)/len(polymer_template))*100:.2f}%')
+        sum += __polymerize(pair, depth, target_depth)
 
-    return difference()
+    diff = max(sum.values()) - min(sum.values())
 
+    return diff
+
+
+@lru_cache(maxsize=None)
 def __polymerize(pair, depth, target_depth):
 
     depth += 1
 
     e = pair_insertion_rules[pair]
-    element_count[e] += 1
 
     if depth == target_depth:
-        return
-
-    __polymerize(pair[0] + e, depth, target_depth)
-    __polymerize(e + pair[1], depth, target_depth)
-
+        return Counter([e])
+    else:
+        left = pair[0] + e
+        right = e + pair[1]
+        sum = __polymerize(left, depth, target_depth) + __polymerize(right, depth, target_depth) + Counter([e])
+        return sum
 
 with(open(filename, "r")) as f:
     for line in f:
@@ -58,13 +56,11 @@ with(open(filename, "r")) as f:
         else:
             polymer_template = list(line)
 
-#init element count
-for c in string.ascii_uppercase:
-    element_count[c] = 0
-
 print('Starting at:', datetime.now())
-print('Step 10. Difference:', polymerize(10))
-#print('Part 2. Difference:', polymerize(40))
+
+#print('Difference:', polymerize(2))
+print('Part 1. Difference:', polymerize(10))
+print('Part 2. Difference:', polymerize(40))
 
 
 t2 = timer()
