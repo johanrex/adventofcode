@@ -1,25 +1,49 @@
+import string
+from datetime import datetime
 
-import re
-import numpy
+from timeit import default_timer as timer
+t1 = timer()
 
 filename = '2021/14_input.txt'
 #filename = '2021/14_input_example.txt'
 
 polymer_template = []
+element_count = {}
 pair_insertion_rules = {}
 
-def step():
-    for i in range(len(polymer_template)-2, -1, -1):
+def difference():
+    vals = sorted(x for x in element_count.values() if x > 0)
+    return vals[len(vals)-1] - vals[0] 
+
+def polymerize(target_depth):
+    depth = 0
+
+    for c in polymer_template:
+        element_count[c] += 1
+
+    for i in range(len(polymer_template)-1):
         pair = polymer_template[i:i+2]
         pair = pair[0]+pair[1]
 
-        element_to_insert = pair_insertion_rules[pair]
-        polymer_template.insert(i+1, element_to_insert)
+        __polymerize(pair, depth, target_depth)
+    
+        # print(f'Done {((i+1)/len(polymer_template))*100:.2f}%')
 
-def difference():
-    a = numpy.array(polymer_template)
-    unique, counts = numpy.unique(a, return_counts=True)
-    return counts.max() - counts.min()
+    return difference()
+
+def __polymerize(pair, depth, target_depth):
+
+    depth += 1
+
+    e = pair_insertion_rules[pair]
+    element_count[e] += 1
+
+    if depth == target_depth:
+        return
+
+    __polymerize(pair[0] + e, depth, target_depth)
+    __polymerize(e + pair[1], depth, target_depth)
+
 
 with(open(filename, "r")) as f:
     for line in f:
@@ -30,28 +54,18 @@ with(open(filename, "r")) as f:
             a = line[0:2]
             b = line[6:]
 
-            if a not in pair_insertion_rules:
-                pair_insertion_rules[a] = b
-            else:
-                raise Exception('weird')
-
+            pair_insertion_rules[a] = b
         else:
             polymer_template = list(line)
 
+#init element count
+for c in string.ascii_uppercase:
+    element_count[c] = 0
 
-for i in range(40):
-    print('step', i+1)
-    step()
-    #print(''.join(polymer_template))
-
-
-    if i == 9:
-        part_1 = difference()
+print('Starting at:', datetime.now())
+print('Step 10. Difference:', polymerize(10))
+#print('Part 2. Difference:', polymerize(40))
 
 
-part_2 = difference()
-
-print('Part 1. Difference:', part_1)
-print('Part 2. Difference:', part_2)
-
-i = 0
+t2 = timer()
+print(f'time: {(t2-t1):.4f}s')
