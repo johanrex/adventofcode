@@ -1,77 +1,132 @@
 import networkx as nx
+import numpy as np
 
 def coord_to_node_name(row, col):
     return f'{col}_{row}'
 
 #filename = '2021/15_input.txt'
 filename = '2021/15_input_example.txt'
+
 lines = []
 with open(filename, 'r') as f:
     for line in f:
         lines.append(list(map(int, list(line.strip()))))
 
-nr_of_cols = len(lines[0])
-nr_of_rows = len(lines)
+def risk(lines):
 
-g = nx.DiGraph()
+    nr_of_cols = len(lines[0])
+    nr_of_rows = len(lines)
 
-#add edges
-for row in range(nr_of_rows):
-    for col in range(nr_of_cols):
-        u = coord_to_node_name(row, col)
+    g = nx.DiGraph()
 
-        if col > 0: #left neighbor?
-            n_row = row
-            n_col = col-1
+    #add edges
+    for row in range(nr_of_rows):
+        for col in range(nr_of_cols):
+            u = coord_to_node_name(row, col)
 
-            v = coord_to_node_name(n_row, n_col)
+            if col > 0: #left neighbor?
+                n_row = row
+                n_col = col-1
 
-            g.add_edge(u, v, weight=lines[n_row][n_col])
-            g.add_edge(v, u, weight=lines[row][col])
+                v = coord_to_node_name(n_row, n_col)
 
-        if col < nr_of_cols-2: #right neighbor?
-            n_row = row
-            n_col = col+1
+                g.add_edge(u, v, weight=lines[n_row][n_col])
+                g.add_edge(v, u, weight=lines[row][col])
 
-            v = coord_to_node_name(n_row, n_col)
+            if col < nr_of_cols-2: #right neighbor?
+                n_row = row
+                n_col = col+1
 
-            g.add_edge(u, v, weight=lines[n_row][n_col])
-            g.add_edge(v, u, weight=lines[row][col])
+                v = coord_to_node_name(n_row, n_col)
 
-        if row > 0: #up neighbor?
-            n_row = row-1
-            n_col = col
+                g.add_edge(u, v, weight=lines[n_row][n_col])
+                g.add_edge(v, u, weight=lines[row][col])
 
-            v = coord_to_node_name(n_row, n_col)
+            if row > 0: #up neighbor?
+                n_row = row-1
+                n_col = col
 
-            g.add_edge(u, v, weight=lines[n_row][n_col])
-            g.add_edge(v, u, weight=lines[row][col])
+                v = coord_to_node_name(n_row, n_col)
 
-        if row < nr_of_rows - 2: #down neighbor
-            n_row = row+1
-            n_col = col
+                g.add_edge(u, v, weight=lines[n_row][n_col])
+                g.add_edge(v, u, weight=lines[row][col])
 
-            v = coord_to_node_name(n_row, n_col)
+            if row < nr_of_rows - 2: #down neighbor
+                n_row = row+1
+                n_col = col
 
-            g.add_edge(u, v, weight=lines[n_row][n_col])
-            g.add_edge(v, u, weight=lines[row][col])
+                v = coord_to_node_name(n_row, n_col)
 
-start = coord_to_node_name(0,0)
-end = coord_to_node_name(nr_of_cols-1, nr_of_rows-1)
+                g.add_edge(u, v, weight=lines[n_row][n_col])
+                g.add_edge(v, u, weight=lines[row][col])
 
-path = nx.dijkstra_path(g, start, end, weight='weight')
+    start = coord_to_node_name(0,0)
+    end = coord_to_node_name(nr_of_cols-1, nr_of_rows-1)
 
-risk = 0
+    path = nx.dijkstra_path(g, start, end, weight='weight')
 
-prev = None
+    risk = 0
 
-for node in path:
-    if prev == None:
-        prev = node
-    else:
-        data = g.get_edge_data(prev, node)
-        risk += data['weight']
-        prev = node
+    prev = None
 
-print('Part 1 risk:', risk)
+    for node in path:
+        if prev == None:
+            prev = node
+        else:
+            data = g.get_edge_data(prev, node)
+            risk += data['weight']
+            prev = node
+    return risk
+
+def iterate_mtx(m):
+    m1 = m+1
+    m1[m1>9]=1
+    return m1
+
+def append_mtx(*mtxv, axis):
+    tmp = None
+    for i in range(len(mtxv)):
+        if i == 0:
+            tmp = mtxv[i]
+            continue
+        else:
+            tmp = np.append(tmp, mtxv[i], axis)
+
+    return tmp
+
+def grid_times_five(lines):
+    m = np.asarray(lines)
+
+    big_rows = m.shape[0]*5
+
+    """
+    01234
+    12345
+    23456
+    34567
+    45678
+    """
+
+    iterations = []
+    for i in range(9):
+        if i == 0:
+            iterations.append(m)
+        else:
+            iterations.append(iterate_mtx(i-1))
+
+    big = append_mtx(
+            append_mtx(iterations[0], iterations[1], iterations[2], iterations[3], iterations[4], axis=1),
+            append_mtx(iterations[1], iterations[2], iterations[3], iterations[4], iterations[5], axis=1),
+            append_mtx(iterations[2], iterations[3], iterations[4], iterations[5], iterations[6], axis=1),
+            append_mtx(iterations[3], iterations[4], iterations[5], iterations[6], iterations[7], axis=1),
+            append_mtx(iterations[4], iterations[5], iterations[6], iterations[7], iterations[8], axis=1),
+            axis=0)
+
+    i=0
+
+
+grid_times_five(lines)
+
+#print('Part 1 risk:', risk(lines))
+
 i=0
