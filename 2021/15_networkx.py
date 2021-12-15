@@ -4,8 +4,8 @@ import numpy as np
 def coord_to_node_name(row, col):
     return f'{col}_{row}'
 
-#filename = '2021/15_input.txt'
-filename = '2021/15_input_example.txt'
+filename = '2021/15_input.txt'
+#filename = '2021/15_input_example.txt'
 
 lines = []
 with open(filename, 'r') as f:
@@ -112,7 +112,7 @@ def grid_times_five(lines):
         if i == 0:
             iterations.append(m)
         else:
-            iterations.append(iterate_mtx(i-1))
+            iterations.append(iterate_mtx(iterations[i-1]))
 
     big = append_mtx(
             append_mtx(iterations[0], iterations[1], iterations[2], iterations[3], iterations[4], axis=1),
@@ -122,11 +122,17 @@ def grid_times_five(lines):
             append_mtx(iterations[4], iterations[5], iterations[6], iterations[7], iterations[8], axis=1),
             axis=0)
 
-    i=0
+    #convert back to list of list... I should have used a numpy 2d array from the start...
+    big_lines = []
+    for row in big:
+        big_lines.append(list(row))
 
+    return big_lines
 
-grid_times_five(lines)
+print('Part 1 risk:', risk(lines))
 
-#print('Part 1 risk:', risk(lines))
+big_lines = grid_times_five(lines)
+
+print('Part 2 risk:', risk(big_lines))
 
 i=0
