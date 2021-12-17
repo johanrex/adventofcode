@@ -23,19 +23,13 @@ def step(pos_x, pos_y, vel_x, vel_y):
 
 
 all_highest_y = -1000
-all_start_vel_x = None
-all_start_vel_y = None
+sum_hits = 0
 
-
-for start_vel_x in range(1000):
-    for start_vel_y in range(0, 300):
+for start_vel_x in range(200):
+    for start_vel_y in range(-200, 200):
 
         vel_x = start_vel_x
         vel_y = start_vel_y
-
-        # #TODO debug
-        # vel_x = 7
-        # vel_y = 2
 
         pos_x = 0
         pos_y = 0
@@ -50,17 +44,15 @@ for start_vel_x in range(1000):
                 target_x[0] <= pos_x <= target_x[1] and
                 target_y[0] <= pos_y <= target_y[1]
             ):
+                sum_hits += 1
+
                 if highest_y > all_highest_y:
                     all_highest_y = highest_y
-                    all_start_vel_x = start_vel_x
-                    all_start_vel_y = start_vel_y
                 break
             elif pos_x > target_x[1]:
                 break
             elif pos_y < target_y[0]:
                 break
 
-
-print('highest y:', all_highest_y)
-print('start_vel_x:', all_start_vel_x)
-print('start_vel_y:', all_start_vel_y)
+print('part 1. highest y:', all_highest_y)
+print('part 2:', sum_hits)
