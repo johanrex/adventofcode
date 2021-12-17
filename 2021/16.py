@@ -3,6 +3,7 @@ from enum import Enum, unique
 from typing import Literal
 import bitstring
 from typing import List
+import math
 
 #filename = '2021/16_input_example.txt'
 filename = '2021/16_input.txt'
@@ -14,6 +15,27 @@ class Packet:
         self.type: int
         self.value: int
         self.sub_packets: List[Packet] = []
+
+    def eval(self):
+        if self.type == 4: #literal
+            return self.value
+        elif self.type == 0: # sum
+            return sum([sub.eval() for sub in self.sub_packets])
+        elif self.type == 1: # product
+            return math.prod([sub.eval() for sub in self.sub_packets])
+        elif self.type == 2: # min
+            return min([sub.eval() for sub in self.sub_packets])
+        elif self.type == 3: # max
+            return max([sub.eval() for sub in self.sub_packets])
+        elif self.type == 5: # >
+            return 1 if self.sub_packets[0].eval() > self.sub_packets[1].eval() else 0
+        elif self.type == 6: # <
+            return 1 if self.sub_packets[0].eval() < self.sub_packets[1].eval() else 0
+        elif self.type == 7: # <
+            return 1 if self.sub_packets[0].eval() == self.sub_packets[1].eval() else 0
+        else:
+            raise Exception('unexpected')
+
 
     def __repr__(self) -> str:
 
@@ -106,7 +128,7 @@ def sum_versions(packets):
         sum += sum_versions(packet.sub_packets)
 
     return sum
-
+       
 
 with open(filename, 'r') as f:
     line = f.readline().strip()
@@ -125,10 +147,15 @@ while bs.pos < bs.length - 7:
     if p is not None:
         packets.append(p)
 
+if len(packets) != 1:
+    raise Exception('unexpected')
+
 #print packets
-for packet in packets:
-    print(repr(packet))
+# for packet in packets:
+#     print(repr(packet))
 
 
 print('part1:', sum_versions(packets))
+print('part2:', packets[0].eval())
+
 i = 0
