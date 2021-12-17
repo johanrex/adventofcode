@@ -1,6 +1,3 @@
-from dataclasses import dataclass
-from enum import Enum, unique
-from typing import Literal
 import bitstring
 from typing import List
 import math
@@ -154,8 +151,5 @@ if len(packets) != 1:
 # for packet in packets:
 #     print(repr(packet))
 
-
 print('part1:', sum_versions(packets))
 print('part2:', packets[0].eval())
-
-i = 0
