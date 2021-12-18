@@ -1,15 +1,18 @@
-
-from collections import deque
 import re
 r = re.compile(r'\d+')
 
 parse_line_idx = None
 
-class Pair:
+class Pair():
     def __init__(self) -> None:
         self.left = None
         self.right = None
         self.parent = None
+
+    def value(self):
+        l = self.left if self.has_left_int() else None
+        r = self.right if self.has_right_int() else None
+        return (l,r)
 
     def has_left_int(self) -> bool:
         return type(self.left) == int
@@ -31,10 +34,33 @@ class Pair:
 
         return s
 
+
+class Tree():
+    @staticmethod
+    def in_order_list(root):
+        lst = []
+        Tree.__in_order(root, lst)
+        return lst
+    @staticmethod
+    def __in_order(node, lst):
+        if node.has_left_child():
+            Tree.__in_order(node.left, lst)
+
+        lst.append(node)
+
+        if node.has_right_child():
+            Tree.__in_order(node.right, lst)
+
+    @staticmethod
+    def print_list(lst):
+        for node in lst:
+            print(str(node.value()))
+
+
 def parse_line(s):
 
     print('parsing line:', s)
-    
+
     global parse_line_idx
     parse_line_idx = 0 
     p = __parse_pair(s)
@@ -171,9 +197,11 @@ def show_tree(p):
 # verify('[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]')
 # verify('[[[[[9,8],1],2],3],4]')
 
-show_tree((parse_line('[[[[[9,8],1],2],3],4]')))
-
-reduce(parse_line('[[[[[9,8],1],2],3],4]'))
+root = parse_line('[[[[[9,8],1],2],3],4]')
+show_tree((root))
+lst = Tree.in_order_list(root)
+Tree.print_list(lst)
+#reduce(parse_line('[[[[[9,8],1],2],3],4]'))
 
 i = 0
 
