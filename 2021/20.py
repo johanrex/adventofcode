@@ -25,29 +25,35 @@ def parse_input(filename):
 def pad_with_empty(unpadded_input, pad_nr):
     return np.pad(unpadded_input, pad_nr, mode='constant')
 
+
 def get_neighbors(image, row, col):
     
-    #pad with one row outside for easy extraction of empty pixels. 
-    padded = pad_with_empty(image, 1)
-    col += 1
-    row += 1
+    if not (
+        1 <= row <= (len(image)-1) and
+        1 <= col <= (len(image[0])-1)
+        ):
+        raise Exception('nah')
 
     neighbors = np.concatenate( (
-        padded[row-1, col-1:col+2],
-        padded[row, col-1:col+2],
-        padded[row+1, col-1:col+2]
+        image[row-1, col-1:col+2],
+        image[row, col-1:col+2],
+        image[row+1, col-1:col+2]
     ))
 
     return neighbors
 
+
 def enhance(input, alg):
+
+    input = pad_with_empty(input, 2)
+
     row_count = len(input)
     col_count = len(input[0])
 
     output = np.copy(input)
 
-    for row in range(row_count):
-        for col in range(col_count):
+    for row in range(1, row_count-1):
+        for col in range(1, col_count-1):
             neighbors = get_neighbors(input, row, col)
 
             #Convert bits to int. Could proabbly be made more effective. 
@@ -59,32 +65,29 @@ def enhance(input, alg):
 
     return output
 
+
 def print_image(image):
     for row in range(image.shape[0]):
         print(''.join(map(str, list(image[row]))).replace('0', ' ').replace('1', '\u25A0'))
 
 
 def main():
-    #filename = '2021/20_input_example.txt'
     filename = '2021/20_input.txt'
+    #filename = '2021/20_input_example.txt'
     alg, input = parse_input(filename)
 
     output = None
 
     for i in range(2):
-        #make bigger
-        extended = pad_with_empty(input, 2)
 
-        print('enhance!')
-        output = enhance(extended, alg)
+        output = enhance(input, alg)
         print_image(output)
 
-        print('Sum:', output.sum())
+        print(f'Enhancements:{i+1} Sum: {output.sum()}')
         
         input = output
 
-
-    # 5682 < x < 5702
+    # 5464
 
 main()
 
