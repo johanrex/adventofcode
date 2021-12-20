@@ -197,6 +197,12 @@ def show_tree(p):
 # verify('[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]')
 # verify('[[[[[9,8],1],2],3],4]')
 
+import json
+from networkx.readwrite import json_graph
+data = json.loads('[[[[[9,8],1],2],3],4]')
+tree = json_graph.tree_graph(data)
+
+
 root = parse_line('[[[[[9,8],1],2],3],4]')
 show_tree((root))
 lst = Tree.in_order_list(root)
