@@ -42,12 +42,7 @@ def get_neighbors(image, row, col):
 
     return neighbors
 
-
-def enhance(input, alg):
-
-    #pad 2 lines
-    input = pad_with_empty(input, 2)
-
+def apply_alg(input, alg):
     row_count = len(input)
     col_count = len(input[0])
 
@@ -64,8 +59,18 @@ def enhance(input, alg):
             
             output[row, col] = px
 
+    return output
+
+def enhance(input, alg, steps):
+
+    #pad 2 lines
+    padded = pad_with_empty(input, 2*steps + 2)
+
+    for step in range(steps):
+        padded = apply_alg(padded, alg)
+
     #strip away 1 extra padding
-    output = output[1:-1,1:-1]
+    output = padded[2:-2,2:-2]
 
     return output
 
@@ -80,18 +85,14 @@ def main():
     #filename = '2021/20_input_example.txt'
     alg, input = parse_input(filename)
 
-    output = None
+    n = 2
+    output = enhance(input, alg, n)
+    print(f'Enhancements:{n} Sum: {output.sum()}')
 
-    for i in range(2):
-
-        output = enhance(input, alg)
-        print_image(output)
-
-        print(f'Enhancements:{i+1} Sum: {output.sum()}')
-        
-        input = output
-
-    # 5464
+    n = 50
+    output = enhance(input, alg, n)
+    print_image(output)
+    print(f'Enhancements:{n} Sum: {output.sum()}')
 
 main()
 
