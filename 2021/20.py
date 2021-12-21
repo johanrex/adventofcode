@@ -45,6 +45,7 @@ def get_neighbors(image, row, col):
 
 def enhance(input, alg):
 
+    #pad 2 lines
     input = pad_with_empty(input, 2)
 
     row_count = len(input)
@@ -56,19 +57,22 @@ def enhance(input, alg):
         for col in range(1, col_count-1):
             neighbors = get_neighbors(input, row, col)
 
-            #Convert bits to int. Could proabbly be made more effective. 
+            #Convert bits to int. Could probably be done more effective. 
             val = int(''.join(map(str, list(neighbors))), 2)
 
             px = alg[val]
             
             output[row, col] = px
 
+    #strip away 1 extra padding
+    output = output[1:-1,1:-1]
+
     return output
 
 
 def print_image(image):
     for row in range(image.shape[0]):
-        print(''.join(map(str, list(image[row]))).replace('0', ' ').replace('1', '\u25A0'))
+        print(''.join(map(str, list(image[row]))).replace('0', ' ').replace('1', chr(9608)))
 
 
 def main():
