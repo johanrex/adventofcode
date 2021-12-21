@@ -42,6 +42,7 @@ def get_neighbors(image, row, col):
 
     return neighbors
 
+
 def apply_alg(input, alg):
     row_count = len(input)
     col_count = len(input[0])
@@ -61,16 +62,17 @@ def apply_alg(input, alg):
 
     return output
 
+
 def enhance(input, alg, steps):
 
     #pad 2 lines
-    padded = pad_with_empty(input, 2*steps + 2)
+    padded = pad_with_empty(input, 2*steps + 1)
 
     for step in range(steps):
         padded = apply_alg(padded, alg)
 
-    #strip away 1 extra padding
-    output = padded[2:-2,2:-2]
+    #strip away extra padding
+    output = padded[steps:-steps, steps:-steps]
 
     return output
 
@@ -87,13 +89,15 @@ def main():
 
     n = 2
     output = enhance(input, alg, n)
+    # print_image(output)
     print(f'Enhancements:{n} Sum: {output.sum()}')
 
     n = 50
     output = enhance(input, alg, n)
-    print_image(output)
+    #print_image(output)
     print(f'Enhancements:{n} Sum: {output.sum()}')
 
-main()
+    #19228 är rätt svar...
 
-i = 0
+
+main()
