@@ -45,7 +45,6 @@ def do_instruction(inst):
                         del cube[key]
 
 
-
 #filename = '2021/22_input_example.txt'
 filename = '2021/22_input.txt'
 instructions = parse_input(filename)
@@ -66,6 +65,6 @@ for i, inst in enumerate(instructions):
         print('skipping:', str(inst))
         continue
 
-# 590784 too low
-print('Part 1:', len(cube))
+
+print('Part 1:', len(cube)) #611176
 
