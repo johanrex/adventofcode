@@ -1,4 +1,3 @@
-from collections import defaultdict
 from dataclasses import dataclass
 from typing import List
 import re
@@ -25,7 +24,6 @@ def parse_input(filename) -> List[Instruction]:
 
             m = p.match(line)
 
-            #instructions.append(Instruction(operation=m[1], x=(int(m[2]), int(m[3])), y=(int(m[4]), int(m[5])), z=(int(m[6]), int(m[7]))))
             instructions.append(Instruction(operation=1 if m[1] == 'on' else 0, x=(int(m[2]), int(m[3])), y=(int(m[4]), int(m[5])), z=(int(m[6]), int(m[7]))))
 
     return instructions
