@@ -3,68 +3,22 @@ from dataclasses import dataclass
 from typing import List
 import re
 
-#example 'on x=-10..44,y=-47..3,z=-30..20'
+from timeit import default_timer as timer
+t1 = timer()
+
+#example: 'on x=-10..44,y=-47..3,z=-30..20'
 p = re.compile('(on|off) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)')
-
-
-@dataclass
-class Point:
-    x: int
-    y: int
-    z: int
-
-    def __eq__(self, other: Point) -> bool:
-        return (
-            self.x == other.x and
-            self.y == other.y and
-            self.z == other.z)
-
-@dataclass
-class Cube:
-    start: Point
-    end: Point
-
-    def __eq__(self, other: Cube) -> bool:
-        return (
-            self.start == other.start and
-            self.end == other.end)
-
-
-    def volume(self):
-        return (self.end.x - self.start.x) * (self.end.y - self.start.y) * (self.end.z - self.start.z)
-
-
-    @staticmethod
-    def intersect(first: Cube, second: Cube):
-        if (
-            ((first.start.x <= second.start.x <= first.end.x) or (second.start.x <= first.start.x <= second.end.x)) and 
-            ((first.start.y <= second.start.y <= first.end.y) or (second.start.y <= first.start.y <= second.end.y)) and 
-            ((first.start.z <= second.start.z <= first.end.z) or (second.start.z <= first.start.z <= second.end.z))
-        ):
-            overlap_start_x = max(first.start.x, second.start.x)
-            overlap_end_x = min(first.end.x, second.end.x)
-
-            overlap_start_y = max(first.start.y, second.start.y)
-            overlap_end_y = min(first.end.y, second.end.y)
-
-            overlap_start_z = max(first.start.z, second.start.z)
-            overlap_end_z = min(first.end.z, second.end.z)
-
-            intersecting_cube = Cube(
-                start=Point(x=overlap_start_x, y=overlap_start_y, z=overlap_start_z),
-                end=Point(x=overlap_end_x, y=overlap_end_y, z=overlap_end_z))
-            return intersecting_cube
-        else:
-            return None
 
 
 @dataclass
 class Instruction:
     operation: str
-    cube: Cube
+    xs: list[int]
+    ys: list[int]
+    zs: list[int]
 
     def __str__(self) -> str:
-        return f'{self.operation} x={self.cube.start.x}..{self.cube.end.x},y={self.cube.start.y}..{self.cube.end.y},z={self.cube.start.z}..{self.cube.end.z}'
+        return f'{self.operation} x={self.xs[0]}..{self.xs[1]},y={self.ys[0]}..{self.ys[1]},z={self.zs[0]}..{self.zs[1]}'
 
 
 def parse_input(filename: str) -> List[Instruction]:
@@ -75,17 +29,18 @@ def parse_input(filename: str) -> List[Instruction]:
             line = line.strip()
 
             m = p.match(line)
-
-            cube = Cube(
-                start=Point(x=int(m[2]), y=int(m[4]), z=int(m[6])),
-                end=Point(x=int(m[3]), y=int(m[5]), z=int(m[7])))
+          
+            xs = [int(m[2]), int(m[3])]
+            ys = [int(m[4]), int(m[5])]
+            zs = [int(m[6]), int(m[7])]
 
             assert (
-                cube.start.x < cube.end.x and 
-                cube.start.y < cube.end.y and 
-                cube.start.z < cube.end.z)
+                xs[0] < xs[1] and 
+                ys[0] < ys[1] and 
+                zs[0] < zs[1]
+                )
 
-            instruction = Instruction(operation=m[1], cube=cube)
+            instruction = Instruction(operation=m[1], xs=xs, ys=ys, zs=zs)
 
             assert line == str(instruction)
 
@@ -93,82 +48,54 @@ def parse_input(filename: str) -> List[Instruction]:
 
     return instructions
 
-def tests():
-
-    c1 = Cube(start=Point(0,0,0), end=Point(10,10,10))
-    c2 = Cube(start=Point(10,10,10), end=Point(12,12,12))
-
-    intersect = Cube.intersect(c1, c2)
-
-
-def get_x_low_high(instructions: Instruction):
-    lo = instructions[0].cube.start.x
-    hi = instructions[0].cube.end.x
-
-    for i in range(1, len(instructions)):
-        inst = instructions[i]
-        hi = inst.cube.end.x if inst.cube.end.x > hi else hi
-        lo = inst.cube.start.x if inst.cube.start.x < lo else lo
-            
-    return lo, hi
-
-
-def get_y_low_high(instructions: Instruction):
-    lo = instructions[0].cube.start.y
-    hi = instructions[0].cube.end.y
-
-    for i in range(1, len(instructions)):
-        inst = instructions[i]
-        hi = inst.cube.end.y if inst.cube.end.y > hi else hi
-        lo = inst.cube.start.y if inst.cube.start.y < lo else lo
-            
-    return lo, hi
-
-
-def get_z_low_high(instructions: Instruction):
-    lo = instructions[0].cube.start.z
-    hi = instructions[0].cube.end.z
-
-    for i in range(1, len(instructions)):
-        inst = instructions[i]
-        hi = inst.cube.end.z if inst.cube.end.z > hi else hi
-        lo = inst.cube.start.z if inst.cube.start.z < lo else lo
-            
-    return lo, hi
-
 
 def count(instructions):
 
-    x_range = get_x_low_high(instructions)
+    #TODO rename to all..
+    #get sorted list of all coordinates
+
+    xs = []
+    for i in instructions:
+        xs.extend([i.xs[0], i.xs[1]+1])
+
+    ys = []
+    for i in instructions:
+        ys.extend([i.ys[0], i.ys[1]+1])
+
+    zs = []
+    for i in instructions:
+        zs.extend([i.zs[0], i.zs[1]+1])
+
+    xs.sort()
+    ys.sort()
+    zs.sort()
 
     sum = 0
 
-    for x in range(x_range[0], x_range[1]+1):
-        x_inputs = [input for input in instructions if input.cube.start.x <= x <= input.cube.end.x]
+    steps = len(xs)-1
+    current_step = 0
 
-        print(f'{((x-x_range[0]) / (x_range[1] - x_range[0]) * 100):.2f}%')
+    for x1,x2 in zip(xs, xs[1:]):
 
-        if len(x_inputs) > 0:
+        x_inputs = [input for input in instructions if input.xs[0] <= x1 <= input.xs[1]]
 
-            y_range = get_y_low_high(x_inputs)
+        current_step += 1
+        print(f'{(current_step / steps * 100):.2f}%')
 
-            for y in range(y_range[0], y_range[1]+1):
-                xy_inputs = [input for input in x_inputs if input.cube.start.y <= y <= input.cube.end.y]
+        for y1,y2 in zip(ys, ys[1:]):
 
-                if len(xy_inputs) > 0:
+            xy_inputs = [input for input in x_inputs if input.ys[0] <= y1 <= input.ys[1]]
+    
+            for z1,z2 in zip(zs, zs[1:]):
 
-                    z_range = get_z_low_high(xy_inputs)                        
+                xyz_inputs = [input for input in xy_inputs if input.zs[0] <= z1 <= input.zs[1]]
 
-                    for z in range(z_range[0], z_range[1]+1):
-                        xyz_inputs = [input for input in xy_inputs if input.cube.start.z <= z <= input.cube.end.z]
+                #order is preserved in list comprehensions so we should just be able to get the last one. 
+                last_relevant_input = next(reversed(xyz_inputs), None)
 
-                        if len(xyz_inputs) > 0:
-                            #order is preserved in list comprehensions so we should just be able to get the last one. 
-                            last_relevant_input = next(reversed(xyz_inputs))
-
-                            if last_relevant_input.operation == 'on':
-
-                                sum += 1
+                if last_relevant_input is not None and last_relevant_input.operation == 'on':
+                    sum += (x2 - x1) * (y2 - y1) * (z2 - z1)
+    
     return sum
 
 
@@ -177,9 +104,9 @@ def part1_instructions(instructions):
 
     for inst in instructions:
         if (
-            (inst.cube.start.x in range(-50, 51) and inst.cube.end.x in range(-50, 51)) and 
-            (inst.cube.start.y in range(-50, 51) and inst.cube.end.y in range(-50, 51)) and 
-            (inst.cube.start.z in range(-50, 51) and inst.cube.end.z in range(-50, 51))
+            (inst.xs[0] in range(-50, 51) and inst.xs[1] in range(-50, 51)) and 
+            (inst.ys[0] in range(-50, 51) and inst.ys[1] in range(-50, 51)) and 
+            (inst.zs[0] in range(-50, 51) and inst.zs[1] in range(-50, 51))
             ):
             part1_instructions.append(inst)
     
@@ -194,3 +121,5 @@ print('Part 1:', count(part1_instructions(instructions))) #611176
 
 print('Part 2:', count(instructions))
 
+t2 = timer()
+print(f'time: {(t2-t1):.4f}s')
