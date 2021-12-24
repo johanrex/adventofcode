@@ -1,4 +1,3 @@
-from __future__ import annotations 
 from dataclasses import dataclass
 from typing import List
 import re
@@ -51,42 +50,41 @@ def parse_input(filename: str) -> List[Instruction]:
 
 def count(instructions):
 
-    #TODO rename to all..
     #get sorted list of all coordinates
 
-    xs = []
+    xs_all = []
     for i in instructions:
-        xs.extend([i.xs[0], i.xs[1]+1])
+        xs_all.extend([i.xs[0], i.xs[1]+1])
 
-    ys = []
+    ys_all = []
     for i in instructions:
-        ys.extend([i.ys[0], i.ys[1]+1])
+        ys_all.extend([i.ys[0], i.ys[1]+1])
 
-    zs = []
+    zs_all = []
     for i in instructions:
-        zs.extend([i.zs[0], i.zs[1]+1])
+        zs_all.extend([i.zs[0], i.zs[1]+1])
 
-    xs.sort()
-    ys.sort()
-    zs.sort()
+    xs_all.sort()
+    ys_all.sort()
+    zs_all.sort()
 
     sum = 0
 
-    steps = len(xs)-1
+    steps = len(xs_all)-1
     current_step = 0
 
-    for x1,x2 in zip(xs, xs[1:]):
+    for x1,x2 in zip(xs_all, xs_all[1:]):
 
         x_inputs = [input for input in instructions if input.xs[0] <= x1 <= input.xs[1]]
 
         current_step += 1
         print(f'{(current_step / steps * 100):.2f}%')
 
-        for y1,y2 in zip(ys, ys[1:]):
+        for y1,y2 in zip(ys_all, ys_all[1:]):
 
             xy_inputs = [input for input in x_inputs if input.ys[0] <= y1 <= input.ys[1]]
     
-            for z1,z2 in zip(zs, zs[1:]):
+            for z1,z2 in zip(zs_all, zs_all[1:]):
 
                 xyz_inputs = [input for input in xy_inputs if input.zs[0] <= z1 <= input.zs[1]]
 
@@ -119,7 +117,7 @@ instructions = parse_input(filename)
 
 print('Part 1:', count(part1_instructions(instructions))) #611176
 
-print('Part 2:', count(instructions))
+print('Part 2:', count(instructions)) #1201259791805392
 
 t2 = timer()
 print(f'time: {(t2-t1):.4f}s')
