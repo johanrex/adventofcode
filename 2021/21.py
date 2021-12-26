@@ -17,8 +17,6 @@ p2 = Player(name='Player 2', pos=10)
 # p1 = Player(name='Player 1', pos=4)
 # p2 = Player(name='Player 2', pos=8)
 
-p1_turn = True
-
 die_val = 0
 die_roll_counter = 0
 
@@ -35,30 +33,37 @@ def get_die_val():
 
     return die_val
 
-while p1.score < 1000 and p2.score < 1000:
+def part1():
+    p1_turn = True
 
-    if p1_turn:
-        p = p1
-    else:
-        p = p2
+    while p1.score < 1000 and p2.score < 1000:
 
-    vals = [get_die_val(), get_die_val(), get_die_val()]
-    s = sum(vals)
+        if p1_turn:
+            p = p1
+        else:
+            p = p2
 
-    p.pos += s
+        vals = [get_die_val(), get_die_val(), get_die_val()]
+        s = sum(vals)
 
-    if p.pos % 10 == 0:
-        p.pos = 10
-    else:
-        p.pos = p.pos % 10
+        p.pos += s
 
-    p.score += p.pos
+        if p.pos % 10 == 0:
+            p.pos = 10
+        else:
+            p.pos = p.pos % 10
 
-    print(f'{p.name} rolls {"+".join(map(str, vals))} and moves to space {p.pos} for a total score of {p.score}.')
+        p.score += p.pos
 
-    #update player
-    p1_turn = not p1_turn
+        print(f'{p.name} rolls {"+".join(map(str, vals))} and moves to space {p.pos} for a total score of {p.score}.')
 
+        #update player
+        p1_turn = not p1_turn
 
-print('part 1:', die_roll_counter * min(p1.score, p2.score)) # 571032
+    return die_roll_counter * min(p1.score, p2.score)
+
+print('part 1:', part1()) # 571032
+
+#part 2
+#p1.score, p2.score, p1.pos, p2.pos, die_roll_counter
 
