@@ -118,31 +118,14 @@ class BinaryTreeNode():
         return node
 
 
-def json_dfs_list(json_str:str):
-
-    import json
-    data = json.loads(json_str)
-    node_list = []
-
-    __json_dfs_list(node_list, data)
-
-    return node_list
-
-def __json_dfs_list(node_list, node):
-
-    if type(node[0])==list:
-        self.__get_dfs_list(node_list, node[0])
-    elif type(node[0])==int:
-        node_list.append(node[0])
-
-    if node.right_child is not None:
-        self.__get_dfs_list(node_list, node.right_child)
-
-
-
 def explode(root: BinaryTreeNode):
+    
+    exploded = False
+
     levels_nodes = root.get_levels()
     if 5 in levels_nodes:
+        exploded = True
+
         nodes = levels_nodes[5]
         leftmost_4_level_deep = nodes[0]
 
@@ -167,7 +150,6 @@ def explode(root: BinaryTreeNode):
                     next.right_value += leftmost_4_level_deep.right_value
                     break
 
-
         #set to 0
         parent = leftmost_4_level_deep.parent
         if parent.left_child == leftmost_4_level_deep:
@@ -175,15 +157,74 @@ def explode(root: BinaryTreeNode):
             parent.left_value = 0
         elif parent.right_child == leftmost_4_level_deep:
             parent.right_child = None
-            parent.right_child = 0
+            parent.right_value = 0
 
-    return root
+        print('after explode:', str(root))
+
+    return exploded
+
+
+def split_value_to_node(val_to_split, parent):
+    new_left_val = val_to_split // 2
+    new_right_val = val_to_split - new_left_val
+
+    new_node = BinaryTreeNode()
+    new_node.parent = parent
+    new_node.left_value = new_left_val
+    new_node.right_value = new_right_val
+
+    return new_node
+
+
+def split(root: BinaryTreeNode):
+
+    splitted = False
+    lst = root.get_dfs_list()
+
+    for node in lst:
+
+        if node.left_value is not None and node.left_value >= 10:
+            node.left_child = split_value_to_node(node.left_value, node)
+            node.left_value = None
+            splitted = True
+            break
+
+        elif node.right_value is not None and node.right_value >= 10:
+            node.right_child = split_value_to_node(node.right_value, node)
+            node.right_value = None
+            splitted = True
+            break
+
+    if splitted:
+        print('after split:', str(root))
+
+    return splitted
 
 
 def reduce(root: BinaryTreeNode):
-    root = explode(root)
+    
+    while True:
+        if explode(root):
+            continue
 
-    return root
+        if split(root):
+            continue
+
+        break
+
+
+def test_reduce(input, output):
+    node = BinaryTreeNode.from_json(input)
+    reduce(node)
+    
+    assert str(node) == output
+
+
+def test_explode(input, output):
+    node = BinaryTreeNode.from_json(input)
+    explode(node) 
+
+    assert str(node) == output
 
 
 def tests():
@@ -205,38 +246,23 @@ def tests():
     for s in strs:
         assert s == str(BinaryTreeNode.from_json(s))
 
-    assert str(explode(BinaryTreeNode.from_json('[[[[[9,8],1],2],3],4]'))) == '[[[[0,9],2],3],4]'
-    assert str(explode(BinaryTreeNode.from_json('[7,[6,[5,[4,[3,2]]]]]'))) == '[7,[6,[5,[7,0]]]]'
-    assert str(explode(BinaryTreeNode.from_json('[[6,[5,[4,[3,2]]]],1]'))) == '[[6,[5,[7,0]]],3]'
-    assert str(explode(BinaryTreeNode.from_json('[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]'))) == '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]'
-    assert str(explode(BinaryTreeNode.from_json('[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]'))) == '[[3,[2,[8,0]]],[9,[5,[7,0]]]]'
+    test_explode('[[[[[9,8],1],2],3],4]', '[[[[0,9],2],3],4]')
+    test_explode('[7,[6,[5,[4,[3,2]]]]]', '[7,[6,[5,[7,0]]]]')
+    test_explode('[[6,[5,[4,[3,2]]]],1]', '[[6,[5,[7,0]]],3]')
+    test_explode('[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]', '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]')
+    test_explode('[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]', '[[3,[2,[8,0]]],[9,[5,[7,0]]]]')
 
-
-    #assert str(explode(BinaryTreeNode.from_json(''))) == ''
-
-
-
+    test_reduce('[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]', '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]')
 
 tests()
 
 print('Input:')
-json_str = '[[6,[5,[4,[3,2]]]],1]'
+json_str = '[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]'
 print(json_str)
 root = BinaryTreeNode.from_json(json_str)
 
-root.pretty_print()
-
-
-# print('')
-
-# lst = root.get_dfs_list()
-# for node in lst:
-#     print(f'({node.left_value},{node.right_value})')
-
 reduce(root)
 
-print('Output')
-print(root)
 i = 0
 
 # pp = BinaryTreePrettyPrinter()
