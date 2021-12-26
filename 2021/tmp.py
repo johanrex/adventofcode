@@ -1,4 +1,5 @@
 
+from typing import List
 class BinaryTreeNode():
     def __init__(self) -> None:
         self.left_value = None
@@ -211,6 +212,44 @@ def reduce(root: BinaryTreeNode):
             continue
 
         break
+    
+    return root
+
+def add_str(str_first, str_second):
+    first = BinaryTreeNode.from_json(str_first)
+    second = BinaryTreeNode.from_json(str_second)
+
+    return add(first, second)
+
+def add(first: BinaryTreeNode, second: BinaryTreeNode):
+
+    reduce(first)
+    reduce(second)
+
+    result = BinaryTreeNode()
+    first.parent = result
+    second.parent = result
+    result.left_child = first
+    result.right_child = second
+
+    reduce(result)
+    
+    return result
+
+def sum_list(list_of_str: List[str]):
+
+    prev = None
+    for nr in list_of_str:
+        current = BinaryTreeNode.from_json(nr)
+
+        if prev is None:
+            prev = current
+            continue
+
+        current = add(prev, current)
+        prev = current
+
+    return current
 
 
 def test_reduce(input, output):
@@ -225,6 +264,24 @@ def test_explode(input, output):
     explode(node) 
 
     assert str(node) == output
+
+
+def magnitude(node):
+    if node.left_value is not None:
+        left_val = node.left_value
+    else:
+        left_val = magnitude(node.left_child)
+
+    if node.right_value is not None:
+        right_val = node.right_value
+    else:
+        right_val = magnitude(node.right_child)
+
+    return (3*left_val) + (2*right_val)
+
+
+def magnitude_str(s):
+    return magnitude(BinaryTreeNode.from_json(s))
 
 
 def tests():
@@ -254,17 +311,45 @@ def tests():
 
     test_reduce('[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]', '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]')
 
+    assert str(sum_list(['[[[[4,3],4],4],[7,[[8,4],9]]]', '[1,1]'])) == '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]'
+    assert str(sum_list(['[1,1]','[2,2]','[3,3]','[4,4]'])) == '[[[[1,1],[2,2]],[3,3]],[4,4]]'
+
+    assert str(sum_list(['[1,1]','[2,2]','[3,3]','[4,4]','[5,5]'])) == '[[[[3,0],[5,3]],[4,4]],[5,5]]'
+
+    assert str(sum_list(['[1,1]','[2,2]','[3,3]','[4,4]','[5,5]','[6,6]'])) == '[[[[5,0],[7,4]],[5,5]],[6,6]]'
+
+    assert str(sum_list(['[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]','[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]','[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]','[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]','[7,[5,[[3,8],[1,4]]]]','[[2,[2,2]],[8,[8,1]]]','[2,9]','[1,[[[9,3],9],[[9,0],[0,7]]]]','[[[5,[7,4]],7],1]','[[[[4,2],2],6],[8,7]]'])) == '[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]'
+
+    assert magnitude_str('[[1,2],[[3,4],5]]') == 143
+
+    assert magnitude_str('[[[[0,7],4],[[7,8],[6,0]]],[8,1]]') == 1384
+    assert magnitude_str('[[[[1,1],[2,2]],[3,3]],[4,4]]') == 445
+    assert magnitude_str('[[[[3,0],[5,3]],[4,4]],[5,5]]') == 791
+    assert magnitude_str('[[[[5,0],[7,4]],[5,5]],[6,6]]') == 1137
+    assert magnitude_str('[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]') == 3488
+
+    assert magnitude(sum_list([
+        '[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]',
+        '[[[5,[2,8]],4],[5,[[9,9],0]]]',
+        '[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]',
+        '[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]',
+        '[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]',
+        '[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]',
+        '[[[[5,4],[7,7]],8],[[8,3],8]]',
+        '[[9,3],[[9,9],[6,[4,9]]]]',
+        '[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]',
+        '[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]'],
+        )) == 4140
+
+
 tests()
 
-print('Input:')
-json_str = '[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]'
-print(json_str)
-root = BinaryTreeNode.from_json(json_str)
+inputs = []
+with open('2021/18_input.txt') as f:
+    for line in f:
+        inputs.append(line.strip())
 
-reduce(root)
+print('Part 1:', magnitude(sum_list(inputs)))
+
 
 i = 0
-
-# pp = BinaryTreePrettyPrinter()
-# pp.pretty_print(data)
-
