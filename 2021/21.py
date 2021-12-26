@@ -10,37 +10,37 @@ class Player:
     score: int = 0
 
 #My input
-P1 = Player(name='Player 1', pos=2)
-P2 = Player(name='Player 2', pos=10)
+p1 = Player(name='Player 1', pos=2)
+p2 = Player(name='Player 2', pos=10)
 
 #Test input
 # p1 = Player(name='Player 1', pos=4)
 # p2 = Player(name='Player 2', pos=8)
 
-P1_TURN = True
+p1_turn = True
 
-DIE_VAL = 0
-DIE_ROLL_COUNTER = 0
+die_val = 0
+die_roll_counter = 0
 
 def get_die_val():
-    global DIE_VAL
-    global DIE_ROLL_COUNTER
+    global die_val
+    global die_roll_counter
 
-    DIE_ROLL_COUNTER += 1
+    die_roll_counter += 1
 
-    if DIE_VAL == 100:
-        DIE_VAL = 1
+    if die_val == 100:
+        die_val = 1
     else:
-        DIE_VAL += 1
+        die_val += 1
 
-    return DIE_VAL
+    return die_val
 
-while P1.score < 1000 and P2.score < 1000:
+while p1.score < 1000 and p2.score < 1000:
 
-    if P1_TURN:
-        p = P1
+    if p1_turn:
+        p = p1
     else:
-        p = P2
+        p = p2
 
     vals = [get_die_val(), get_die_val(), get_die_val()]
     s = sum(vals)
@@ -57,8 +57,8 @@ while P1.score < 1000 and P2.score < 1000:
     print(f'{p.name} rolls {"+".join(map(str, vals))} and moves to space {p.pos} for a total score of {p.score}.')
 
     #update player
-    P1_TURN = not P1_TURN
+    p1_turn = not p1_turn
 
 
-print('part 1:', DIE_ROLL_COUNTER * min(P1.score, P2.score)) # 571032
+print('part 1:', die_roll_counter * min(p1.score, p2.score)) # 571032
 
