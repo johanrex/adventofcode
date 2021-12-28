@@ -47,10 +47,8 @@ def part1():
 
         p.pos += s
 
-        if p.pos % 10 == 0:
-            p.pos = 10
-        else:
-            p.pos = p.pos % 10
+        #smart mod
+        p.pos = ((p.pos-1) % 10)+1
 
         p.score += p.pos
 
