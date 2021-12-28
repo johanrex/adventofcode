@@ -1,5 +1,19 @@
+from __future__ import annotations
 from dataclasses import dataclass
 import itertools
+import functools
+
+#Input: test. 
+# p1_pos = 4
+# p2_pos = 8
+
+#Input: real. 
+p1_pos = 2
+p2_pos = 10
+
+def smart_mod(n:int) -> int:
+    return ((n-1) % 10)+1
+
 
 #TODO varför slutar det fungera när man tar bort type hints???
 @dataclass
@@ -8,13 +22,9 @@ class Player:
     pos: int = None
     score: int = 0
 
-#My input
-p1 = Player(name='Player 1', pos=2)
-p2 = Player(name='Player 2', pos=10)
+p1 = Player(name='Player 1', pos=p1_pos)
+p2 = Player(name='Player 2', pos=p2_pos)
 
-#Test input
-# p1 = Player(name='Player 1', pos=4)
-# p2 = Player(name='Player 2', pos=8)
 
 die_val = 0
 die_roll_counter = 0
@@ -48,8 +58,8 @@ def part1():
         p.pos += s
 
         #smart mod
-        p.pos = ((p.pos-1) % 10)+1
-
+        p.pos = smart_mod(p.pos)
+        
         p.score += p.pos
 
         print(f'{p.name} rolls {"+".join(map(str, vals))} and moves to space {p.pos} for a total score of {p.score}.')
@@ -59,45 +69,37 @@ def part1():
 
     return die_roll_counter * min(p1.score, p2.score)
 
+
+@functools.lru_cache(None)
+def part_2_wins(
+    p1_pos: int,
+    p1_score: int,
+    p2_pos: int,
+    p2_score: int
+    ) -> tuple[int, int]:
+
+    p1_wins = 0
+    p2_wins = 0
+    for i, j, k in itertools.product( (1,2,3), (1,2,3), (1,2,3) ):
+        new_p1_pos = smart_mod(p1_pos + i + j + k)
+        new_p1_score = p1_score + new_p1_pos
+
+        if new_p1_score >= 21:
+            p1_wins += 1
+        else:
+            tmp_p2_wins, tmp_p1_wins = part_2_wins(
+                p2_pos,
+                p2_score, 
+                new_p1_pos,
+                new_p1_score
+            )
+            p1_wins += tmp_p1_wins
+            p2_wins += tmp_p2_wins
+
+    return p1_wins, p2_wins
+
 print('part 1:', part1()) # 571032
 
-
-def part2():
-    die_combinations = list(itertools.permutations([1,2,3], 3))
-
-    P1_SCORE_IDX = 0
-    P2_SCORE_IDX = 1
-    P1_POS_IDX = 2
-    P2_POS_IDX = 3
-    DIE_ROLL_COUNTER = 4
-
-    state = [0]*5
-
-    show_must_go_on = True
-    p1_turn = True
-
-    while show_must_go_on:
-        if p1_turn:
-            key_score = 'p1.score'
-            key_pos = 'p1.pos'
-        else:
-            key_score = 'p2.score'
-            key_pos = 'p2.pos'
-
-        for die_result in die_combinations:
-            s = sum(die_result)
-            state[key_pos] += s
-
-            if state[key_pos] % 10 == 0:
-                state[key_pos] = 10
-            else:
-                state[key_pos] = state[key_pos] % 10
-
-            state[key_score] += state[key_pos]
-
-    #update player
-    p1_turn = not p1_turn
-
-#part 2
-#p1.score, p2.score, p1.pos, p2.pos, die_roll_counter
-
+print('Part 2:', max(part_2_wins(p1_pos, 0, p2_pos, 0)))
+# Test: Expected: 444356092776315 
+# Real: Expected: 49975322685009
