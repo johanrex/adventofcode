@@ -35,8 +35,12 @@ def part_2_wins(
 
     return p1_wins, p2_wins
 
-#Test 444356092776315
-p1_pos = 4
-p2_pos = 8
+#Input: test. Expected: 444356092776315
+# p1_pos = 4
+# p2_pos = 8
+
+#Input: real. Expected: 49975322685009
+p1_pos = 2
+p2_pos = 10
 
 print('Part 2:', max(part_2_wins(p1_pos, 0, p2_pos, 0)))
