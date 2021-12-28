@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from os import name
-
+import itertools
 
 #TODO varför slutar det fungera när man tar bort type hints???
 @dataclass
@@ -63,6 +62,43 @@ def part1():
     return die_roll_counter * min(p1.score, p2.score)
 
 print('part 1:', part1()) # 571032
+
+
+def part2():
+    die_combinations = list(itertools.permutations([1,2,3], 3))
+
+    P1_SCORE_IDX = 0
+    P2_SCORE_IDX = 1
+    P1_POS_IDX = 2
+    P2_POS_IDX = 3
+    DIE_ROLL_COUNTER = 4
+
+    state = [0]*5
+
+    show_must_go_on = True
+    p1_turn = True
+
+    while show_must_go_on:
+        if p1_turn:
+            key_score = 'p1.score'
+            key_pos = 'p1.pos'
+        else:
+            key_score = 'p2.score'
+            key_pos = 'p2.pos'
+
+        for die_result in die_combinations:
+            s = sum(die_result)
+            state[key_pos] += s
+
+            if state[key_pos] % 10 == 0:
+                state[key_pos] = 10
+            else:
+                state[key_pos] = state[key_pos] % 10
+
+            state[key_score] += state[key_pos]
+
+    #update player
+    p1_turn = not p1_turn
 
 #part 2
 #p1.score, p2.score, p1.pos, p2.pos, die_roll_counter
