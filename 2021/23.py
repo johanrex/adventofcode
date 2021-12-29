@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import List
 from dataclasses import dataclass
+import copy
 
 A = 1
 B = 2
@@ -18,6 +19,9 @@ mapper = {
 class Amphipod:
     type: int    
     pos: tuple
+
+    def __str__(self) -> str:
+        return 
 
 class Graph:
     def __init__(self) -> None:
@@ -38,7 +42,7 @@ class Graph:
 
         self.vertices.append(v)
 
-    def get_vertex_by_id(self, id: object):
+    def get_vertex_by_id(self, id: object) -> Graph.Vertex:
         v = next(vertex for vertex in self.vertices if vertex.id == id)
         return v
 
@@ -50,25 +54,22 @@ class Graph:
         if v2.edges is None:
             v2.edges = []
 
-        v1.edges.append(Graph.Edge(destination=v2))
-        v2.edges.append(Graph.Edge(destination=v1))
+        v1.edges.append(v2)
+        v2.edges.append(v1)
         
     @dataclass
     class Vertex:
         id: object
-        value: int
-        edges: List[Graph.Edge] = None
+        value: object = None
+        edges: List[Graph.Vertex] = None
 
-    @dataclass
-    class Edge:
-        destination: Graph.Vertex
 
 def create_graph(lines):
     G = Graph()
 
     row = 1
     for col in range(11):
-        G.add_vertex(Graph.Vertex(id=(row, col), value=None))
+        G.add_vertex(Graph.Vertex(id=(row, col)))
 
         if col > 0:
             Graph.add_bidirectional_edge(
@@ -77,13 +78,35 @@ def create_graph(lines):
 
     for row in range(2, 4):
         for col in [3,5,7,9]:
-            apod = Amphipod(mapper[lines[row][col]], pos=(row, col))
-            G.add_vertex(Graph.Vertex(id=(row, col), value=apod))
+            G.add_vertex(Graph.Vertex(id=(row, col)))
             Graph.add_bidirectional_edge(
                 G.get_vertex_by_id( (row, col)),
                 G.get_vertex_by_id( (row-1, col)))
 
     return G
+
+
+def get_initial_pos(lines):
+    amphipods = []
+    for row in range(2, 4):
+        for col in [3,5,7,9]:
+            amphipods.append(Amphipod(mapper[lines[row][col]], pos=(row, col)))
+
+    return amphipods
+
+def get_end_pos(lines):
+    amphipods = copy.deepcopy(get_initial_pos(lines))
+    amphipods[0].value = A
+    amphipods[1].value = B
+    amphipods[2].value = C
+    amphipods[3].value = D
+    amphipods[4].value = A
+    amphipods[5].value = B
+    amphipods[6].value = C
+    amphipods[7].value = D
+
+    return amphipods
+
 
 def read_input(filename):
     lines = []
@@ -93,8 +116,23 @@ def read_input(filename):
 
     return lines 
 
-def get_valid_moves():
-    pass
+def is_vertex_occupied(amphipods: List[Amphipod], id) -> bool:
+    return next((True for a in amphipods if a.pos == id), False) == True
+
+def is_hallway(vertex) -> bool:
+    if vertex.id[0] == 1:
+        return True
+    else:
+        return False
+
+def get_reachable_vertices(G: Graph, amphipods: List[Amphipod], apod: Amphipod, ) -> List[Graph.Vertex]:
+    tmp = []
+
+    v = Graph.get_vertex_by_id(apod.pos)
+    for v_neighbor in v.edges:
+        if not is_vertex_occupied(G, v_neighbor.id):
+            pass
+
 
 def organize(G):
     pass
@@ -105,11 +143,8 @@ lines = read_input(filename)
 G = create_graph(lines)
 amphipods = [v.value for v in G.vertices if v.value is not None]
 
-#hur representera state?
-#push/pop 
-#__repr__ för states och så en dict med str -> Graph. 
-#hmm... jag måste nog skicka in state till en funktion som tar in current state och returnerar next state. 
-#serialisera state till json eller nåt. 
+import pickle
+buf = pickle.dumps(amphipods)
+copy = pickle.loads(buf)
 
 i = 0
-
