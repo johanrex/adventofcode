@@ -1,46 +1,106 @@
 from __future__ import annotations
-import itertools 
-import functools
+from typing import List
+from dataclasses import dataclass
+import copy
+import networkx as nx
+import itertools
+
+A = 1
+B = 2
+C = 3
+D = 4
+
+mapper = {
+    'A' : A,
+    'B' : B,
+    'C' : C,
+    'D' : D
+}
+
+def create_graph() -> nx.Graph:
+    G = nx.Graph()
+
+    row = 1
+    for col in range(1, 12):
+        G.add_node( (row, col) )
+
+        if col > 0:
+            G.add_edge( (row, col), (row, col-1) )
+
+    for row in range(2, 4):
+        for col in [3,5,7,9]:
+            G.add_node( (row, col) )
+            G.add_edge( (row, col), (row-1, col) )
+
+    return G
 
 
-def smart_mod(n:int) -> int:
-    return ((n-1) % 10)+1
+def get_start_state(lines):
+    pos_apods = {}
+
+    for row in range(2, 4):
+        for col in [3,5,7,9]:
+            pos_apods[(row, col)] = mapper[lines[row][col]]
+
+    return pos_apods
+
+def get_end_state(start_state):
+    c = itertools.cycle([A, B, C, D])
+    end_state = copy.deepcopy(start_state)
+    
+    for key in end_state.keys():
+        end_state[key] = next(c)
+    
+    return end_state
 
 
-@functools.lru_cache(None)
-def part_2_wins(
-    p1_pos: int,
-    p1_score: int,
-    p2_pos: int,
-    p2_score: int
-    ) -> tuple[int, int]:
+def read_input(filename):
+    lines = []
+    with open(filename) as f:
+        for line in f:
+            lines.append(line.replace('\n', ''))
 
-    p1_wins = 0
-    p2_wins = 0
-    for i, j, k in itertools.product( (1,2,3), (1,2,3), (1,2,3) ):
-        new_p1_pos = smart_mod(p1_pos + i + j + k)
-        new_p1_score = p1_score + new_p1_pos
+    return lines 
 
-        if new_p1_score >= 21:
-            p1_wins += 1
-        else:
-            tmp_p2_wins, tmp_p1_wins = part_2_wins(
-                p2_pos,
-                p2_score, 
-                new_p1_pos,
-                new_p1_score
-            )
-            p1_wins += tmp_p1_wins
-            p2_wins += tmp_p2_wins
+def is_node_occupied(state: dict, pos: tuple[int, int]) -> bool:
+    return pos in state
 
-    return p1_wins, p2_wins
+def is_no_parking(pos: tuple[int, int]):
+    return pos in [(1,3), (1, 5), (1,7), (1,9)]
 
-#Input: test. Expected: 444356092776315
-# p1_pos = 4
-# p2_pos = 8
+def is_hallway(pos: tuple(int, int)) -> bool:
+    return pos[0] == 1
 
-#Input: real. Expected: 49975322685009
-p1_pos = 2
-p2_pos = 10
+def get_reachable_vertices(G: nx.Graph, state: dict[tuple[int, int], int], source: tuple[int, int] ):
 
-print('Part 2:', max(part_2_wins(p1_pos, 0, p2_pos, 0)))
+    paths = list(nx.dfs_edges(G, source=source))
+
+    for path in paths:
+        print(path)
+
+        #Prune paths according to:
+        #is_no_parking()
+        #is_node_occupied()
+        # is allowed room
+        # move from room to hallway. (don't get stuck moving up and down in room)
+
+
+def organize(G):
+    pass
+
+filename = '2021/23_input_example.txt'
+lines = read_input(filename)
+
+start_state = get_start_state(lines)
+end_state = get_end_state(start_state)
+
+
+G = create_graph()
+get_reachable_vertices(G, start_state, (2, 3) )
+
+
+import pickle
+buf = pickle.dumps(None)
+copy = pickle.loads(buf)
+
+i = 0
