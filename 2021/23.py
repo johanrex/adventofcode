@@ -2,15 +2,6 @@ from __future__ import annotations
 from typing import List
 from dataclasses import dataclass
 
-Initial_state = \
-"""
-#############
-#...........#
-###B#C#B#D###
-  #A#D#C#A#
-  #########
-"""
-
 A = 1
 B = 2
 C = 3
@@ -113,6 +104,12 @@ lines = read_input(filename)
 
 G = create_graph(lines)
 amphipods = [v.value for v in G.vertices if v.value is not None]
+
+#hur representera state?
+#push/pop 
+#__repr__ för states och så en dict med str -> Graph. 
+#hmm... jag måste nog skicka in state till en funktion som tar in current state och returnerar next state. 
+#serialisera state till json eller nåt. 
 
 i = 0
 
