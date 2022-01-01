@@ -98,10 +98,32 @@ def get_valid_room_pos(current_state: dict[tuple[int, int], int], current_pos: t
     if first_free_pos_from_bottom is not None:
         return first_free_pos_from_bottom
 
+def should_move_out_of_room(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
+    
+    assert not is_hallway(start_pos)
+
+    apod = current_state[start_pos]
+
+    src_room = start_pos[1]
+    dst_room = apod_to_room_mapper[apod]
+
+    if src_room == dst_room:
+        for room_level in range(start_pos[0]+1, 2+ROOM_LEVELS):
+            if apod != current_state[(room_level, dst_room)]:
+                return True 
+    else:
+        return True
+
+    return False
+
 
 def get_valid_hallway_positions(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
 
     assert not is_hallway(start_pos)
+
+    # check if we should move out of room. 
+    if not should_move_out_of_room(current_state, start_pos):
+        return None
 
     positions = []
 
@@ -144,7 +166,6 @@ def get_valid_moves(current_state, pos):
         if valid_room_pos is not None:
             moves.append(valid_room_pos)
     else:
-        TODO "don't move into hallway if you're already in the correct place.."
         tmp = get_valid_hallway_positions(current_state, pos)
         if tmp is not None:
             moves.extend(tmp)
@@ -192,7 +213,7 @@ def organize(current_state, end_state):
     return costs
 
 
-def __organize(current_state, end_state, costs, cost = 0):
+def __organize(current_state, end_state, costs: List[int], cost:int = 0):
 
     for pos in current_state:
         apod = current_state[pos]
