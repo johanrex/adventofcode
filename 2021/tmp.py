@@ -1,6 +1,7 @@
 #TODO explicit type aliases https://www.python.org/dev/peps/pep-0613/
 
 from __future__ import annotations
+import pickle
 from typing import List
 from dataclasses import dataclass
 import itertools
@@ -213,9 +214,20 @@ def cost_of_move(apod, src_pos, dst_pos):
     return steps * multiple
 
 
-state_guard = []
+def serialize_state(state):
+    return pickle.dumps(state)
+
+states_processed = {}
 lowest_total_cost = 10000000
 def organize(current_state, end_state, cost:int = 0):
+
+    current_state_serialized = serialize_state(current_state)
+    
+    if current_state_serialized in states_processed:
+        return
+    else:
+        states_processed[current_state_serialized] = 1
+
     global lowest_total_cost
     global positions_evaluated
 
