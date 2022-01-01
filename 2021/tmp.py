@@ -99,8 +99,15 @@ def is_free_path(G: nx.Graph, current_state: dict[tuple[int, int], int], src: tu
     return not found_other_apod_along_path
 
 
-def get_valid_room_pos(current_state: dict[tuple[int, int], int], apod: int, current_pos: tuple[int, int]):
-    dst_room_col =apod_to_room_mapper[apod]
+def get_valid_room_pos(current_state: dict[tuple[int, int], int], current_pos: tuple[int, int]):
+
+    assert is_hallway(current_pos)
+
+    apod = current_state[current_pos]
+
+    assert apod != 0
+
+    dst_room_col = apod_to_room_mapper[apod]
 
     current_col = current_pos[1]
 
@@ -118,48 +125,62 @@ def get_valid_room_pos(current_state: dict[tuple[int, int], int], apod: int, cur
         return first_free_pos_from_bottom
 
 
-def get_valid_hallway_positions(G: nx.Graph, current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
+def get_valid_hallway_positions(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
+
+    assert not is_hallway(start_pos)
 
     positions = []
 
+    #check if we can move out of room. 
+    start_row = start_pos[0]
+    start_col = start_pos[1]
+
+    if start_row > 2:
+        for row in range(start_row, 1, -1):
+            if not is_free_pos(current_state, (row, start_col) ):
+                return None
+
+
     leftmost_col = 1
+    for col in range(start_col, leftmost_col-1, -1):
+        pos = (1, col)
+        if is_free_pos(current_state, pos):
+            if not is_no_parking(pos):
+                positions.append(pos)
+        else:
+            break
+
+
     rightmost_col = 11
+    for col in range(start_col, rightmost_col+1):
+        pos = (1, col)
+        if is_free_pos(current_state, pos):
+            if not is_no_parking(pos):
+                positions.append(pos)
+        else:
+            break
 
-    for col in 
+    return positions
 
-    leftmost_hallway_pos = (1, 1)
-    rightmost_hallway_pos = (1, 11)
-
-    paths = nx.shortest_simple_paths(G, start_pos, leftmost_hallway_pos)
-    
-    for pos in paths:
-        if not is_free_pos(pos):
-            break 
-        
-        if is_no_parking(pos):
-            continue
-
-        positions.append(pos)
-
-
-def get_valid_moves(apod, pos, current_state):
+def get_valid_moves(pos, current_state):
     moves = []
 
     if is_hallway(pos):
-        dst_room =apod_to_room_mapper[apod]
-        valid_room_pos = get_valid_room_pos(current_state, apod, pos)
+        valid_room_pos = get_valid_room_pos(current_state, pos)
         if valid_room_pos is not None:
             moves.append(valid_room_pos)
     else:
-        is_free_path        
-
+        tmp = get_valid_hallway_positions(current_state, pos)
+        if tmp is not None:
+            moves.extend(tmp)
+                
     return moves
 
 
 def sort(G, current_state, end_state):
     for pos in current_state:
         apod = current_state[pos]
-        moves = get_valid_moves(apod, pos, current_state)
+        moves = get_valid_moves(pos, current_state)
 
 
 filename = '2021/23_input_example.txt'
