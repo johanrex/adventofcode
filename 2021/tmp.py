@@ -210,16 +210,9 @@ def cost_of_move(apod, src_pos, dst_pos):
     return steps * multiple
 
 
-def organize(current_state, end_state):
-
-    costs = []
-
-    __organize(current_state, end_state, costs)
-
-    return costs
-
-
-def __organize(current_state, end_state, costs: List[int], cost:int = 0):
+lowest_total_cost = 10000000
+def organize(current_state, end_state, cost:int = 0):
+    global lowest_total_cost
 
     for pos, apod in current_state.items():
         moves = get_valid_moves(current_state, pos)
@@ -233,11 +226,16 @@ def __organize(current_state, end_state, costs: List[int], cost:int = 0):
 
             new_cost = cost + cost_of_move(apod, pos, move)
 
+            if new_cost > lowest_total_cost:
+                continue
+
             new_state = get_new_state(current_state, pos, move)
-            if new_state == end_state:
-                costs.append(new_cost)
+            if new_state == end_state and new_cost < lowest_total_cost:
+                print('New lowest cost:', new_cost)
+                lowest_total_cost = new_cost
             else:
-                __organize(new_state, end_state, costs, new_cost)
+                organize(new_state, end_state, new_cost)
+
 
 def print_burrow(current_state):
 
@@ -258,14 +256,15 @@ def print_burrow(current_state):
 
 
 
-filename = '2021/23_input_example.txt'
+#filename = '2021/23_input_example.txt'
+filename = '2021/23_input.txt'
 lines = read_input(filename)
 
 start_state = get_start_state(lines)
 end_state = get_end_state(start_state)
 
-costs = organize(start_state, end_state)
+organize(start_state, end_state)
 
-print('Part 1:', next(iter(sorted(costs))))
+print('Part 1:', lowest_total_cost)
 
 i = 0
