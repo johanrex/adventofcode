@@ -3,9 +3,8 @@
 from __future__ import annotations
 from typing import List
 from dataclasses import dataclass
-import copy
-import networkx as nx
 import itertools
+import functools
 
 ROOM_SLOTS = 2
 
@@ -21,37 +20,12 @@ mapper = {
     'D' : D
 }
 
-room_to_apod_mapper = {
-    3: A,
-    5: B,
-    7: C,
-    9: D
-}
-
 apod_to_room_mapper = {
     A: 3,
     B: 5,
     C: 7,
     D: 9
 }
-
-
-def create_graph() -> nx.Graph:
-    G = nx.Graph()
-
-    row = 1
-    for col in range(1, 12):
-        G.add_node( (row, col) )
-
-        if col > 0:
-            G.add_edge( (row, col), (row, col-1) )
-
-    for row in range(2, 2 + ROOM_SLOTS):
-        for col in [3,5,7,9]:
-            G.add_node( (row, col) )
-            G.add_edge( (row, col), (row-1, col) )
-
-    return G
 
 
 def get_start_state(lines):
@@ -64,8 +38,10 @@ def get_start_state(lines):
     return pos_apods
 
 def get_end_state(start_state):
+
+    end_state = start_state.copy()
+
     c = itertools.cycle([A, B, C, D])
-    end_state = copy.deepcopy(start_state)
     
     for key in end_state.keys():
         end_state[key] = next(c)
@@ -90,15 +66,6 @@ def is_no_parking(pos: tuple[int, int]):
 def is_hallway(pos: tuple(int, int)) -> bool:
     return pos[0] == 1
 
-def is_free_path(G: nx.Graph, current_state: dict[tuple[int, int], int], src: tuple[int, int], dst: tuple[int, int]):
-
-    paths = nx.shortest_simple_paths(G, src, dst)
-    shortest_path = next(paths)
-
-    found_other_apod_along_path = next(True for pos in shortest_path if pos in current_state, False)
-    return not found_other_apod_along_path
-
-
 def get_valid_room_pos(current_state: dict[tuple[int, int], int], current_pos: tuple[int, int]):
 
     assert is_hallway(current_pos)
@@ -115,10 +82,10 @@ def get_valid_room_pos(current_state: dict[tuple[int, int], int], current_pos: t
 
     room_coordinates = [(depth, dst_room_col) for depth in range(2, 2+ROOM_SLOTS)]
 
-    is_other_apod_in_room = next(True for room_coordinate in room_coordinates if room_coordinate in current_state, False)
+    is_other_apod_in_room = next((True for room_coordinate in room_coordinates if room_coordinate in current_state), False)
 
     if is_other_apod_in_room:
-        return False
+        return None
 
     first_free_pos_from_bottom = next(reversed(room_coordinate for room_coordinate in room_coordinates if room_coordinate not in current_state), None)
     if first_free_pos_from_bottom is not None:
@@ -162,7 +129,7 @@ def get_valid_hallway_positions(current_state: dict[tuple[int, int], int], start
 
     return positions
 
-def get_valid_moves(pos, current_state):
+def get_valid_moves(current_state, pos):
     moves = []
 
     if is_hallway(pos):
@@ -176,11 +143,61 @@ def get_valid_moves(pos, current_state):
                 
     return moves
 
+def get_new_state(old_state, src_pos, dst_pos):
 
-def sort(G, current_state, end_state):
+    new_state = old_state.copy()
+
+    assert src_pos != dst_pos
+    assert dst_pos not in new_state
+
+    new_state[dst_pos] = new_state[src_pos]
+    del new_state[src_pos]
+
+    return new_state
+
+@functools.cache
+def cost_of_move(apod, src_pos, dst_pos):
+    global A, B, C, D
+
+    if apod == A:
+        multiple = 1
+    elif apod == B:
+        multiple = 10
+    elif apod == C:
+        multiple = 100
+    elif apod == D:
+        multiple = 1000
+    else:
+        raise Exception('no')
+
+    steps = abs(src_pos[0] - dst_pos[0]) + abs(src_pos[1] - dst_pos[1])
+
+    return steps * multiple
+
+
+def organize(current_state, end_state):
+
+    costs = []
+
+    __organize(current_state, end_state, costs)
+
+    return costs
+
+
+def __organize(current_state, end_state, costs, cost = 0):
+
     for pos in current_state:
         apod = current_state[pos]
-        moves = get_valid_moves(pos, current_state)
+        moves = get_valid_moves(current_state, pos)
+        for move in moves:
+
+            cost += cost_of_move(apod, pos, move)
+
+            new_state = get_new_state(current_state, pos, move)
+            if new_state == end_state:
+                costs.append(cost)
+            else:
+                __organize(new_state, end_state, costs, cost)
 
 
 filename = '2021/23_input_example.txt'
@@ -189,16 +206,8 @@ lines = read_input(filename)
 start_state = get_start_state(lines)
 end_state = get_end_state(start_state)
 
-G = create_graph()
+costs = organize(start_state, end_state)
 
-is_free_path(G, start_state, (3,3), (1, 1) )
-
-sort(G, start_state, end_state)
-#get_reachable_vertices(G, start_state, (2, 3) )
-
-
-import pickle
-buf = pickle.dumps(None)
-copy = pickle.loads(buf)
+print('Part 1:', next(iter(sorted(costs))))
 
 i = 0
