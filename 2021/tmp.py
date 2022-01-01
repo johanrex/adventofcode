@@ -93,10 +93,12 @@ def get_valid_room_pos(current_state: dict[tuple[int, int], int], current_pos: t
 
     if is_other_apod_in_room:
         return None
+    else:
+        first_free_pos_from_bottom = next((room_coordinate for room_coordinate in reversed(room_coordinates) if room_coordinate not in current_state), None)
+        if first_free_pos_from_bottom is not None:
+            return first_free_pos_from_bottom
 
-    first_free_pos_from_bottom = next((room_coordinate for room_coordinate in reversed(room_coordinates) if room_coordinate not in current_state), None)
-    if first_free_pos_from_bottom is not None:
-        return first_free_pos_from_bottom
+    return None
 
 def should_move_out_of_room(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
     
@@ -107,15 +109,27 @@ def should_move_out_of_room(current_state: dict[tuple[int, int], int], start_pos
     src_room = start_pos[1]
     dst_room = apod_to_room_mapper[apod]
 
-    if src_room == dst_room:
-        for room_level in range(start_pos[0]+1, 2+ROOM_LEVELS):
-            if apod != current_state[(room_level, dst_room)]:
-                return True 
-    else:
+    correct_room = src_room == dst_room
+    is_free_above = True
+    is_wrong_apod_under = False
+
+    for room_level in range(2, 2+ROOM_LEVELS):
+        if room_level < start_pos[0]:
+            above = (room_level, src_room)
+            if above in current_state and current_state[above] != apod:
+                is_free_above = False
+        
+        if room_level > start_pos[0]:
+            below = (room_level, src_room)
+            if below in current_state and current_state[below] != apod:
+                is_wrong_apod_under = True
+
+    if not correct_room and is_free_above:
         return True
-
-    return False
-
+    elif correct_room and is_wrong_apod_under:
+        return True
+    else:
+        return False
 
 def get_valid_hallway_positions(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
 
@@ -127,15 +141,7 @@ def get_valid_hallway_positions(current_state: dict[tuple[int, int], int], start
 
     positions = []
 
-    #check if we can move out of room. 
-    start_row = start_pos[0]
     start_col = start_pos[1]
-
-    if start_row > 2:
-        for row in range(start_row, 1, -1):
-            if not is_free_pos(current_state, (row, start_col) ):
-                return None
-
 
     leftmost_col = 1
     for col in range(start_col, leftmost_col-1, -1):
@@ -184,7 +190,7 @@ def get_new_state(old_state, src_pos, dst_pos):
 
     return new_state
 
-@functools.cache
+#@functools.cache
 def cost_of_move(apod, src_pos, dst_pos):
     global A, B, C, D
 
@@ -215,8 +221,7 @@ def organize(current_state, end_state):
 
 def __organize(current_state, end_state, costs: List[int], cost:int = 0):
 
-    for pos in current_state:
-        apod = current_state[pos]
+    for pos, apod in current_state.items():
         moves = get_valid_moves(current_state, pos)
 
         # print('')
