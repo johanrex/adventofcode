@@ -5,6 +5,9 @@ from typing import List
 from dataclasses import dataclass
 import itertools
 import functools
+from timeit import default_timer as timer
+
+positions_evaluated = 0
 
 ROOM_LEVELS = 2
 
@@ -210,11 +213,14 @@ def cost_of_move(apod, src_pos, dst_pos):
     return steps * multiple
 
 
+state_guard = []
 lowest_total_cost = 10000000
 def organize(current_state, end_state, cost:int = 0):
     global lowest_total_cost
+    global positions_evaluated
 
     for pos, apod in current_state.items():
+
         moves = get_valid_moves(current_state, pos)
 
         # print('')
@@ -233,8 +239,13 @@ def organize(current_state, end_state, cost:int = 0):
             if new_state == end_state and new_cost < lowest_total_cost:
                 print('New lowest cost:', new_cost)
                 lowest_total_cost = new_cost
+
+                time_elapsed = timer() - start_timer
+                print(f'Evaluating {positions_evaluated/time_elapsed} positions/s.')
             else:
                 organize(new_state, end_state, new_cost)
+
+        positions_evaluated += 1
 
 
 def print_burrow(current_state):
@@ -256,9 +267,13 @@ def print_burrow(current_state):
 
 
 
+start_timer = timer()
+
 #filename = '2021/23_input_example.txt'
 filename = '2021/23_input.txt'
 lines = read_input(filename)
+
+
 
 start_state = get_start_state(lines)
 end_state = get_end_state(start_state)
