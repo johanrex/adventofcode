@@ -6,18 +6,25 @@ from dataclasses import dataclass
 import itertools
 import functools
 
-ROOM_SLOTS = 2
+ROOM_LEVELS = 2
 
 A = 1
 B = 2
 C = 3
 D = 4
 
-mapper = {
-    'A' : A,
-    'B' : B,
-    'C' : C,
-    'D' : D
+char_to_int_mapper = {
+    'A': A,
+    'B': B,
+    'C': C,
+    'D': D
+}
+
+int_to_char_mapper = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+    D: 'D'
 }
 
 apod_to_room_mapper = {
@@ -31,9 +38,9 @@ apod_to_room_mapper = {
 def get_start_state(lines):
     pos_apods = {}
 
-    for row in range(2, 2 + ROOM_SLOTS):
+    for row in range(2, 2 + ROOM_LEVELS):
         for col in [3,5,7,9]:
-            pos_apods[(row, col)] = mapper[lines[row][col]]
+            pos_apods[(row, col)] = char_to_int_mapper[lines[row][col]]
 
     return pos_apods
 
@@ -80,14 +87,14 @@ def get_valid_room_pos(current_state: dict[tuple[int, int], int], current_pos: t
 
     assert current_col != dst_room_col
 
-    room_coordinates = [(depth, dst_room_col) for depth in range(2, 2+ROOM_SLOTS)]
+    room_coordinates = [(depth, dst_room_col) for depth in range(2, 2+ROOM_LEVELS)]
 
-    is_other_apod_in_room = next((True for room_coordinate in room_coordinates if room_coordinate in current_state), False)
+    is_other_apod_in_room = next((True for room_coordinate in room_coordinates if room_coordinate in current_state and current_state[room_coordinate] != apod), False)
 
     if is_other_apod_in_room:
         return None
 
-    first_free_pos_from_bottom = next(reversed(room_coordinate for room_coordinate in room_coordinates if room_coordinate not in current_state), None)
+    first_free_pos_from_bottom = next((room_coordinate for room_coordinate in reversed(room_coordinates) if room_coordinate not in current_state), None)
     if first_free_pos_from_bottom is not None:
         return first_free_pos_from_bottom
 
@@ -137,6 +144,7 @@ def get_valid_moves(current_state, pos):
         if valid_room_pos is not None:
             moves.append(valid_room_pos)
     else:
+        TODO "don't move into hallway if you're already in the correct place.."
         tmp = get_valid_hallway_positions(current_state, pos)
         if tmp is not None:
             moves.extend(tmp)
@@ -189,15 +197,39 @@ def __organize(current_state, end_state, costs, cost = 0):
     for pos in current_state:
         apod = current_state[pos]
         moves = get_valid_moves(current_state, pos)
+
+        # print('')
+        # print('In this state:')
+        # print_burrow(current_state)
+        # print(f'Found {len(moves)} moves for apod at {pos}.')
+
         for move in moves:
 
-            cost += cost_of_move(apod, pos, move)
+            new_cost = cost + cost_of_move(apod, pos, move)
 
             new_state = get_new_state(current_state, pos, move)
             if new_state == end_state:
-                costs.append(cost)
+                costs.append(new_cost)
             else:
-                __organize(new_state, end_state, costs, cost)
+                __organize(new_state, end_state, costs, new_cost)
+
+def print_burrow(current_state):
+
+    lines = []
+    lines.append(list('#############'))
+    lines.append(list('#...........#'))
+    lines.append(list('###.#.#.#.###'))
+    for _ in range(ROOM_LEVELS-1):
+        lines.append(list('  #.#.#.#.#  '))
+
+    lines.append(list('  #########  '))
+
+    for pos, apod in current_state.items():
+        lines[pos[0]][pos[1]] = int_to_char_mapper[apod]
+
+    for lst in lines:
+        print(''.join(lst))
+
 
 
 filename = '2021/23_input_example.txt'
