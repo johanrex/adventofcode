@@ -17,19 +17,8 @@ B = 2
 C = 3
 D = 4
 
-char_to_int_mapper = {
-    'A': A,
-    'B': B,
-    'C': C,
-    'D': D
-}
-
-int_to_char_mapper = {
-    A: 'A',
-    B: 'B',
-    C: 'C',
-    D: 'D'
-}
+char_to_int_mapper = {'A':A,'B':B,'C':C,'D':D}
+int_to_char_mapper = {A:'A',B:'B',C:'C',D:'D'}
 
 apod_to_room_mapper = {
     A: 3,
@@ -103,14 +92,17 @@ def move_from_hallway_to_room(current_state: dict[tuple[int, int], int], current
     if is_hallway_blocked:
         return None
 
-    room_coordinates = [(depth, dst_room_col) for depth in range(2, 2+ROOM_LEVELS)]
+    dst_room_positions = [(depth, dst_room_col) for depth in range(2, 2+ROOM_LEVELS)]
 
-    is_other_apod_in_room = next((True for room_coordinate in room_coordinates if room_coordinate in current_state and current_state[room_coordinate] != apod), False)
+    is_other_apod_in_room = next((True for dst_room_pos in dst_room_positions if dst_room_pos in current_state and current_state[dst_room_pos] != apod), False)
+
+    # print_burrow(current_state)
+    # print(current_pos)
 
     if is_other_apod_in_room:
         return None
     else:
-        first_free_pos_from_bottom = next((room_coordinate for room_coordinate in reversed(room_coordinates) if room_coordinate not in current_state), None)
+        first_free_pos_from_bottom = next((dst_room_pos for dst_room_pos in reversed(dst_room_positions) if dst_room_pos not in current_state), None)
         if first_free_pos_from_bottom is not None:
             return first_free_pos_from_bottom
 
@@ -240,8 +232,6 @@ lowest_total_cost = 10000000
 lowest_total_cost_moves = []
 def organize(current_state, end_state, cost:int = 0, total_path = []):
 
-    #print_burrow(current_state)
-
     current_state_serialized = serialize_state(current_state)
     
     if current_state_serialized in states_processed:
@@ -253,26 +243,26 @@ def organize(current_state, end_state, cost:int = 0, total_path = []):
     global lowest_total_cost_moves
     global positions_evaluated
 
-    for pos, apod in current_state.items():
+    for src_pos, apod in current_state.items():
 
-        moves = get_valid_moves(current_state, pos)
+        dst_positions = get_valid_moves(current_state, src_pos)
 
         # print('')
         # print('In this state:')
         # print_burrow(current_state)
         # print(f'Found {len(moves)} moves for apod at {pos}.')
 
-        for move in moves:
+        for dst_pos in dst_positions:
             
             new_total_path = total_path.copy()
-            new_total_path.append( (pos, move) )
+            new_total_path.append( (src_pos, dst_pos) )
 
-            new_cost = cost + cost_of_move(apod, pos, move)
+            new_cost = cost + cost_of_move(apod, src_pos, dst_pos)
 
             if new_cost > lowest_total_cost:
                 continue
 
-            new_state = get_new_state(current_state, pos, move)
+            new_state = get_new_state(current_state, src_pos, dst_pos)
             
             if new_state == end_state: 
                 
