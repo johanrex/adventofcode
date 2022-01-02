@@ -64,7 +64,10 @@ def is_hallway(pos: tuple(int, int)) -> bool:
 
 def get_dst_pos_in_room(current_state, dst_room_col):
 
-    for pos in range(1+ROOM_LEVELS, 2-1, -1):
+    for row in range(1+ROOM_LEVELS, 2-1, -1):
+
+        pos = (row, dst_room_col)
+
         if pos not in current_state:
             return pos
         else:
@@ -84,9 +87,9 @@ def move_from_hallway_to_room(current_state: dict[tuple[int, int], int], current
 
     dst_room_col = apod_to_room_mapper[apod]
 
-    current_col = current_pos[1]
+    src_col = current_pos[1]
 
-    assert current_col != dst_room_col
+    assert src_col != dst_room_col
 
     dst_room_pos = get_dst_pos_in_room(current_state, dst_room_col)
 
@@ -94,15 +97,16 @@ def move_from_hallway_to_room(current_state: dict[tuple[int, int], int], current
         return None
     else:
 
-        hallway_from_col = min(current_col, dst_room_col)
-        hallway_to_col = max(current_col, dst_room_col)
+        if src_col < dst_room_col:
+            r = range(src_col+1, dst_room_col)
+        else:
+            r = range(src_col-1, dst_room_col, -1)
 
-        TODO detta funkar inte beroende på vad som är from och to...
-        hallway_positions = ( (1, col) for col in range(hallway_from_col+1, hallway_to_col+1) )
-        is_hallway_blocked = next( (True for pos in hallway_positions if pos in current_state), False)
+        for col in r:
+            if (1, col) in current_state:
+                return None #hallway blocked
 
-        if is_hallway_blocked:
-            return None
+        return dst_room_pos
 
 
 def should_move_out_of_room(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
