@@ -277,7 +277,7 @@ def organize(current_state, end_state, cost:int = 0, total_path = []):
             else:
                 organize(new_state, end_state, new_cost, new_total_path)
 
-        positions_evaluated += 1
+        positions_evaluated += len(dst_positions)
 
 
 def print_burrow(current_state):
