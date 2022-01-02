@@ -20,12 +20,8 @@ D = 4
 char_to_int_mapper = {'A':A,'B':B,'C':C,'D':D}
 int_to_char_mapper = {A:'A',B:'B',C:'C',D:'D'}
 
-apod_to_room_mapper = {
-    A: 3,
-    B: 5,
-    C: 7,
-    D: 9
-}
+apod_to_room_mapper = {A:3,B:5,C:7,D:9}
+room_to_apod_mapper = {3:A,5:B,7:C,9:D}
 
 
 def get_start_state(lines):
@@ -61,10 +57,22 @@ def is_free_pos(state: dict, pos: tuple[int, int]) -> bool:
     return pos not in state
 
 def is_no_parking(pos: tuple[int, int]):
-    return pos in [(1,3), (1, 5), (1,7), (1,9)]
+    return pos in [(1,3), (1,5), (1,7), (1,9)]
 
 def is_hallway(pos: tuple(int, int)) -> bool:
     return pos[0] == 1
+
+def get_dst_pos_in_room(current_state, dst_room_col):
+
+    for pos in range(1+ROOM_LEVELS, 2-1, -1):
+        if pos not in current_state:
+            return pos
+        else:
+            if current_state[pos] != room_to_apod_mapper[dst_room_col]:
+                return None
+
+    return None
+
 
 def move_from_hallway_to_room(current_state: dict[tuple[int, int], int], current_pos: tuple[int, int]):
 
@@ -74,39 +82,28 @@ def move_from_hallway_to_room(current_state: dict[tuple[int, int], int], current
 
     apod = current_state[current_pos]
 
-    assert apod != 0
-
     dst_room_col = apod_to_room_mapper[apod]
 
     current_col = current_pos[1]
 
     assert current_col != dst_room_col
 
-    hallway_from_col = min(current_col, dst_room_col)
-    hallway_to_col = max(current_col, dst_room_col)
+    dst_room_pos = get_dst_pos_in_room(current_state, dst_room_col)
 
-    #TODO kanske göra en funktion som kollar om en lista med positions är blockerade. 
-    hallway_positions = ( (1, col) for col in range(hallway_from_col+1, hallway_to_col+1) )
-    is_hallway_blocked = next( (True for pos in hallway_positions if pos in current_state), False)
-
-    if is_hallway_blocked:
-        return None
-
-    dst_room_positions = [(depth, dst_room_col) for depth in range(2, 2+ROOM_LEVELS)]
-
-    is_other_apod_in_room = next((True for dst_room_pos in dst_room_positions if dst_room_pos in current_state and current_state[dst_room_pos] != apod), False)
-
-    # print_burrow(current_state)
-    # print(current_pos)
-
-    if is_other_apod_in_room:
+    if dst_room_pos is None:
         return None
     else:
-        first_free_pos_from_bottom = next((dst_room_pos for dst_room_pos in reversed(dst_room_positions) if dst_room_pos not in current_state), None)
-        if first_free_pos_from_bottom is not None:
-            return first_free_pos_from_bottom
 
-    return None
+        hallway_from_col = min(current_col, dst_room_col)
+        hallway_to_col = max(current_col, dst_room_col)
+
+        TODO detta funkar inte beroende på vad som är from och to...
+        hallway_positions = ( (1, col) for col in range(hallway_from_col+1, hallway_to_col+1) )
+        is_hallway_blocked = next( (True for pos in hallway_positions if pos in current_state), False)
+
+        if is_hallway_blocked:
+            return None
+
 
 def should_move_out_of_room(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
 
@@ -140,20 +137,20 @@ def should_move_out_of_room(current_state: dict[tuple[int, int], int], start_pos
     else:
         return False
 
-def move_from_room_to_hallway(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
+def move_from_room_to_hallway(current_state: dict[tuple[int, int], int], src_pos: tuple[int, int]):
 
-    assert not is_hallway(start_pos)
+    assert not is_hallway(src_pos)
 
     # print_burrow(current_state)
     # print(start_pos)
 
     # check if we should move out of room. 
-    if not should_move_out_of_room(current_state, start_pos):
+    if not should_move_out_of_room(current_state, src_pos):
         return None
 
     positions = []
 
-    start_col = start_pos[1]
+    start_col = src_pos[1]
 
     leftmost_col = 1
     for col in range(start_col-1, leftmost_col-1, -1):
@@ -163,7 +160,6 @@ def move_from_room_to_hallway(current_state: dict[tuple[int, int], int], start_p
                 positions.append(pos)
         else:
             break
-
 
     rightmost_col = 11
     for col in range(start_col+1, rightmost_col+1):
@@ -176,7 +172,7 @@ def move_from_room_to_hallway(current_state: dict[tuple[int, int], int], start_p
 
     return positions
 
-def get_valid_moves(current_state, pos):
+def get_moves(current_state, pos):
     moves = []
 
     if is_hallway(pos):
@@ -232,12 +228,12 @@ lowest_total_cost = 10000000
 lowest_total_cost_moves = []
 def organize(current_state, end_state, cost:int = 0, total_path = []):
 
-    current_state_serialized = serialize_state(current_state)
+    # current_state_serialized = serialize_state(current_state)
     
-    if current_state_serialized in states_processed:
-        return
-    else:
-        states_processed[current_state_serialized] = 1
+    # if current_state_serialized in states_processed:
+    #     return
+    # else:
+    #     states_processed[current_state_serialized] = 1
 
     global lowest_total_cost
     global lowest_total_cost_moves
@@ -245,7 +241,7 @@ def organize(current_state, end_state, cost:int = 0, total_path = []):
 
     for src_pos, apod in current_state.items():
 
-        dst_positions = get_valid_moves(current_state, src_pos)
+        dst_positions = get_moves(current_state, src_pos)
 
         # print('')
         # print('In this state:')
