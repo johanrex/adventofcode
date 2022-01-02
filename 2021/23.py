@@ -77,7 +77,9 @@ def is_no_parking(pos: tuple[int, int]):
 def is_hallway(pos: tuple(int, int)) -> bool:
     return pos[0] == 1
 
-def get_valid_room_pos(current_state: dict[tuple[int, int], int], current_pos: tuple[int, int]):
+def move_from_hallway_to_room(current_state: dict[tuple[int, int], int], current_pos: tuple[int, int]):
+
+    #print_burrow(current_state)
 
     assert is_hallway(current_pos)
 
@@ -90,6 +92,16 @@ def get_valid_room_pos(current_state: dict[tuple[int, int], int], current_pos: t
     current_col = current_pos[1]
 
     assert current_col != dst_room_col
+
+    hallway_from_col = min(current_col, dst_room_col)
+    hallway_to_col = max(current_col, dst_room_col)
+
+    #TODO kanske göra en funktion som kollar om en lista med positions är blockerade. 
+    hallway_positions = ( (1, col) for col in range(hallway_from_col+1, hallway_to_col+1) )
+    is_hallway_blocked = next( (True for pos in hallway_positions if pos in current_state), False)
+
+    if is_hallway_blocked:
+        return None
 
     room_coordinates = [(depth, dst_room_col) for depth in range(2, 2+ROOM_LEVELS)]
 
@@ -105,7 +117,7 @@ def get_valid_room_pos(current_state: dict[tuple[int, int], int], current_pos: t
     return None
 
 def should_move_out_of_room(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
-    
+
     assert not is_hallway(start_pos)
 
     apod = current_state[start_pos]
@@ -128,16 +140,20 @@ def should_move_out_of_room(current_state: dict[tuple[int, int], int], start_pos
             if below in current_state and current_state[below] != apod:
                 is_wrong_apod_under = True
 
+    ##TODO detta kommer inte funka om room är mer än 2 djup...
     if not correct_room and is_free_above:
         return True
-    elif correct_room and is_wrong_apod_under:
+    elif is_wrong_apod_under:
         return True
     else:
         return False
 
-def get_valid_hallway_positions(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
+def move_from_room_to_hallway(current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]):
 
     assert not is_hallway(start_pos)
+
+    # print_burrow(current_state)
+    # print(start_pos)
 
     # check if we should move out of room. 
     if not should_move_out_of_room(current_state, start_pos):
@@ -154,7 +170,7 @@ def get_valid_hallway_positions(current_state: dict[tuple[int, int], int], start
             if not is_no_parking(pos):
                 positions.append(pos)
         else:
-            break
+            continue
 
 
     rightmost_col = 11
@@ -164,7 +180,7 @@ def get_valid_hallway_positions(current_state: dict[tuple[int, int], int], start
             if not is_no_parking(pos):
                 positions.append(pos)
         else:
-            break
+            continue
 
     return positions
 
@@ -172,11 +188,11 @@ def get_valid_moves(current_state, pos):
     moves = []
 
     if is_hallway(pos):
-        valid_room_pos = get_valid_room_pos(current_state, pos)
+        valid_room_pos = move_from_hallway_to_room(current_state, pos)
         if valid_room_pos is not None:
             moves.append(valid_room_pos)
     else:
-        tmp = get_valid_hallway_positions(current_state, pos)
+        tmp = move_from_room_to_hallway(current_state, pos)
         if tmp is not None:
             moves.extend(tmp)
                 
@@ -221,7 +237,8 @@ def serialize_state(state):
 
 states_processed = {}
 lowest_total_cost = 10000000
-def organize(current_state, end_state, cost:int = 0):
+lowest_total_cost_moves = []
+def organize(current_state, end_state, cost:int = 0, total_path = []):
 
     current_state_serialized = serialize_state(current_state)
     
@@ -231,6 +248,7 @@ def organize(current_state, end_state, cost:int = 0):
         states_processed[current_state_serialized] = 1
 
     global lowest_total_cost
+    global lowest_total_cost_moves
     global positions_evaluated
 
     for pos, apod in current_state.items():
@@ -243,6 +261,9 @@ def organize(current_state, end_state, cost:int = 0):
         # print(f'Found {len(moves)} moves for apod at {pos}.')
 
         for move in moves:
+            
+            new_total_path = total_path.copy()
+            new_total_path.append( (pos, move) )
 
             new_cost = cost + cost_of_move(apod, pos, move)
 
@@ -256,10 +277,12 @@ def organize(current_state, end_state, cost:int = 0):
                     print('New lowest cost:', new_cost)
                     lowest_total_cost = new_cost
 
+                    lowest_total_cost_moves = new_total_path
+
                     time_elapsed = timer() - start_timer
                     print(f'Evaluating {positions_evaluated/time_elapsed} positions/s.')
             else:
-                organize(new_state, end_state, new_cost)
+                organize(new_state, end_state, new_cost, new_total_path)
 
         positions_evaluated += 1
 
@@ -295,6 +318,12 @@ end_state = get_end_state(start_state)
 
 organize(start_state, end_state)
 
+print('Positions evaluated:', positions_evaluated)
+
 print('Part 1:', lowest_total_cost)
+
+for move in lowest_total_cost_moves:
+    print(move)
+
 
 i = 0
