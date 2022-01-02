@@ -1,88 +1,152 @@
-from time import perf_counter as pfc
-from heapq import heappush, heappop
+"""
+Advent of Code 2021 - Day 23
+https://adventofcode.com/2021/day/23
+"""
+
+import re
+from copy import deepcopy
+from queue import PriorityQueue
+from typing import Any, Dict, List
+
+DAY = '23'
+
+FULL_INPUT_FILE = f'2021/23_input_example.txt'
+TEST_INPUT_FILE = f'../inputs/day{DAY}/input.test.txt'
+
+PART_2_INSERTIONS = {
+    'A': ['D', 'D'],
+    'B': ['C', 'B'],
+    'C': ['B', 'A'],
+    'D': ['A', 'C'],
+}
 
 
-def read_puzzle(filename):
-    with open(filename) as f:
-        return "".join([c for row in f.read().split("\n") for c in row if c not in "# "])
+class Burrow:
+    AMPHIPOD_TYPES = {'A': 1, 'B': 10, 'C': 100, 'D': 1000}
+    PATHS = {
+        0: {'A': [0, 1], 'B': [0, 1, 2], 'C': [0, 1, 2, 3], 'D': [0, 1, 2, 3, 4]},
+        1: {'A': [1], 'B': [1, 2], 'C': [1, 2, 3], 'D': [1, 2, 3, 4]},
+        2: {'A': [2], 'B': [2], 'C': [2, 3], 'D': [2, 3, 4]},
+        3: {'A': [3, 2], 'B': [3], 'C': [3], 'D': [3, 4]},
+        4: {'A': [4, 3, 2], 'B': [4, 3], 'C': [4], 'D': [4]},
+        5: {'A': [5, 4, 3, 2], 'B': [5, 4, 3], 'C': [5, 4], 'D': [5]},
+        6: {'A': [6, 5, 4, 3, 2], 'B': [6, 5, 4, 3], 'C': [6, 5, 4], 'D': [6, 5]}
+    }
+
+    def __init__(self, state: Dict = None, cost: int = 0):
+        self.state = deepcopy(state) if state else {}
+        self.cost = cost
+        self.state_hash = self._state_hash
+
+    def __lt__(self, other):
+        return self.cost < other.cost
+
+    @classmethod
+    def move_cost(cls, hallway_position: int, room_type: str, room_position: int,
+                  amphipod_type: str):
+        distance = 2 * len(cls.PATHS[hallway_position][room_type]) + room_position \
+                         - (1 if hallway_position in (0, 6) else 0)
+        return distance * cls.AMPHIPOD_TYPES[amphipod_type]
+
+    @property
+    def _state_hash(self):
+        return hash(tuple(tuple(v) for k, v in sorted(self.state.items())))
+
+    @property
+    def is_a_winner(self):
+        return all(all(b == a for b in self.state[a]) for a in self.AMPHIPOD_TYPES)
+
+    @property
+    def possible_moves(self) -> List[Any]:
+        next_possible_states = []
+        for hall_pos in range(len(self.state['H'])):
+            amphipod_type = self.state['H'][hall_pos]
+            if amphipod_type and self.room_open(amphipod_type):
+                if self.path_to_room_clear(hall_pos, amphipod_type):
+                    room_pos = self.next_spot_in_room(amphipod_type)
+                    new_burrow = Burrow(self.state, self.cost)
+                    new_burrow.move('H', hall_pos, amphipod_type, room_pos)
+                    return [new_burrow]
+        for room in self.AMPHIPOD_TYPES:
+            if not self.room_open(room):
+                amphipod_type = [_ for _ in self.state[room] if _][0]
+                room_pos = self.state[room].index(amphipod_type)
+                for hall_pos in self.PATHS:
+                    if not self.state['H'][hall_pos] and self.path_to_room_clear(hall_pos, room):
+                        new_burrow = Burrow(self.state, self.cost)
+                        new_burrow.move(room, room_pos, 'H', hall_pos)
+                        next_possible_states.append(new_burrow)
+        return next_possible_states
+
+    def move(self, from_room: str, from_pos: int, to_room: str, to_pos: int):
+        self.cost += self.move_cost(from_pos, to_room, to_pos, to_room) if from_room == 'H' \
+            else self.move_cost(to_pos, from_room, from_pos, self.state[from_room][from_pos])
+        self.state[to_room][to_pos] = self.state[from_room][from_pos]
+        self.state[from_room][from_pos] = None
+        self.state_hash = self._state_hash
+
+    def room_open(self, room: str) -> bool:
+        return all(_ in (None, room) for _ in self.state[room])
+
+    def next_spot_in_room(self, room: str) -> int:
+        return len(self.state[room]) - 1 - self.state[room][::-1].index(None)
+
+    def path_to_room_clear(self, hallway_start: int, end_room_type: str) -> bool:
+        for position in self.PATHS[hallway_start][end_room_type]:
+            if position != hallway_start and self.state['H'][position]:
+                return False
+        return True
 
 
-def can_leave_room(room, puzzle, part1):
-    t = targets1 if part1  else targets2
-    memb = {puzzle[i] for i in t[room]}
-    if memb in ({'.'}, {'.',room}, {room}): return False
-    for i in t[room]:
-        if puzzle[i] != '.': return i    
+def find_path(burrow: Burrow) -> Burrow:
+    queue = PriorityQueue()
+    visited = set()
+    queue.put(burrow)
 
-
-def can_enter_room(i1,amphi, puzzle, part1):
-    t = targets1 if part1  else targets2
-    bestI = False
-    for i in t[amphi]:
-        if puzzle[i] == ".": bestI = i
-        elif puzzle[i] != amphi: return False
-    if not blocked(i1, stepout[amphi], puzzle): return bestI
-
-
-def blocked(i1, i2, puzzle):
-    step = 1 if i1 < i2 else -1
-    return any(puzzle[v] != "." for v in range(i1 + step, i2 + step, step))
-
-
-def get_possible_hallway_pos(i1, puzzle):
-    for i2 in hallway:
-        if puzzle[i2] != ".": continue
-        if blocked(stepout[targetsI[i1]], i2, puzzle): continue
-        yield i2
-
-
-def distance(i1, i2):
-    if i1 > i2: i1,i2 = i2,i1
-    return abs(stepout[targetsI[i2]] - i1) + (i2-7)//4
-
-
-def swap(i1, i2, puzzle):
-    p = list(puzzle)
-    p[i1], p[i2] = p[i2], p[i1]
-    return "".join(p)
-
-
-def possible_moves(puzzle,part1):
-    moves = []
-    for i1 in hallway:
-        if puzzle[i1] == ".": continue
-        if not (i2 := can_enter_room(i1,puzzle[i1], puzzle, part1)): continue
-        moves.append((i1, i2, distance(i1, i2)))
-    for room in "ABCD":
-        if not (i1 := can_leave_room(room, puzzle, part1)): continue
-        for i2 in get_possible_hallway_pos(i1, puzzle):
-            moves.append((i1, i2, distance(i1, i2)))
-    return moves
-
-
-def solve(puzzle,part1=True):
-    queue, seen = [(0, puzzle)], {puzzle: 0}
-    solution = '.'*11+'ABCD'*2 if part1 else '.'*11+'ABCD'*4
     while queue:
-        cost, state = heappop(queue)
-        if state == solution: return cost
-        for i1, i2, dist in possible_moves(state,part1):
-            new_cost = cost + dist * energy[state[i1]]
-            moved = swap(i1, i2, state)
-            if seen.get(moved, 999999) <= new_cost: continue
-            seen[moved] = new_cost
-            heappush(queue, (new_cost, moved))
+        burrow = queue.get()
+        if burrow.is_a_winner:
+            return burrow
+        elif burrow.state_hash not in visited:
+            for possible_move in burrow.possible_moves:
+                queue.put(possible_move)
+            visited.add(burrow.state_hash)
 
 
-energy = dict(A=1, B=10, C=100, D=1000)
-hallway = {0, 1, 3, 5, 7, 9, 10}
-stepout = {"A": 2, "B": 4, "C": 6, "D": 8}
-targets1 = {"A": range(11,16,4), "B": range(12,17,4), "C": range(13,18,4), "D": range(14,19,4)}
-targets2 = {"A": range(11,24,4), "B": range(12,25,4), "C": range(13,26,4), "D": range(14,27,4)}
-targetsI = {v: key for key, val in targets2.items() for v in val}
+def load_data(infile_path: str) -> Dict:
+    with open(infile_path, 'r', encoding='ascii') as infile:
+        c = [re.match(r'\W*#+(\w)#(\w)#(\w)#(\w)#+', l).groups() for l in infile.readlines()[2:4]]
+        return {
+            'H': [None] * 7,
+            'A': [c[0][0], c[1][0]],
+            'B': [c[0][1], c[1][1]],
+            'C': [c[0][2], c[1][2]],
+            'D': [c[0][3], c[1][3]],
+        }
 
 
-start = pfc()
-print(solve(read_puzzle("2021/23_input.txt")))
-#print(solve(read_puzzle("Tag_23_b.txt"),False))
-print(pfc() - start)
+def part_1(infile_path: str) -> int:
+    start_map = load_data(infile_path)
+    result = find_path(Burrow(start_map))
+    return result.cost
+
+
+def part_2(infile_path: str) -> int:
+    start_map = load_data(infile_path)
+    for c in PART_2_INSERTIONS:
+        start_map[c] = [start_map[c][0]] + PART_2_INSERTIONS[c] + [start_map[c][1]]
+    result = find_path(Burrow(start_map))
+    return result.cost
+
+
+def show_moves(b):
+    for i in range(len(b)):
+        print(f'{i} : {b[i].cost} : {b[i].state}')
+
+
+if __name__ == '__main__':
+    part1_answer = part_1(FULL_INPUT_FILE)
+    print(f'Part 1: {part1_answer}')
+
+    part2_answer = part_2(FULL_INPUT_FILE)
+    print(f'Part 2: {part2_answer}')

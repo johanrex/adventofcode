@@ -164,23 +164,23 @@ def move_from_room_to_hallway(current_state: dict[tuple[int, int], int], start_p
     start_col = start_pos[1]
 
     leftmost_col = 1
-    for col in range(start_col, leftmost_col-1, -1):
+    for col in range(start_col-1, leftmost_col-1, -1):
         pos = (1, col)
         if is_free_pos(current_state, pos):
             if not is_no_parking(pos):
                 positions.append(pos)
         else:
-            continue
+            break
 
 
     rightmost_col = 11
-    for col in range(start_col, rightmost_col+1):
+    for col in range(start_col+1, rightmost_col+1):
         pos = (1, col)
         if is_free_pos(current_state, pos):
             if not is_no_parking(pos):
                 positions.append(pos)
         else:
-            continue
+            break
 
     return positions
 
@@ -240,6 +240,8 @@ lowest_total_cost = 10000000
 lowest_total_cost_moves = []
 def organize(current_state, end_state, cost:int = 0, total_path = []):
 
+    #print_burrow(current_state)
+
     current_state_serialized = serialize_state(current_state)
     
     if current_state_serialized in states_processed:
@@ -273,6 +275,7 @@ def organize(current_state, end_state, cost:int = 0, total_path = []):
             new_state = get_new_state(current_state, pos, move)
             
             if new_state == end_state: 
+                
                 if new_cost < lowest_total_cost:
                     print('New lowest cost:', new_cost)
                     lowest_total_cost = new_cost
