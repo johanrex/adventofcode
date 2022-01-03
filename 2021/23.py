@@ -1,18 +1,18 @@
 import itertools
 from timeit import default_timer as timer
 
-# 3.8 compatible type hints. Silly capital letters
+# 3.8 compatible type hints for pypy. Silly capital letters. Better in 3.10.
 from typing import Tuple, Dict, List
 
 PositionType = Tuple[int, int]
 StateType = Dict[PositionType, int]
 
 
-positions_evaluated = 0
-states_processed_memo = {}
-lowest_end_state_cost = 10000000
+positions_evaluated = None
+states_processed_memo = None
+lowest_end_state_cost = None
 
-ROOM_LEVELS = 2
+ROOM_LEVELS = None
 
 A = 1
 B = 2
@@ -24,6 +24,18 @@ int_to_char_mapper = {A: "A", B: "B", C: "C", D: "D"}
 
 apod_to_room_mapper = {A: 3, B: 5, C: 7, D: 9}
 room_to_apod_mapper = {3: A, 5: B, 7: C, 9: D}
+
+start_timer = timer()
+
+
+def init_global_variables():
+    global positions_evaluated
+    global states_processed_memo
+    global lowest_end_state_cost
+
+    positions_evaluated = 0
+    states_processed_memo = {}
+    lowest_end_state_cost = 10000000
 
 
 def hash_state(current_state: StateType, cost: int) -> int:
@@ -55,11 +67,21 @@ def get_end_state(start_state: StateType) -> StateType:
     return end_state
 
 
-def read_input(filename):
+def read_input(filename, is_part_1):
+    global ROOM_LEVELS
+
     lines = []
     with open(filename) as f:
         for line in f:
             lines.append(line.replace("\n", ""))
+
+    if is_part_1:
+        ROOM_LEVELS = 2
+    else:
+        lines.insert(3, "  #D#C#B#A#")
+        lines.insert(4, "  #D#B#A#C#")
+
+        ROOM_LEVELS = 4
 
     return lines
 
@@ -139,7 +161,7 @@ def should_move_out_of_room(current_state: StateType, start_pos: PositionType) -
     for room_level in range(2, 2 + ROOM_LEVELS):
         if room_level < start_pos[0]:
             above = (room_level, src_room)
-            if above in current_state and current_state[above] != apod:
+            if above in current_state:
                 is_free_above = False
 
         if room_level > start_pos[0]:
@@ -147,13 +169,16 @@ def should_move_out_of_room(current_state: StateType, start_pos: PositionType) -
             if below in current_state and current_state[below] != apod:
                 is_wrong_apod_under = True
 
-    ##TODO detta kommer inte funka om room är mer än 2 djup...
-    if not correct_room and is_free_above:
-        return True
-    elif is_wrong_apod_under:
-        return True
+    if correct_room:
+        if is_wrong_apod_under and is_free_above:
+            return True
+        else:
+            return False
     else:
-        return False
+        if is_free_above:
+            return True
+        else:
+            return False
 
 
 def move_from_room_to_hallway(
@@ -300,22 +325,30 @@ def print_burrow(current_state: StateType):
         print("".join(lst))
 
 
-start_timer = timer()
+def solve(filename, is_part_1):
+    global start_timer
+
+    init_global_variables()
+
+    lines = read_input(filename, is_part_1)
+
+    start_state = get_start_state(lines)
+    end_state = get_end_state(start_state)
+
+    organize(start_state, end_state)
+
+    print(
+        f"Lowest end state cost: {lowest_end_state_cost}. Positions evaluated: {positions_evaluated}. Time elapsed: {timer() - start_timer}."
+    )
+
 
 # filename = '2021/23_input_example.txt'
 filename = "2021/23_input.txt"
-lines = read_input(filename)
 
-start_state = get_start_state(lines)
-end_state = get_end_state(start_state)
+print("Part 1")
+solve(filename, True)  # 14148
 
-organize(start_state, end_state)
+print("")
 
-print("Positions evaluated:", positions_evaluated)
-
-print("Part 1:", lowest_end_state_cost)  # 14148
-
-print("Time elapsed:", timer() - start_timer)
-
-
-i = 0
+print("Part 2")
+solve(filename, False)  # 43814
