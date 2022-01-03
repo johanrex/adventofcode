@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 import pickle
-from typing import List
-from dataclasses import dataclass
 import itertools
 from timeit import default_timer as timer
 
@@ -223,9 +221,8 @@ def cost_of_move(apod, src_pos, dst_pos):
 
 states_processed = {}
 lowest_end_state_cost = 10000000
-lowest_total_cost_moves = []
 
-def organize(current_state, end_state, cost:int = 0, total_path = []):
+def organize(current_state, end_state, cost:int = 0):
 
     current_state_serialized = serialize(current_state, cost)
     
@@ -235,7 +232,6 @@ def organize(current_state, end_state, cost:int = 0, total_path = []):
         states_processed[current_state_serialized] = 1
 
     global lowest_end_state_cost
-    global lowest_total_cost_moves
     global positions_evaluated
 
     for src_pos, apod in current_state.items():
@@ -244,9 +240,6 @@ def organize(current_state, end_state, cost:int = 0, total_path = []):
 
         for dst_pos in dst_positions:
             
-            new_total_path = total_path.copy()
-            new_total_path.append( (src_pos, dst_pos) )
-
             new_cost = cost + cost_of_move(apod, src_pos, dst_pos)
 
             if new_cost > lowest_end_state_cost:
@@ -260,12 +253,10 @@ def organize(current_state, end_state, cost:int = 0, total_path = []):
                     print('New lowest cost:', new_cost)
                     lowest_end_state_cost = new_cost
 
-                    lowest_total_cost_moves = new_total_path
-
                     time_elapsed = timer() - start_timer
                     print(f'Evaluating {positions_evaluated/time_elapsed} positions/s.')
             else:
-                organize(new_state, end_state, new_cost, new_total_path)
+                organize(new_state, end_state, new_cost)
 
         positions_evaluated += len(dst_positions)
 
@@ -294,7 +285,6 @@ start_timer = timer()
 filename = '2021/23_input.txt'
 lines = read_input(filename)
 
-
 start_state = get_start_state(lines)
 end_state = get_end_state(start_state)
 
@@ -303,9 +293,6 @@ organize(start_state, end_state)
 print('Positions evaluated:', positions_evaluated)
 
 print('Part 1:', lowest_end_state_cost) #14148
-
-for move in lowest_total_cost_moves:
-    print(move)
 
 print('Time elapsed:', timer() - start_timer)
 
