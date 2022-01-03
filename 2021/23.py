@@ -1,6 +1,3 @@
-# TODO explicit type aliases https://www.python.org/dev/peps/pep-0613/
-
-import pickle
 import itertools
 from timeit import default_timer as timer
 
@@ -29,8 +26,11 @@ apod_to_room_mapper = {A: 3, B: 5, C: 7, D: 9}
 room_to_apod_mapper = {3: A, 5: B, 7: C, 9: D}
 
 
-def serialize(current_state: StateType, cost: int) -> bytes:
-    return pickle.dumps([current_state, cost])
+def hash_state(current_state: StateType, cost: int) -> int:
+    keys = sorted(current_state.keys())
+    lst = [(key, current_state[key]) for key in keys]
+    lst.append(cost)
+    return hash(tuple(lst))
 
 
 def get_start_state(lines) -> StateType:
@@ -248,12 +248,12 @@ def organize(
     cost: int = 0,
 ):
 
-    current_state_serialized = serialize(current_state, cost)
+    hash = hash_state(current_state, cost)
 
-    if current_state_serialized in states_processed_memo:
+    if hash in states_processed_memo:
         return
     else:
-        states_processed_memo[current_state_serialized] = 1
+        states_processed_memo[hash] = 1
 
     global lowest_end_state_cost
     global positions_evaluated
