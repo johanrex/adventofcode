@@ -4,6 +4,15 @@ from __future__ import annotations
 import pickle
 import itertools
 from timeit import default_timer as timer
+from typing import Tuple, Dict
+
+# StateType = dict[tuple[int, int], int]
+# PositionType = tuple[int, int]
+
+# 3.8 compatible type hints. Silly capital letters
+StateType = Dict[Tuple[int, int], int]
+PositionType = Tuple[int, int]
+
 
 positions_evaluated = 0
 states_processed_memo = {}
@@ -23,7 +32,7 @@ apod_to_room_mapper = {A: 3, B: 5, C: 7, D: 9}
 room_to_apod_mapper = {3: A, 5: B, 7: C, 9: D}
 
 
-def serialize(current_state, cost) -> bytes:
+def serialize(current_state: StateType, cost: int) -> bytes:
     return pickle.dumps([current_state, cost])
 
 
@@ -70,7 +79,7 @@ def is_hallway(pos: tuple(int, int)) -> bool:
     return pos[0] == 1
 
 
-def get_dst_pos_in_room(current_state, dst_room_col):
+def get_dst_pos_in_room(current_state: StateType, dst_room_col):
 
     for row in range(1 + ROOM_LEVELS, 2 - 1, -1):
 
@@ -85,9 +94,7 @@ def get_dst_pos_in_room(current_state, dst_room_col):
     return None
 
 
-def move_from_hallway_to_room(
-    current_state: dict[tuple[int, int], int], current_pos: tuple[int, int]
-):
+def move_from_hallway_to_room(current_state: StateType, current_pos: PositionType):
 
     assert is_hallway(current_pos)
 
@@ -117,9 +124,7 @@ def move_from_hallway_to_room(
         return dst_room_pos
 
 
-def should_move_out_of_room(
-    current_state: dict[tuple[int, int], int], start_pos: tuple[int, int]
-):
+def should_move_out_of_room(current_state: StateType, start_pos: PositionType):
 
     assert not is_hallway(start_pos)
 
@@ -152,9 +157,7 @@ def should_move_out_of_room(
         return False
 
 
-def move_from_room_to_hallway(
-    current_state: dict[tuple[int, int], int], src_pos: tuple[int, int]
-):
+def move_from_room_to_hallway(current_state: StateType, src_pos: PositionType):
 
     assert not is_hallway(src_pos)
 
@@ -187,7 +190,7 @@ def move_from_room_to_hallway(
     return positions
 
 
-def get_moves(current_state, pos):
+def get_moves(current_state: StateType, pos: PositionType):
     moves = []
 
     if is_hallway(pos):
@@ -202,7 +205,9 @@ def get_moves(current_state, pos):
     return moves
 
 
-def get_new_state(old_state, src_pos, dst_pos):
+def get_new_state(
+    old_state: StateType, src_pos: PositionType, dst_pos: PositionType
+) -> StateType:
 
     new_state = old_state.copy()
 
@@ -236,7 +241,7 @@ def cost_of_move(apod, src_pos, dst_pos):
     return steps * multiple
 
 
-def organize(current_state, end_state, cost: int = 0):
+def organize(current_state: StateType, end_state: StateType, cost: int = 0):
 
     current_state_serialized = serialize(current_state, cost)
 
@@ -272,7 +277,7 @@ def organize(current_state, end_state, cost: int = 0):
         positions_evaluated += len(dst_positions)
 
 
-def print_burrow(current_state):
+def print_burrow(current_state: StateType):
 
     lines = []
     lines.append(list("#############"))
