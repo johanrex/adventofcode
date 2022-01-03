@@ -1,17 +1,14 @@
 # TODO explicit type aliases https://www.python.org/dev/peps/pep-0613/
 
-from __future__ import annotations
 import pickle
 import itertools
 from timeit import default_timer as timer
-from typing import Tuple, Dict
-
-# StateType = dict[tuple[int, int], int]
-# PositionType = tuple[int, int]
 
 # 3.8 compatible type hints. Silly capital letters
-StateType = Dict[Tuple[int, int], int]
+from typing import Tuple, Dict, List
+
 PositionType = Tuple[int, int]
+StateType = Dict[PositionType, int]
 
 
 positions_evaluated = 0
@@ -36,7 +33,7 @@ def serialize(current_state: StateType, cost: int) -> bytes:
     return pickle.dumps([current_state, cost])
 
 
-def get_start_state(lines):
+def get_start_state(lines) -> StateType:
     pos_apods = {}
 
     for row in range(2, 2 + ROOM_LEVELS):
@@ -46,7 +43,7 @@ def get_start_state(lines):
     return pos_apods
 
 
-def get_end_state(start_state):
+def get_end_state(start_state: StateType) -> StateType:
 
     end_state = start_state.copy()
 
@@ -67,19 +64,19 @@ def read_input(filename):
     return lines
 
 
-def is_free_pos(state: dict, pos: tuple[int, int]) -> bool:
+def is_free_pos(state: dict, pos: PositionType) -> bool:
     return pos not in state
 
 
-def is_no_parking(pos: tuple[int, int]):
+def is_no_parking(pos: PositionType) -> bool:
     return pos in [(1, 3), (1, 5), (1, 7), (1, 9)]
 
 
-def is_hallway(pos: tuple(int, int)) -> bool:
+def is_hallway(pos: PositionType) -> bool:
     return pos[0] == 1
 
 
-def get_dst_pos_in_room(current_state: StateType, dst_room_col):
+def get_dst_pos_in_room(current_state: StateType, dst_room_col) -> PositionType:
 
     for row in range(1 + ROOM_LEVELS, 2 - 1, -1):
 
@@ -94,7 +91,9 @@ def get_dst_pos_in_room(current_state: StateType, dst_room_col):
     return None
 
 
-def move_from_hallway_to_room(current_state: StateType, current_pos: PositionType):
+def move_from_hallway_to_room(
+    current_state: StateType, current_pos: PositionType
+) -> PositionType:
 
     assert is_hallway(current_pos)
 
@@ -124,7 +123,7 @@ def move_from_hallway_to_room(current_state: StateType, current_pos: PositionTyp
         return dst_room_pos
 
 
-def should_move_out_of_room(current_state: StateType, start_pos: PositionType):
+def should_move_out_of_room(current_state: StateType, start_pos: PositionType) -> bool:
 
     assert not is_hallway(start_pos)
 
@@ -157,7 +156,9 @@ def should_move_out_of_room(current_state: StateType, start_pos: PositionType):
         return False
 
 
-def move_from_room_to_hallway(current_state: StateType, src_pos: PositionType):
+def move_from_room_to_hallway(
+    current_state: StateType, src_pos: PositionType
+) -> PositionType:
 
     assert not is_hallway(src_pos)
 
@@ -190,7 +191,7 @@ def move_from_room_to_hallway(current_state: StateType, src_pos: PositionType):
     return positions
 
 
-def get_moves(current_state: StateType, pos: PositionType):
+def get_moves(current_state: StateType, pos: PositionType) -> List[PositionType]:
     moves = []
 
     if is_hallway(pos):
@@ -220,7 +221,7 @@ def get_new_state(
     return new_state
 
 
-def cost_of_move(apod, src_pos, dst_pos):
+def cost_of_move(apod, src_pos: PositionType, dst_pos: PositionType) -> int:
     global A, B, C, D
 
     assert src_pos != dst_pos
@@ -241,7 +242,11 @@ def cost_of_move(apod, src_pos, dst_pos):
     return steps * multiple
 
 
-def organize(current_state: StateType, end_state: StateType, cost: int = 0):
+def organize(
+    current_state: StateType,
+    end_state: StateType,
+    cost: int = 0,
+):
 
     current_state_serialized = serialize(current_state, cost)
 
