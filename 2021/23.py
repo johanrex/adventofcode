@@ -5,7 +5,6 @@ import pickle
 from typing import List
 from dataclasses import dataclass
 import itertools
-import functools
 from timeit import default_timer as timer
 
 positions_evaluated = 0
@@ -22,6 +21,10 @@ int_to_char_mapper = {A:'A',B:'B',C:'C',D:'D'}
 
 apod_to_room_mapper = {A:3,B:5,C:7,D:9}
 room_to_apod_mapper = {3:A,5:B,7:C,9:D}
+
+
+def serialize(current_state, cost) -> bytes:
+    return pickle.dumps([current_state, cost])
 
 
 def get_start_state(lines):
@@ -78,8 +81,6 @@ def get_dst_pos_in_room(current_state, dst_room_col):
 
 
 def move_from_hallway_to_room(current_state: dict[tuple[int, int], int], current_pos: tuple[int, int]):
-
-    #print_burrow(current_state)
 
     assert is_hallway(current_pos)
 
@@ -145,9 +146,6 @@ def move_from_room_to_hallway(current_state: dict[tuple[int, int], int], src_pos
 
     assert not is_hallway(src_pos)
 
-    # print_burrow(current_state)
-    # print(start_pos)
-
     # check if we should move out of room. 
     if not should_move_out_of_room(current_state, src_pos):
         return None
@@ -202,7 +200,6 @@ def get_new_state(old_state, src_pos, dst_pos):
 
     return new_state
 
-#@functools.cache
 def cost_of_move(apod, src_pos, dst_pos):
     global A, B, C, D
 
@@ -224,33 +221,26 @@ def cost_of_move(apod, src_pos, dst_pos):
     return steps * multiple
 
 
-def serialize_state(state):
-    return pickle.dumps(state)
-
 states_processed = {}
-lowest_total_cost = 10000000
+lowest_end_state_cost = 10000000
 lowest_total_cost_moves = []
+
 def organize(current_state, end_state, cost:int = 0, total_path = []):
 
-    # current_state_serialized = serialize_state(current_state)
+    current_state_serialized = serialize(current_state, cost)
     
-    # if current_state_serialized in states_processed:
-    #     return
-    # else:
-    #     states_processed[current_state_serialized] = 1
+    if current_state_serialized in states_processed:
+        return
+    else:
+        states_processed[current_state_serialized] = 1
 
-    global lowest_total_cost
+    global lowest_end_state_cost
     global lowest_total_cost_moves
     global positions_evaluated
 
     for src_pos, apod in current_state.items():
 
         dst_positions = get_moves(current_state, src_pos)
-
-        # print('')
-        # print('In this state:')
-        # print_burrow(current_state)
-        # print(f'Found {len(moves)} moves for apod at {pos}.')
 
         for dst_pos in dst_positions:
             
@@ -259,16 +249,16 @@ def organize(current_state, end_state, cost:int = 0, total_path = []):
 
             new_cost = cost + cost_of_move(apod, src_pos, dst_pos)
 
-            if new_cost > lowest_total_cost:
+            if new_cost > lowest_end_state_cost:
                 continue
 
             new_state = get_new_state(current_state, src_pos, dst_pos)
             
             if new_state == end_state: 
                 
-                if new_cost < lowest_total_cost:
+                if new_cost < lowest_end_state_cost:
                     print('New lowest cost:', new_cost)
-                    lowest_total_cost = new_cost
+                    lowest_end_state_cost = new_cost
 
                     lowest_total_cost_moves = new_total_path
 
@@ -298,11 +288,10 @@ def print_burrow(current_state):
         print(''.join(lst))
 
 
-
 start_timer = timer()
 
-filename = '2021/23_input_example.txt'
-#filename = '2021/23_input.txt'
+#filename = '2021/23_input_example.txt'
+filename = '2021/23_input.txt'
 lines = read_input(filename)
 
 
@@ -313,10 +302,12 @@ organize(start_state, end_state)
 
 print('Positions evaluated:', positions_evaluated)
 
-print('Part 1:', lowest_total_cost)
+print('Part 1:', lowest_end_state_cost) #14148
 
 for move in lowest_total_cost_moves:
     print(move)
+
+print('Time elapsed:', timer() - start_timer)
 
 
 i = 0
