@@ -252,9 +252,6 @@ def organize(current_state, end_state, cost:int = 0):
                 if new_cost < lowest_end_state_cost:
                     print('New lowest cost:', new_cost)
                     lowest_end_state_cost = new_cost
-
-                    time_elapsed = timer() - start_timer
-                    print(f'Evaluating {positions_evaluated/time_elapsed} positions/s.')
             else:
                 organize(new_state, end_state, new_cost)
 
