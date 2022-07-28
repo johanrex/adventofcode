@@ -56,5 +56,5 @@ def part2():
     print("Part 2:", valid_count)
 
 
-# part1()
+part1()
 part2()
