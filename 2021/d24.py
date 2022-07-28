@@ -80,6 +80,5 @@ if __name__ == "__main__":
             break
 
         model_nr -= 1
-        assert model_nr > 0
 
     pass
