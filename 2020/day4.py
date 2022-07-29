@@ -9,9 +9,6 @@ re_hcl = re.compile(r"#(\d|[a-f]){6}")
 re_ecl = re.compile(r"amb|blu|brn|gry|grn|hzl|oth")
 re_pid = re.compile(r"\d{9}")
 
-part1_count = 0
-part2_count = 0
-
 
 def part1_valid(d: dict) -> bool:
     if len(mandatory_fields - set(d.keys())) == 0:
@@ -24,8 +21,8 @@ def part2_valid(d: dict) -> bool:
 
     d = defaultdict(str) | d
 
-    # if not part1_valid(d):
-    #     return False
+    if len(set(d.keys()) - mandatory_fields - {"cid"}) != 0:
+        return False
 
     val = d["byr"]
     if not (len(val) == 4 and 1920 <= int(val) <= 2002):
@@ -78,25 +75,15 @@ def record_to_dict(record) -> dict:
     return d
 
 
-def parse_passport(current_record):
-    global part1_count
-    global part2_count
-
-    d = record_to_dict(current_record)
-
-    if part1_valid(d):
-        part1_count += 1
-
-    if part2_valid(d):
-        part2_count += 1
-
-
-def parse_passports(lines):
+def parse_passports(lines, validator_func):
+    valid_count = 0
     current_record = None
 
     for line in lines:
         if line == "":
-            parse_passport(current_record)
+            d = record_to_dict(current_record)
+            if validator_func(d):
+                valid_count += 1
             current_record = None
             continue
 
@@ -105,16 +92,14 @@ def parse_passports(lines):
 
         current_record.append(line)
 
-
-with open("day4_input.txt") as f:
-    lines = f.readlines()
-
-lines = [line.strip() for line in lines]
-parse_passports(lines)
-
-print("Part1:", part1_count)
-print("Part2:", part2_count)
+    return valid_count
 
 
-# for p in passports:
-#     print(p)
+if __name__ == "__main__":
+    with open("day4_input.txt") as f:
+        lines = f.readlines()
+
+    lines = [line.strip() for line in lines]
+
+    print("Part1:", parse_passports(lines, part1_valid))
+    print("Part2:", parse_passports(lines, part2_valid))
