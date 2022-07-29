@@ -1,4 +1,4 @@
-from day4 import part1_valid, record_to_dict, part2_valid, parse_passports
+from day4 import part1_valid, record_to_dict, part2_valid, parse_passports, hgt_valid
 
 
 def test_p2_invalid_record_1():
@@ -40,6 +40,13 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719
 
     lines = [line.strip() for line in lines]
     assert parse_passports(lines, part2_valid) == 4
+
+
+def test_hgt_valid():
+    assert hgt_valid("60in")
+    assert hgt_valid("190cm")
+    assert not hgt_valid("190in")
+    assert not hgt_valid("190")
 
 
 # test_p2_valid_record_1()

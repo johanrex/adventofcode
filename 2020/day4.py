@@ -7,7 +7,18 @@ mandatory_fields = {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"}
 re_hgt = re.compile(r"(\d+)(cm|in)")
 re_hcl = re.compile(r"#(\d|[a-f]){6}")
 re_ecl = re.compile(r"amb|blu|brn|gry|grn|hzl|oth")
-re_pid = re.compile(r"\d{9}")
+re_pid = re.compile(r"^\d{9}$")
+
+
+def hgt_valid(val):
+    is_valid = False
+    if (m := re.match(re_hgt, val)) and len(m.groups()) == 2 and m.group(1).isnumeric():
+        cm_valid = "cm" == m.group(2) and 150 <= int(m.group(1)) <= 193
+        in_valid = "in" == m.group(2) and 59 <= int(m.group(1)) <= 76
+        if cm_valid or in_valid:
+            is_valid = True
+
+    return is_valid
 
 
 def part1_valid(d: dict) -> bool:
@@ -37,14 +48,7 @@ def part2_valid(d: dict) -> bool:
         return False
 
     val = d["hgt"]
-    hgt_valid = False
-    if (m := re.match(re_hgt, val)) and len(m.groups()) == 2 and m.group(1).isnumeric():
-        cm_valid = "cm" == m.group(2) and 150 <= int(m.group(1)) <= 193
-        in_valid = "in" == m.group(2) and 59 <= int(m.group(1)) <= 76
-        if cm_valid or in_valid:
-            hgt_valid = True
-
-    if not hgt_valid:
+    if not hgt_valid(val):
         return False
 
     val = d["hcl"]
