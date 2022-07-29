@@ -13,28 +13,6 @@ part1_count = 0
 part2_count = 0
 
 
-@dataclass
-class Passport:
-    byr: str
-    iyr: str
-    eyr: str
-    hgt: str
-    hcl: str
-    ecl: str
-    pid: str
-    cid: str
-
-    def is_valid(self) -> bool:
-        d = self.asdict()
-        del d["cid"]
-
-        for key, value in d.items():
-            if value is None or value == "":
-                return False
-
-        return True
-
-
 def part1_valid(d: dict) -> bool:
     if len(mandatory_fields - set(d.keys())) == 0:
         return True
@@ -87,18 +65,24 @@ def part2_valid(d: dict) -> bool:
     return True
 
 
-def parse_passport(current_record):
-    global part1_count
-    global part2_count
-
+def record_to_dict(record) -> dict:
     kvps = []
-    for line in current_record:
+    for line in record:
         kvps.extend(line.split())
 
     d = {}
     for kvp in kvps:
         key, value = kvp.split(":", 1)
         d[key] = value
+
+    return d
+
+
+def parse_passport(current_record):
+    global part1_count
+    global part2_count
+
+    d = record_to_dict(current_record)
 
     if part1_valid(d):
         part1_count += 1
