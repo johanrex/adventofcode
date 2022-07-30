@@ -32,9 +32,6 @@ def part2_valid(d: dict) -> bool:
 
     d = defaultdict(str) | d
 
-    if len(set(d.keys()) - mandatory_fields - {"cid"}) != 0:
-        return False
-
     val = d["byr"]
     if not (len(val) == 4 and 1920 <= int(val) <= 2002):
         return False
