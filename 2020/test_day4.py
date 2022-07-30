@@ -1,4 +1,4 @@
-from day4 import part1_valid, record_to_dict, part2_valid, parse_passports, hgt_valid
+from day4 import part2_valid, parse_passports, hgt_valid
 
 
 def test_p2_invalid_record_1():

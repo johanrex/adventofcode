@@ -28,7 +28,6 @@ for line in lines:
         pwd=m.group(4),
     )
     pwd_items.append(item)
-    pass
 
 
 def part1():

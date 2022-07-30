@@ -1,5 +1,4 @@
 from collections import defaultdict
-from dataclasses import dataclass
 import re
 
 mandatory_fields = {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"}
@@ -13,9 +12,13 @@ re_pid = re.compile(r"^\d{9}$")
 def hgt_valid(val):
     is_valid = False
     if (m := re.match(re_hgt, val)) and len(m.groups()) == 2 and m.group(1).isnumeric():
-        cm_valid = "cm" == m.group(2) and 150 <= int(m.group(1)) <= 193
-        in_valid = "in" == m.group(2) and 59 <= int(m.group(1)) <= 76
-        if cm_valid or in_valid:
+        if (
+            # fmt: off
+            ("cm" == m.group(2) and 150 <= int(m.group(1)) <= 193)
+            or  # noqa: W504
+            ("in" == m.group(2) and 59 <= int(m.group(1)) <= 76)
+            # fmt: on
+        ):
             is_valid = True
 
     return is_valid
