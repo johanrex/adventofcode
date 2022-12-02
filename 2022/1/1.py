@@ -1,4 +1,3 @@
-
 def parse():
     lst = []
     grp = None
@@ -18,6 +17,7 @@ def parse():
         lst.append(grp)
     return lst
 
+
 def part1():
     max_sum = 0
 
@@ -26,12 +26,12 @@ def part1():
         if s > max_sum:
             max_sum = s
 
-
-    #assert max_sum == 74394
+    # assert max_sum == 74394
     print("Max elf:", max_sum)
 
+
 def part2():
-    sums =[]
+    sums = []
 
     for grp in lst:
         s = sum(grp)
@@ -39,11 +39,9 @@ def part2():
 
     sums.sort(reverse=True)
 
-    print("Top 3 elf cals:", sums[0] + sums[1] + sums [2]) 
-
+    print("Top 3 elf cals:", sums[0] + sums[1] + sums[2])
 
 
 lst = parse()
 part1()
 part2()
-
