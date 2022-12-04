@@ -24,10 +24,8 @@ with open("4/input") as f:
         if len(s_union) != (len(s1) + len(s2)):
             nr_of_overlaps += 1
 
-assert nr_of_fully_contained == 657
-assert nr_of_overlaps == 938
-
 print("Part1:", nr_of_fully_contained)
 print("Part2:", nr_of_overlaps)
 
-# 2-4,6-8
+assert nr_of_fully_contained == 657
+assert nr_of_overlaps == 938
