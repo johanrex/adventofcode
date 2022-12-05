@@ -61,7 +61,7 @@ def parse_setup(f: TextIO):
     return stacks
 
 
-def execute(stacks: list[list[str]], instructions: list[Instruction]):
+def execute_part1(stacks: list[list[str]], instructions: list[Instruction]):
     for instr in instructions:
         for _ in range(instr.n):
             stack_src = stacks[instr.src - 1]
@@ -69,17 +69,44 @@ def execute(stacks: list[list[str]], instructions: list[Instruction]):
             item = stack_src.pop()
             stack_dst.append(item)
 
+    ans = get_answer(stacks)
+    assert ans == "QNHWJVJZW"
+    return ans
 
-with open("5/input") as f:
-    # with open("5/example") as f:
+
+def execute_part2(stacks: list[list[str]], instructions: list[Instruction]):
+    for instr in instructions:
+        stack_src = stacks[instr.src - 1]
+        stack_dst = stacks[instr.dst - 1]
+
+        items = stack_src[-instr.n :]
+        stacks[instr.src - 1] = stack_src[: len(stack_src) - instr.n]
+
+        stack_dst.extend(items)
+
+    ans = get_answer(stacks)
+    assert ans == "BPCZJLFJW"
+    return ans
+
+
+def get_answer(stacks: list[list[str]]):
+    ans = ""
+    for stack in stacks:
+        ans += stack[-1]
+    return ans
+
+
+filename = "5/input"
+# filename = "5/example"
+
+with open(filename) as f:
     stacks = parse_setup(f)
     instructions = parse_instructions(f)
-    execute(stacks, instructions)
 
-part1 = ""
-for stack in stacks:
-    part1 += stack[-1]
-print(part1)
+    print(execute_part1(stacks, instructions))
 
+with open(filename) as f:
+    stacks = parse_setup(f)
+    instructions = parse_instructions(f)
 
-pass
+    print(execute_part2(stacks, instructions))
