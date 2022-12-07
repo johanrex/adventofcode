@@ -58,22 +58,16 @@ def parse_input(lines) -> FsDir:
 
 
 def dfs(fs_dir: FsDir):
-    global part1_size
     global dirsizes
-
     dirsize = 0
 
     for child_dir in fs_dir.dirs:
         dirsize += dfs(child_dir)
 
     dirsize += sum(fs_file.size for fs_file in fs_dir.files)
-
     dirsizes.append(dirsize)
 
-    if dirsize <= 100000:
-        part1_size += dirsize
-
-    print(f"Size of '{fs_dir.name}': {dirsize}")
+    # print(f"Size of '{fs_dir.name}': {dirsize}")
     return dirsize
 
 
@@ -84,12 +78,12 @@ root = parse_input(filename)
 part1_size = 0
 dirsizes = []
 dfs(root)
+
+part1_size = sum([dirsize for dirsize in dirsizes if dirsize <= 100000])
+assert part1_size == 1908462
 print("Part1:", part1_size)
 
-
 total_dirsize = max(dirsizes)
-part2_candidates = [dirsize for dirsize in dirsizes if (70000000 - total_dirsize + dirsize) >= 30000000]
-part2_size = min(part2_candidates)
-
-
+part2_size = min([dirsize for dirsize in dirsizes if (70000000 - total_dirsize + dirsize) >= 30000000])
+assert part2_size == 3979145
 print("Part2:", part2_size)
