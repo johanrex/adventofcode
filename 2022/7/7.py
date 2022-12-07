@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 import re
 from typing import Self
+import sys
 
 
 @dataclass
@@ -57,6 +58,8 @@ def parse_input(lines) -> FsDir:
 
 
 def dfs(fs_dir: FsDir):
+    global part1_size
+    global dirsizes
 
     dirsize = 0
 
@@ -65,18 +68,28 @@ def dfs(fs_dir: FsDir):
 
     dirsize += sum(fs_file.size for fs_file in fs_dir.files)
 
+    dirsizes.append(dirsize)
+
     if dirsize <= 100000:
-        global part1_size
         part1_size += dirsize
 
     print(f"Size of '{fs_dir.name}': {dirsize}")
     return dirsize
 
 
-# filename = "7/input"
-filename = "7/example"
+filename = "7/input"
+# filename = "7/example"
 root = parse_input(filename)
 
 part1_size = 0
+dirsizes = []
 dfs(root)
 print("Part1:", part1_size)
+
+
+total_dirsize = max(dirsizes)
+part2_candidates = [dirsize for dirsize in dirsizes if (70000000 - total_dirsize + dirsize) >= 30000000]
+part2_size = min(part2_candidates)
+
+
+print("Part2:", part2_size)
