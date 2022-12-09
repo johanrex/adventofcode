@@ -121,6 +121,6 @@ for move in moves:
     # print_unique_tail_pos()
     pass
 
-# 6173 too low.
-# 6349 too high
-print("Part1:", len(unique_tail_pos))
+part1 = len(unique_tail_pos)
+assert part1 == 6332
+print("Part1:", part1)
