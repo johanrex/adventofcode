@@ -60,8 +60,6 @@ def step(from_h: Coordinate, from_t: Coordinate, move: Move) -> tuple[Coordinate
             case "D":
                 to_t.y = to_h.y + 1
                 to_t.x = to_h.x
-                # start = min(from_t.y, to_t.y) + diag_skip
-                # stop = max(from_t.y, to_t.y) + 1
                 start = min(from_t.y, to_t.y)
                 stop = max(from_t.y, to_t.y)
 
