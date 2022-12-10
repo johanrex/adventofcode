@@ -37,9 +37,7 @@ with open(filename) as f:
         cycle = cycles_to_check[0]
 
         val = None
-        if old_state.cycle_nr <= cycle < current_state.cycle_nr:
-            val = old_state.reg_x_val
-        elif old_state.cycle_nr < cycle <= current_state.cycle_nr:
+        if old_state.cycle_nr <= cycle <= current_state.cycle_nr:
             val = old_state.reg_x_val
 
         if val is not None:
