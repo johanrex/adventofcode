@@ -2,6 +2,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 
+magic_nr = 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 * 23 * 29
+
+
 @dataclass
 class Monkey:
     id: int
@@ -11,9 +14,6 @@ class Monkey:
     true_throw_to: int
     false_throw_to: int
     inspect_cnt: int = 0
-
-
-monkeys = []
 
 
 """
@@ -32,6 +32,7 @@ def operation(old, op_str):
 
 
 def parse(filename):
+    monkeys = []
     with open(filename) as f:
         while line := f.readline():
             assert line.startswith("Monkey ")
@@ -57,40 +58,59 @@ def parse(filename):
             )
 
             monkeys.append(m)
-            print("Parsed:", m)
-
-            pass
     return monkeys
 
 
-def do_round(monkeys: list[Monkey]):
+def do_round(monkeys: list[Monkey], divide: bool):
     for m in monkeys:
         m.inspect_cnt += len(m.items)
         while len(m.items) > 0:
             item = m.items.pop(0)
             item = operation(item, m.operation_str)
-            item //= 3
+
+            if divide:
+                item //= 3
+            elif item > magic_nr:
+                item %= magic_nr
+
             if item % m.test_divisible_by == 0:
                 monkeys[m.true_throw_to].items.append(item)
             else:
                 monkeys[m.false_throw_to].items.append(item)
 
 
+def print_stats(monkeys, nr_of_rounds):
+    print(f"State after {nr_of_rounds} rounds:")
+    for m in monkeys:
+        print(f"Monkey {m.id}: {m.items}")
+
+    print("")
+
+    for m in monkeys:
+        print(f"Monkey {m.id} inspected items {m.inspect_cnt} times.")
+
+
+def get_monkey_business(filename: str, divide: bool, nr_of_rounds: int):
+    monkeys = parse(filename)
+
+    for _ in range(nr_of_rounds):
+        do_round(monkeys, divide)
+
+    # print_stats(monkeys, nr_of_rounds)
+
+    inspects = [m.inspect_cnt for m in monkeys]
+    sorted_inspects = list(reversed(sorted(inspects)))
+    monkey_business = sorted_inspects[0] * sorted_inspects[1]
+    return monkey_business
+
+
 # filename = "11/example"
 filename = "11/input"
-monkeys = parse(filename)
 
-nr_of_rounds = 20
-for i in range(nr_of_rounds):
-    do_round(monkeys)
+monkey_business = get_monkey_business(filename, divide=True, nr_of_rounds=20)
+assert 78960 == monkey_business
+print("Part1:", monkey_business)
 
-print(f"State after {nr_of_rounds} rounds:")
-for m in monkeys:
-    print(f"Monkey {m.id}: {m.items}")
-
-for m in monkeys:
-    print(f"Monkey {m.id} inspected items {m.inspect_cnt} times.")
-
-inspects = [m.inspect_cnt for m in monkeys]
-sorted_inspects = list(reversed(sorted(inspects)))
-print("Monkey business:", sorted_inspects[0] * sorted_inspects[1])
+monkey_business = get_monkey_business(filename, divide=False, nr_of_rounds=10000)
+assert 14561971968 == monkey_business
+print("Part2:", monkey_business)
