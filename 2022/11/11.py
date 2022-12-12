@@ -1,19 +1,14 @@
-from collections.abc import Callable
 from dataclasses import dataclass
-import operator
 
 
 magic_nr = 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 * 23 * 29
-ops = {"+": operator.add, "*": operator.mul, "pow": operator.pow}
 
 
 @dataclass
 class Monkey:
     id: int
     items: list[int]
-    # operation_str: str
-    operation_operator: Callable
-    operation_value: int
+    operation_str: str
     test_divisible_by: int
     true_throw_to: int
     false_throw_to: int
@@ -30,6 +25,11 @@ Monkey 0:
 """
 
 
+def operation(old, op_str):
+    new = eval(op_str)
+    return new
+
+
 def parse(filename):
     monkeys = []
     with open(filename) as f:
@@ -38,14 +38,7 @@ def parse(filename):
             monkey_id = int(line[7])
             items = list(map(int, f.readline().strip()[16:].split(",")))
             line = f.readline().strip()
-
-            if "old * old" in line:
-                operation_operator = ops["pow"]
-                operation_value = 2
-            else:
-                operation_operator = ops[line[21]]
-                operation_value = int(line[23:])
-
+            operation_str = line[17:]
             line = f.readline().strip()
             test_divisible_by = int(line[19:])
             line = f.readline().strip()
@@ -57,8 +50,7 @@ def parse(filename):
             m = Monkey(
                 id=monkey_id,
                 items=items,
-                operation_operator=operation_operator,
-                operation_value=operation_value,
+                operation_str=operation_str,
                 test_divisible_by=test_divisible_by,
                 true_throw_to=true_throw_to,
                 false_throw_to=false_throw_to,
@@ -73,7 +65,7 @@ def do_round(monkeys: list[Monkey], divide: bool):
         m.inspect_cnt += len(m.items)
         while len(m.items) > 0:
             item = m.items.pop(0)
-            item = m.operation_operator(item, m.operation_value)
+            item = operation(item, m.operation_str)
 
             if divide:
                 item //= 3
