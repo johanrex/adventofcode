@@ -79,15 +79,23 @@ def index(lst, x):
 
 
 def is_free(coord, blocked, sands):
-    if index(blocked, coord) is None and index(sands, coord) is None:
-        return True
-    else:
+    global has_ground
+    if has_ground and coord[1] == y_ground:
         return False
+    else:
+        if index(blocked, coord) is None and index(sands, coord) is None:
+            return True
+        else:
+            return False
 
 
 def is_block_below(x, y, blocked):
-    below = next((coord for coord in blocked if coord[0] == x and coord[1] > y), None)
-    return below is not None
+    global has_ground
+    if has_ground:
+        return True
+    else:
+        below = next((coord for coord in blocked if coord[0] == x and coord[1] > y), None)
+        return below is not None
 
 
 def add_sand(blocked: list[tuple[int, int]], sands: list[tuple[int, int]]):
@@ -115,14 +123,20 @@ def add_sand(blocked: list[tuple[int, int]], sands: list[tuple[int, int]]):
                 # print_current(blocked, sands)
                 at_rest = True
 
+                # Horrible code.
+                if curr_x == 500 and curr_y == 0:
+                    print("Part2:", len(sands))
+                    return False
+
     return not overflow
 
 
+# filename = "14/example"
 filename = "14/input"
 blocked = parse_input(filename)
 
-# print("Blocked coords:")
-print(blocked)
+# Part1 has no ground
+has_ground = False
 
 sands = []
 while add_sand(blocked, sands):
@@ -130,3 +144,11 @@ while add_sand(blocked, sands):
 
 sands_at_rest = len(sands)
 print("Part1:", sands_at_rest)  # 808
+
+y_max = next(reversed((sorted(blocked, key=lambda coord: coord[1]))))[1]
+y_ground = y_max + 2
+has_ground = True
+
+sands = []
+while add_sand(blocked, sands):
+    pass
