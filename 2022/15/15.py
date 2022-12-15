@@ -7,19 +7,20 @@ def get_distance(a: tuple[int, int], b: tuple[int, int]):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
-def get_coords_within_distance(coord: tuple[int, int], distance):
+def get_coords_within_distance(coord: tuple[int, int], distance, row):
     x, y = coord
-    coords = []
+    coords = set()
 
     # for x_i in range(x - distance, (x + distance) + 1):
 
-    for y_i in range(y - distance, (y + distance) + 1):
-        for x_i in range(x - distance, (x + distance) + 1):
-            coord_candidate = (x_i, y_i)
-            if get_distance(coord, coord_candidate) > distance:
-                continue
-            else:
-                coords.append(coord_candidate)
+    # for y_i in range(y - distance, (y + distance) + 1):
+    y_i = row
+    for x_i in range(x - distance, (x + distance) + 1):
+        coord_candidate = (x_i, y_i)
+        if get_distance(coord, coord_candidate) > distance:
+            continue
+        else:
+            coords.add(coord_candidate)
 
     return coords
 
@@ -52,15 +53,15 @@ sensor_beacon = parse(filename)
 
 # coords = get_coords_within_distance(sensor, d)
 
-row = 10
+row = 2000000
 visible_coords_at_row = set()
 sensors = sensor_beacon.keys()
 for sensor, beacon in sensor_beacon.items():
     d = get_distance(sensor, beacon)
-    coords = get_coords_within_distance(sensor, d)
-    coords = [coord for coord in coords if coord[1] == row]
+    coords = get_coords_within_distance(sensor, d, row)
+    # coords = [coord for coord in coords if coord[1] == row]
 
-    visible_coords_at_row |= set(coords)
+    visible_coords_at_row |= coords
 
 for sensor, beacon in sensor_beacon.items():
     if sensor in visible_coords_at_row:
