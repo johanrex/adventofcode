@@ -47,7 +47,8 @@ def remove_pattern_at(cave, pat, x_left, y_bottom):
         pat_y += 1
 
 
-def put_pattern_at(cave, pat, x_left, y_bottom):
+# cave is assumed to be empty where pat should be placed.
+def put_pattern_at(cave, pat, x_left, y_bottom, chr="@"):
     pat_height = len(pat)
     pat_width = len(pat[0])
 
@@ -55,7 +56,9 @@ def put_pattern_at(cave, pat, x_left, y_bottom):
     for curr_y in range(y_bottom - pat_height + 1, y_bottom + 1):
         pat_x = 0
         for curr_x in range(x_left, x_left + pat_width):
-            cave[curr_y][curr_x] = pat[pat_y][pat_x]
+            if pat[pat_y][pat_x] != ".":
+                assert cave[curr_y][curr_x] == "."  # TODO remove for performance
+                cave[curr_y][curr_x] = chr
             pat_x += 1
         pat_y += 1
 
@@ -73,7 +76,7 @@ def can_move_in_direction(cave, pat, x_pat_left_src, y_pat_bottom_src, direction
             return False
     elif direction == Direction.DOWN:
         y_offset = 1
-        if y_pat_bottom_src + len(pat) >= len(cave):
+        if y_pat_bottom_src + 1 >= len(cave):
             return False
 
     pat_height = len(pat)
@@ -92,11 +95,6 @@ def can_move_in_direction(cave, pat, x_pat_left_src, y_pat_bottom_src, direction
         pat_y += 1
 
     return True
-
-
-def can_move_down(cave, pat, x_pat_left_src, y_pat_bottom_src):
-    if y_pat_bottom_src - 1 == 0:
-        return False
 
 
 filename = "17/example"
@@ -118,14 +116,13 @@ jet_idx = 0
 nr_of_rocks = 2
 
 for rock_idx in range(nr_of_rocks):
-    empty_lines = count_empty_lines_from_top(cave)
-    lines_to_extend = 3 - empty_lines
-    assert lines_to_extend >= 0
-    extend_cave(cave, lines_to_extend)
-
     pat = patterns[pat_idx]
     pat_height = len(pat)
-    extend_cave(cave, pat_height)
+    empty_lines = count_empty_lines_from_top(cave)
+    lines_to_extend = pat_height + 3 - empty_lines
+
+    assert lines_to_extend >= 0
+    extend_cave(cave, lines_to_extend)
 
     pat_left_x = 2
     pat_bottom_y = pat_height - 1
@@ -135,26 +132,30 @@ for rock_idx in range(nr_of_rocks):
 
     is_falling = True
     while is_falling:
-        jet = jets[jet_idx]
-        if jet == ">":
-            direction = Direction.RIGHT
-            x_offset = 1
-        else:
-            direction = Direction.LEFT
-            x_offset = -1
-
-        if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, direction):
-            remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-            pat_left_x += x_offset
-            put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-
         if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, Direction.DOWN):
+            jet = jets[jet_idx]
+            if jet == ">":
+                direction = Direction.RIGHT
+                x_offset = 1
+            else:
+                direction = Direction.LEFT
+                x_offset = -1
+
+            if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, direction):
+                remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+                pat_left_x += x_offset
+                put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+
+            # Move down
             remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
             pat_bottom_y += 1
             put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+
+            print_cave(cave)
         else:
             is_falling = False
+            remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+            put_pattern_at(cave, pat, pat_left_x, pat_bottom_y, chr="#")
 
-        print_cave(cave)
         jet_idx = (jet_idx + 1) % len(jets)
     pat_idx = (pat_idx + 1) % len(patterns)
