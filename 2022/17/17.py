@@ -112,17 +112,19 @@ patterns = [
 cave: list[list[str]] = []
 pat_idx = 0
 jet_idx = 0
-
-nr_of_rocks = 2
+nr_of_rocks = 5
+total_jet_cnt = 0
 
 for rock_idx in range(nr_of_rocks):
     pat = patterns[pat_idx]
     pat_height = len(pat)
+    needed_lines = pat_height + 3
     empty_lines = count_empty_lines_from_top(cave)
-    lines_to_extend = pat_height + 3 - empty_lines
 
-    assert lines_to_extend >= 0
-    extend_cave(cave, lines_to_extend)
+    if needed_lines > empty_lines:
+        lines_to_extend = needed_lines - empty_lines
+        extend_cave(cave, lines_to_extend)
+        assert lines_to_extend <= 6
 
     pat_left_x = 2
     pat_bottom_y = pat_height - 1
@@ -132,30 +134,38 @@ for rock_idx in range(nr_of_rocks):
 
     is_falling = True
     while is_falling:
+
+        jet = jets[jet_idx]
+        total_jet_cnt += 1  # DEBUG
+
+        if jet == ">":
+            direction = Direction.RIGHT
+            x_offset = 1
+        else:
+            direction = Direction.LEFT
+            x_offset = -1
+
+        if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, direction):
+            remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+            pat_left_x += x_offset
+            put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+
         if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, Direction.DOWN):
-            jet = jets[jet_idx]
-            if jet == ">":
-                direction = Direction.RIGHT
-                x_offset = 1
-            else:
-                direction = Direction.LEFT
-                x_offset = -1
-
-            if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, direction):
-                remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-                pat_left_x += x_offset
-                put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-
-            # Move down
             remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
             pat_bottom_y += 1
             put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-
-            print_cave(cave)
         else:
             is_falling = False
             remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
             put_pattern_at(cave, pat, pat_left_x, pat_bottom_y, chr="#")
 
+        print_cave(cave)
+
         jet_idx = (jet_idx + 1) % len(jets)
     pat_idx = (pat_idx + 1) % len(patterns)
+
+
+print_cave(cave)
+print("total_jet_cnt:", total_jet_cnt)
+print("Part1:", len(cave) - count_empty_lines_from_top(cave))
+pass
