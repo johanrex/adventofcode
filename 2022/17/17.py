@@ -1,3 +1,13 @@
+import sys
+from enum import IntEnum
+
+
+class Direction(IntEnum):
+    LEFT = sys.maxsize - 1
+    RIGHT = sys.maxsize - 2
+    DOWN = sys.maxsize - 3
+
+
 def print_cave(cave):
     print("This is the cave:")
     for lst in cave:
@@ -50,26 +60,38 @@ def put_pattern_at(cave, pat, x_left, y_bottom):
         pat_y += 1
 
 
-def can_move_left(cave, pat, x_left_src, y_bottom_src):
-    if x_left_src <= 0:
-        return False
+def can_move_in_direction(cave, pat, x_pat_left_src, y_pat_bottom_src, direction):
+    x_offset = 0
+    if direction == Direction.LEFT:
+        x_offset = -1
+        if x_pat_left_src <= 0:
+            return False
+    elif direction == Direction.RIGHT:
+        x_offset = 1
+        if x_pat_left_src + len(pat[0]) >= len(cave[0]):
+            return False
 
     pat_height = len(pat)
     pat_width = len(pat[0])
 
     pat_y = 0
-    for curr_y in range(y_bottom_src - pat_height + 1, y_bottom_src + 1):
+    for curr_y in range(y_pat_bottom_src - pat_height + 1, y_pat_bottom_src + 1):
 
         pat_x = 0
-        for curr_x in range(x_left_src - 1, x_left_src + pat_width - 1):
-            pat_val = pat[pat_y][pat_x]
+        for curr_x in range(x_pat_left_src + x_offset, x_pat_left_src + pat_width + x_offset):
             cave_val = cave[curr_y][curr_x]
-            if cave_val == "#":
+            pat_val = pat[pat_y][pat_x]
+            if cave_val == "#" and pat_val == "@":
                 return False
             pat_x += 1
         pat_y += 1
 
     return True
+
+
+def can_move_down(cave, pat, x_pat_left_src, y_pat_bottom_src):
+    if y_pat_bottom_src - 1 == 0:
+        return False
 
 
 filename = "17/example"
@@ -110,9 +132,15 @@ for i in range(1):
     put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
     print_cave(cave)
 
-    while can_move_left(cave, pat, pat_left_x, pat_bottom_y):
+    while can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, Direction.LEFT):
         remove_pattern_at(cave, pat, pat_left_x, pat_height - 1)
         pat_left_x -= 1
+        put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+        print_cave(cave)
+
+    while can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, Direction.RIGHT):
+        remove_pattern_at(cave, pat, pat_left_x, pat_height - 1)
+        pat_left_x += 1
         put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
         print_cave(cave)
 
