@@ -97,75 +97,86 @@ def can_move_in_direction(cave, pat, x_pat_left_src, y_pat_bottom_src, direction
     return True
 
 
-# filename = "17/input"
-filename = "17/example"
-with open(filename) as f:
-    jets = list(f.read().strip())
+def drop_rocks(filename, nr_of_rocks):
+    with open(filename) as f:
+        jets = list(f.read().strip())
 
-patterns = [
-    [[*"@@@@"]],
-    [[*".@."], [*"@@@"], [*".@."]],
-    [[*"..@"], [*"..@"], [*"@@@"]],
-    [[*"@"], [*"@"], [*"@"], [*"@"]],
-    [[*"@@"], [*"@@"]],
-]
+    patterns = [
+        [[*"@@@@"]],
+        [[*".@."], [*"@@@"], [*".@."]],
+        [[*"..@"], [*"..@"], [*"@@@"]],
+        [[*"@"], [*"@"], [*"@"], [*"@"]],
+        [[*"@@"], [*"@@"]],
+    ]
 
-cave: list[list[str]] = []
-pat_idx = 0
-jet_idx = 0
-nr_of_rocks = 2022
+    cave: list[list[str]] = []
+    pat_idx = 0
+    jet_idx = 0
 
-for rock_idx in range(nr_of_rocks):
-    pat = patterns[pat_idx]
-    pat_height = len(pat)
-    needed_lines = pat_height + 3
-    empty_lines = count_empty_lines_from_top(cave)
+    for rock_idx in range(nr_of_rocks):
+        pat = patterns[pat_idx]
+        pat_height = len(pat)
+        needed_lines = pat_height + 3
+        empty_lines = count_empty_lines_from_top(cave)
 
-    if needed_lines > empty_lines:
-        lines_to_extend = needed_lines - empty_lines
-        extend_cave(cave, lines_to_extend)
-        empty_lines = empty_lines + lines_to_extend
-        assert lines_to_extend <= 6
+        if needed_lines > empty_lines:
+            lines_to_extend = needed_lines - empty_lines
+            extend_cave(cave, lines_to_extend)
+            empty_lines = empty_lines + lines_to_extend
+            assert lines_to_extend <= 6
 
-    pat_left_x = 2
-    # pat_bottom_y = pat_height - 1
-    pat_bottom_y = empty_lines - 3 - 1
+        pat_left_x = 2
+        # pat_bottom_y = pat_height - 1
+        pat_bottom_y = empty_lines - 3 - 1
 
-    put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-    print(f"Rock {rock_idx+1} spawned.")
-    # print_cave(cave)
+        put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+        if (rock_idx + 1) % 10_000 == 0:
+            print(f"Rock {rock_idx+1} spawned.")
 
-    is_falling = True
-    while is_falling:
-
-        jet = jets[jet_idx]
-
-        if jet == ">":
-            direction = Direction.RIGHT
-            x_offset = 1
-        else:
-            direction = Direction.LEFT
-            x_offset = -1
-
-        if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, direction):
-            remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-            pat_left_x += x_offset
-            put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-
-        if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, Direction.DOWN):
-            remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-            pat_bottom_y += 1
-            put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-        else:
-            is_falling = False
-            remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
-            put_pattern_at(cave, pat, pat_left_x, pat_bottom_y, chr="#")
-
+        # print(f"Rock {rock_idx+1} spawned.")
         # print_cave(cave)
 
-        jet_idx = (jet_idx + 1) % len(jets)
-    pat_idx = (pat_idx + 1) % len(patterns)
+        is_falling = True
+        while is_falling:
+
+            jet = jets[jet_idx]
+
+            if jet == ">":
+                direction = Direction.RIGHT
+                x_offset = 1
+            else:
+                direction = Direction.LEFT
+                x_offset = -1
+
+            if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, direction):
+                remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+                pat_left_x += x_offset
+                put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+
+            if can_move_in_direction(cave, pat, pat_left_x, pat_bottom_y, Direction.DOWN):
+                remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+                pat_bottom_y += 1
+                put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+            else:
+                is_falling = False
+                remove_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+                put_pattern_at(cave, pat, pat_left_x, pat_bottom_y, chr="#")
+
+            # print_cave(cave)
+
+            jet_idx = (jet_idx + 1) % len(jets)
+        pat_idx = (pat_idx + 1) % len(patterns)
+
+    return len(cave) - count_empty_lines_from_top(cave)
 
 
-print("Part1:", len(cave) - count_empty_lines_from_top(cave))
-pass
+filename = "17/input"
+# filename = "17/example"
+
+p1 = drop_rocks(filename, 2022)
+assert p1 == 3171
+print("Part1:", p1)
+
+
+p2 = drop_rocks(filename, 1000000000000)
+print("Part2:", p2)
