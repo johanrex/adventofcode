@@ -50,6 +50,28 @@ def put_pattern_at(cave, pat, x_left, y_bottom):
         pat_y += 1
 
 
+def can_move_left(cave, pat, x_left_src, y_bottom_src):
+    if x_left_src <= 0:
+        return False
+
+    pat_height = len(pat)
+    pat_width = len(pat[0])
+
+    pat_y = 0
+    for curr_y in range(y_bottom_src - pat_height + 1, y_bottom_src + 1):
+
+        pat_x = 0
+        for curr_x in range(x_left_src - 1, x_left_src + pat_width - 1):
+            pat_val = pat[pat_y][pat_x]
+            cave_val = cave[curr_y][curr_x]
+            if cave_val == "#":
+                return False
+            pat_x += 1
+        pat_y += 1
+
+    return True
+
+
 filename = "17/example"
 with open(filename) as f:
     jet = list(f.read().strip())
@@ -83,19 +105,16 @@ for i in range(1):
     pat_height = len(pat)
     extend_cave(cave, pat_height)
 
-    put_pattern_at(cave, pat, 1, pat_height - 1)
+    pat_left_x = 2
+    pat_bottom_y = pat_height - 1
+    put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
     print_cave(cave)
 
-    remove_pattern_at(cave, pat, 1, pat_height - 1)
-    print_cave(cave)
-
-    pat = patterns[1]
-    pat_height = len(pat)
-    put_pattern_at(cave, pat, 1, pat_height - 1)
-    print_cave(cave)
-
-    remove_pattern_at(cave, pat, 1, pat_height - 1)
-    print_cave(cave)
+    while can_move_left(cave, pat, pat_left_x, pat_bottom_y):
+        remove_pattern_at(cave, pat, pat_left_x, pat_height - 1)
+        pat_left_x -= 1
+        put_pattern_at(cave, pat, pat_left_x, pat_bottom_y)
+        print_cave(cave)
 
     # Bottom left pos
     # pattern_pos =
