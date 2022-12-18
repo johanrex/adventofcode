@@ -1,15 +1,6 @@
 from dataclasses import dataclass
-from enum import Enum, auto
 import sys
-
-
-class Direction(Enum):
-    LEFT = auto()
-    RIGHT = auto()
-    UP = auto()
-    DOWN = auto()
-    FRONT = auto()
-    BACK = auto()
+from typing import Self
 
 
 @dataclass(frozen=True)
@@ -17,6 +8,42 @@ class Point:
     x: int
     y: int
     z: int
+
+    def __cmp(self, other: Self):
+        if self.x < other.x:
+            return -1
+        elif self.x > other.x:
+            return 1
+        else:
+            if self.y < other.y:
+                return -1
+            elif self.y > other.y:
+                return 1
+            else:
+                if self.z < other.z:
+                    return -1
+                elif self.z > other.z:
+                    return 1
+                else:
+                    return 0
+
+    def __lt__(self, other):
+        return self.__cmp(other) < 0
+
+    def __le__(self, other):
+        return self.__cmp(other) <= 0
+
+    def __eq__(self, other):
+        return self.__cmp(other) == 0
+
+    def __ne__(self, other):
+        return self.__cmp(other) != 0
+
+    def __gt__(self, other):
+        return self.__cmp(other) > 0
+
+    def __ge__(self, other):
+        return self.__cmp(other) >= 0
 
 
 def parse(filename):
@@ -96,17 +123,14 @@ def get_neighbors(p: Point, min_p: Point, max_p: Point) -> set[Point]:
     return ns
 
 
-def is_in_bounds(p: Point, min_p: Point, max_p: Point) -> bool:
-    return min_p.x <= p.x <= max_p.x and min_p.y <= p.y <= max_p.y and min_p.z <= p.z <= max_p.z
-
-
-def flood_fill(min_p, max_p, points):
+def bfs(min_p, max_p, points):
     q = [min_p]
     visited = set()
     surface_pairs = set()
     while len(q) > 0:
         p = q.pop()
         visited.add(p)
+
         visit_candidates = get_neighbors(p, min_p, max_p)
 
         for n in visit_candidates:
@@ -129,6 +153,6 @@ print("Part1:", sides)
 
 min_p, max_p = get_enclosing_points(points)
 
-surfaces = flood_fill(min_p, max_p, points)
+surfaces = bfs(min_p, max_p, points)
 assert surfaces == 2556
 print("Part2:", surfaces)
