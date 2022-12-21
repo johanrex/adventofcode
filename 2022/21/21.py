@@ -31,6 +31,9 @@ class Monkey:
         else:
             return "???"
 
+    def __repr__(self) -> str:
+        return str(self)
+
 
 def parse(filename):
     monkeys = []
@@ -65,7 +68,7 @@ def parse(filename):
     return monkeys
 
 
-def eval(monkeys):
+def eval_part1(monkeys):
     lookup = {m.name: m for m in monkeys}
 
     unresolveds = [m for m in monkeys if m.type == MonkeyType.OPERATION]
@@ -90,11 +93,83 @@ def eval(monkeys):
         unresolveds = [m for m in monkeys if m.type == MonkeyType.OPERATION]
 
 
-filename = "21/input"
-monkeys = parse(filename)
+def eval_part2(monkeys):
+    lookup = {m.name: m for m in monkeys}
 
-eval(monkeys)
+    unresolveds = [m for m in monkeys if m.type == MonkeyType.OPERATION]
+    improvement = True
+    while improvement:
+        nr_before = len(unresolveds)
 
-monkey = next(m for m in monkeys if m.name == "root")
-print(f"Part1. {monkey.name} has value: {monkey.value}")
-# [print(m) for m in monkeys]
+        for unresolved in unresolveds:
+            if unresolved.operand1 in lookup:
+                if type(unresolved.operand1) == str and lookup[unresolved.operand1].type == MonkeyType.VALUE:
+                    unresolved.operand1 = lookup[unresolved.operand1].value
+
+            if unresolved.operand2 in lookup:
+                if type(unresolved.operand2) == str and lookup[unresolved.operand2].type == MonkeyType.VALUE:
+                    unresolved.operand2 = lookup[unresolved.operand2].value
+
+            # Did we resolve both operands?
+            if type(unresolved.operand1) == int and type(unresolved.operand2) == int:
+                unresolved.value = unresolved.operator(unresolved.operand1, unresolved.operand2)
+                unresolved.type = MonkeyType.VALUE
+                unresolved.operand1 = None
+                unresolved.operand2 = None
+                print("Resolved: ", unresolved.name)
+
+        unresolveds = [m for m in monkeys if m.type == MonkeyType.OPERATION]
+        nr_after = len(unresolveds)
+
+        if nr_after == nr_before:
+            improvement = False
+
+
+def part1(filename):
+    monkeys = parse(filename)
+    eval_part1(monkeys)
+    monkey = next(m for m in monkeys if m.name == "root")
+    print(f"Part1. {monkey.name} has value: {monkey.value}")
+
+
+def part2(filename):
+
+    # TODO, scrap this. Build expression and use a symbolic solver like sympy instead.
+
+    monkeys = parse(filename)
+    # remove humn
+    for i, m in enumerate(monkeys):
+        if m.name == "humn":
+            monkeys.pop(i)
+            break
+
+    eval_part2(monkeys)
+    root = next(m for m in monkeys if m.name == "root")
+    equal_val = root.operand2
+
+    # remove root
+    for i, m in enumerate(monkeys):
+        if m.name == "root":
+            monkeys.pop(i)
+            break
+
+    # invert the remaining operations
+    ops = {
+        add: sub,
+        sub: add,
+        mul: floordiv,
+        floordiv: mul,
+    }
+    for m in monkeys:
+        if m.type == MonkeyType.OPERATION:
+            m.operator = ops[m.operator]
+
+    eval_part2(monkeys)
+    pass
+
+    print(f"Part2. TODO. ")
+
+
+filename = "21/example"
+part1(filename)
+part2(filename)
