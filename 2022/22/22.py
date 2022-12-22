@@ -157,5 +157,3 @@ grid, instructions = parse(filename)
 stop_row, stop_col, stop_direction = walk(grid, instructions)
 pwd = password(stop_row, stop_col, stop_direction)
 print("Part1:", pwd)
-
-# TODO create grid class with caching of methods.
