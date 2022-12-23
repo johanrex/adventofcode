@@ -79,6 +79,8 @@ def do_round(grid: np.ndarray, directions_to_consider: list[Direction]):
     rows = grid.shape[0]
     cols = grid.shape[1]
 
+    nr_elves_moved = 0
+
     # (row_old, col_old, row_new, col_new)
     move_proposals = []
     for curr_row in range(1, rows - 1):
@@ -151,7 +153,9 @@ def do_round(grid: np.ndarray, directions_to_consider: list[Direction]):
             grid[old_row][old_col] = "."
             grid[new_row][new_col] = "#"
 
-    return grid
+            nr_elves_moved += 1
+
+    return grid, nr_elves_moved
 
 
 def print_grid(grid: np.ndarray):
@@ -168,18 +172,22 @@ direction_to_consider_gen = directions_to_consider_generator()
 print("Initial state:")
 print_grid(grid)
 
-rounds = 10
-for i in range(rounds):
+round = 0
+while True:
     directions_to_consider = next(direction_to_consider_gen)
-    grid = do_round(grid, directions_to_consider)
+    grid, nr_elves_moved = do_round(grid, directions_to_consider)
 
-    print(f"After round {i+1}:")
-    print_grid(grid)
+    round += 1
+
+    if round == 10:
+        # print(f"After round {i+1}:")
+        # print_grid(grid)
+
+        print("Part1:", np.sum(prune_grid(grid) == "."))
+
+    if nr_elves_moved == 0:
+        print("Part2:", round)
+        break
 
 
-grid = prune_grid(grid)
-print("Grid after pruning:")
-print_grid(grid)
-
-print("Part1:", np.sum(grid == "."))
 pass
