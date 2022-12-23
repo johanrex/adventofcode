@@ -1,6 +1,5 @@
 from enum import Enum
 import numpy as np
-from itertools import cycle
 
 
 class Direction(Enum):
