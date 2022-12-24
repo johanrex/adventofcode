@@ -79,10 +79,15 @@ def parse(filename: str):
     return G, start_node, end_node
 
 
-# filename = "12/example"
-filename = "12/input"
+filename = "12/example"
+# filename = "12/input"
 
 G, start_node, end_node = parse(filename)
+
+iterator = nx.bfs_predecessors(G, end_node, depth_limit=None, sort_neighbors=None)
+
+pass
+
 path = nx.shortest_path(G, start_node, end_node)
 print("Part1:", len(path) - 1)
 
@@ -99,5 +104,5 @@ for node in lowest_nodes:
         pass
 print("Part2:", shortest - 1)
 
-
+# johan    5,039213
 pass

@@ -48,3 +48,12 @@ with open(filename) as f:
             # print(part1_sum_of_signal_strengths)
 
 print("Part1:", part1_sum_of_signal_strengths)
+
+
+def print(crt):
+
+    for line in crt:
+        print("".join(line))
+
+
+crt = [["."] * 40] * 6
