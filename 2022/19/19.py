@@ -52,8 +52,10 @@ class State:
     def copy(self) -> Self:
         new_state = State()
         new_state.blueprint_id = self.blueprint_id
-        new_state.material_count = self.material_count.copy()
-        new_state.robot_count = self.robot_count.copy()
+        # new_state.material_count = self.material_count.copy()
+        new_state.material_count = {k: v for k, v in self.material_count.items()}
+        # new_state.robot_count = self.robot_count.copy()
+        new_state.robot_count = {k: v for k, v in self.robot_count.items()}
         return new_state
 
     def __eq__(self, o: object) -> bool:
@@ -77,7 +79,7 @@ class State:
         return msg
 
 
-# @cache
+@cache
 def can_produce_robot(state: State, bp: Blueprint, material_to_produce: Material) -> bool:
     materials_needed = bp.factory_costs[material_to_produce]
 
@@ -89,15 +91,8 @@ def can_produce_robot(state: State, bp: Blueprint, material_to_produce: Material
 
 
 def add_new_robot(state: State, bp: Blueprint, material_to_produce: Material) -> State:
-    new_state = State()
-    new_state.blueprint_id = bp.blueprint_id
-    new_state.robot_count = state.robot_count.copy()
+    new_state = state.copy()
     new_state.robot_count[material_to_produce] = state.robot_count[material_to_produce] + 1
-
-    new_state.material_count = state.material_count.copy()
-    for material in bp.factory_costs[material_to_produce]:
-        new_state.material_count[material] = state.material_count[material] - bp.factory_costs[material_to_produce][material]
-
     return new_state
 
 
@@ -112,6 +107,7 @@ def get_initial_state(bp_id: int) -> State:
         state.robot_count[material] = 0
 
     state.robot_count[Material.ORE] = 1
+    state.material_count[Material.ORE] = 1
     return state
 
 
@@ -161,37 +157,33 @@ def get_next_possible_states(old_state: State, bp: Blueprint, current_time: int,
     possible_next_states: set[State] = set()
 
     if can_produce_robot(old_state, bp, Material.GEODE):
-        new_state = add_new_robot(old_state, bp, Material.GEODE)
-        possible_next_states.add(new_state)
+        next_state = add_new_robot(old_state, bp, Material.GEODE)
+        possible_next_states.add(next_state)
     else:
         # TODO will produce more than theoretical maximum spend?
         time_left = stop_time - current_time
 
-        if ((old_state.robot_count[Material.OBSIDIAN] * time_left) < (max_material_costs[Material.OBSIDIAN] * time_left)) and can_produce_robot(
-            old_state, bp, Material.OBSIDIAN
-        ):
-            new_state = add_new_robot(old_state, bp, Material.OBSIDIAN)
-            possible_next_states.add(new_state)
+        if can_produce_robot(old_state, bp, Material.OBSIDIAN):
+            next_state = add_new_robot(old_state, bp, Material.OBSIDIAN)
+            possible_next_states.add(next_state)
 
-        if ((old_state.robot_count[Material.CLAY] * time_left) < (max_material_costs[Material.CLAY] * time_left)) and can_produce_robot(
-            old_state, bp, Material.CLAY
-        ):
-            new_state = add_new_robot(old_state, bp, Material.CLAY)
-            possible_next_states.add(new_state)
+        if can_produce_robot(old_state, bp, Material.CLAY):
+            next_state = add_new_robot(old_state, bp, Material.CLAY)
+            possible_next_states.add(next_state)
 
         if ((old_state.robot_count[Material.ORE] * time_left) < (max_material_costs[Material.ORE] * time_left)) and can_produce_robot(
             old_state, bp, Material.ORE
         ):
-            new_state = add_new_robot(old_state, bp, Material.ORE)
-            possible_next_states.add(new_state)
+            next_state = add_new_robot(old_state, bp, Material.ORE)
+            possible_next_states.add(next_state)
 
         # Add the "do nothing" state
         possible_next_states.add(old_state.copy())
 
-    for new_state in possible_next_states:
-        # Add one material for each robot that existed at old state.
-        for material, robot_count in old_state.robot_count.items():
-            new_state.material_count[material] += robot_count
+    # Add one material for each robot that existed at old state.
+    for next_state in possible_next_states:
+        for material, old_robot_count in old_state.robot_count.items():
+            next_state.material_count[material] += old_robot_count
 
     return possible_next_states
 
@@ -204,7 +196,7 @@ bps = parse(filename)
 sum_max_quality_levels = 0
 
 for bp in bps:
-    stop_time = 24
+    stop_time: int = 24
 
     bp_max_quality_level = 0
 
@@ -213,7 +205,7 @@ for bp in bps:
     max_material_costs = bp.get_max_material_cost()
 
     for current_time in range(stop_time):
-        start_time = time.perf_counter()
+        t1 = time.perf_counter()
         current_states: set[State] = set()
 
         if current_time == 0:
@@ -224,14 +216,17 @@ for bp in bps:
 
         max_geodes = sorted([s.material_count[Material.GEODE] for s in current_states], reverse=True)[0]
 
-        stop_time = time.perf_counter()
+        t2 = time.perf_counter()
 
         if bp_max_quality_level < (bp.blueprint_id * max_geodes):
             bp_max_quality_level = bp.blueprint_id * max_geodes
 
-        print(
-            f"Minute {current_time+1} elapsed. Bp: {bp.blueprint_id}. States: {len(current_states)}. Max geodes: {max_geodes}. Max quality level: {bp_max_quality_level}. Speed: {len(current_states)/(stop_time-start_time):.2f} states/sec. Time: {(stop_time-start_time):.2f} sec."
-        )
+        msg = ""
+        msg += f"Bp: {bp.blueprint_id}."
+        msg += f" Minute {str(current_time+1).ljust(2)}."
+        msg += f" States: {str(len(current_states)).ljust(7)}. Max geodes: {max_geodes}. Max quality level: {bp_max_quality_level}."
+        msg += f" Speed: {len(current_states)/(t2-t1):.2f} states/sec. Time: {(t2-t1):.2f} sec."
+        print(msg)
 
         prev_states = current_states
     sum_max_quality_levels += bp_max_quality_level
