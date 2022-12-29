@@ -232,11 +232,8 @@ def dfs(bp: Blueprint, node: TreeNode, stop_time: int, current_time: int = 0) ->
 filename = "19/input"
 bps = parse(filename)
 
-
 sum_max_quality_levels = 0
 stop_time: int = 24
-
-tmp_max_children = 0
 
 for bp in bps:
     print(f"Bp: {bp.blueprint_id}.")
@@ -245,7 +242,7 @@ for bp in bps:
     state = get_initial_state(bp.blueprint_id)
     root = TreeNode(value=state, parent=None)
     max_geodes = dfs(bp, root, stop_time)
-    print(f"Max geodes: {max_geodes}.")
+    print(f"Max geodes found: {max_geodes}.")
     sum_max_quality_levels += max_geodes * bp.blueprint_id
 
 
@@ -259,8 +256,4 @@ for bp in bps:
 # msg += f" Speed: {len(current_states)/(t2-t1):.2f} states/sec. Time: {(t2-t1):.2f} sec."
 # print(msg)
 
-
 print("Part1:", sum_max_quality_levels)
-
-# pip install pulp
-# from pulp import LpMaximize, LpProblem, LpStatus, LpVariable
