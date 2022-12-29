@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
 from functools import cache
 import re
@@ -52,9 +52,7 @@ class State:
     def copy(self) -> Self:
         new_state = State()
         new_state.blueprint_id = self.blueprint_id
-        # new_state.material_count = self.material_count.copy()
         new_state.material_count = {k: v for k, v in self.material_count.items()}
-        # new_state.robot_count = self.robot_count.copy()
         new_state.robot_count = {k: v for k, v in self.robot_count.items()}
         return new_state
 
@@ -79,20 +77,38 @@ class State:
         return msg
 
 
+@dataclass
+class TreeNode:
+    value: State
+    parent: Self | None
+    children: list[Self] = field(default_factory=list)
+
+
 @cache
-def can_produce_robot(state: State, bp: Blueprint, material_to_produce: Material) -> bool:
+def can_buy_robot(state: State, bp: Blueprint, material_to_produce: Material) -> bool:
     materials_needed = bp.factory_costs[material_to_produce]
 
-    for material in materials_needed:
-        if material not in state.material_count or state.material_count[material] < materials_needed[material]:
+    for material_needed, cost in materials_needed.items():
+        if state.material_count[material_needed] < cost:
             return False
 
     return True
 
 
-def add_new_robot(state: State, bp: Blueprint, material_to_produce: Material) -> State:
+def add_materials_to_state(state: State):
+    new_state = state.copy()
+    new_state.material_count[material_to_produce] = state.material_count[material_to_produce] + amount
+    return new_state
+
+
+def buy_new_robot(state: State, bp: Blueprint, material_to_produce: Material) -> State:
     new_state = state.copy()
     new_state.robot_count[material_to_produce] = state.robot_count[material_to_produce] + 1
+
+    materials_needed = bp.factory_costs[material_to_produce]
+    for material, cost in materials_needed.items():
+        new_state.material_count[material] = state.material_count[material] - cost
+
     return new_state
 
 
@@ -107,7 +123,7 @@ def get_initial_state(bp_id: int) -> State:
         state.robot_count[material] = 0
 
     state.robot_count[Material.ORE] = 1
-    state.material_count[Material.ORE] = 1
+    # state.material_count[Material.ORE] = 1
     return state
 
 
@@ -152,86 +168,97 @@ def print_bp(bp: Blueprint):
     print(msg)
 
 
+def get_do_nothing_state(old_state: State, bp: Blueprint):
+    new_state = old_state.copy()
+
+    return new_state
+
+
 # @cache
 def get_next_possible_states(old_state: State, bp: Blueprint, current_time: int, stop_time: int) -> set[State]:
-    possible_next_states: set[State] = set()
+    next_states: set[State] = set()
+    time_left = stop_time - current_time
 
-    if can_produce_robot(old_state, bp, Material.GEODE):
-        next_state = add_new_robot(old_state, bp, Material.GEODE)
-        possible_next_states.add(next_state)
-    else:
-        # TODO will produce more than theoretical maximum spend?
-        time_left = stop_time - current_time
-
-        if can_produce_robot(old_state, bp, Material.OBSIDIAN):
-            next_state = add_new_robot(old_state, bp, Material.OBSIDIAN)
-            possible_next_states.add(next_state)
-
-        if can_produce_robot(old_state, bp, Material.CLAY):
-            next_state = add_new_robot(old_state, bp, Material.CLAY)
-            possible_next_states.add(next_state)
-
-        if ((old_state.robot_count[Material.ORE] * time_left) < (max_material_costs[Material.ORE] * time_left)) and can_produce_robot(
-            old_state, bp, Material.ORE
-        ):
-            next_state = add_new_robot(old_state, bp, Material.ORE)
-            possible_next_states.add(next_state)
-
+    if time_left <= 1:
         # Add the "do nothing" state
-        possible_next_states.add(old_state.copy())
+        next_states.add(old_state.copy())
+    else:
+        if can_buy_robot(old_state, bp, Material.GEODE):
+            next_states.add(buy_new_robot(old_state, bp, Material.GEODE))
+        else:
+            if can_buy_robot(old_state, bp, Material.OBSIDIAN):
+                next_states.add(buy_new_robot(old_state, bp, Material.OBSIDIAN))
 
-    # Add one material for each robot that existed at old state.
-    for next_state in possible_next_states:
-        for material, old_robot_count in old_state.robot_count.items():
-            next_state.material_count[material] += old_robot_count
+            if can_buy_robot(old_state, bp, Material.CLAY):
+                next_states.add(buy_new_robot(old_state, bp, Material.CLAY))
 
-    return possible_next_states
+            if ((old_state.robot_count[Material.ORE] * time_left) < (max_material_costs[Material.ORE] * time_left)) and can_buy_robot(
+                old_state, bp, Material.ORE
+            ):
+                next_states.add(buy_new_robot(old_state, bp, Material.ORE))
+
+            if old_state.material_count[Material.ORE] < max_material_costs[Material.ORE]:
+                # Add the "do nothing" state
+                next_states.add(old_state.copy())
+
+    # collect output from working robots
+    for next_state in next_states:
+        for material, count in old_state.robot_count.items():
+            next_state.material_count[material] += count
+
+    return next_states
 
 
-filename = "19/example"
-# filename = "19/input"
+def dfs(bp: Blueprint, node: TreeNode, stop_time: int, current_time: int = 0) -> int:
+    old_state = node.value
+
+    if current_time == stop_time:
+        return old_state.material_count[Material.GEODE]
+
+    next_states = get_next_possible_states(old_state, bp, current_time, stop_time)
+
+    for next_state in next_states:
+        node.children.append(TreeNode(value=next_state, parent=node))
+
+    max_geodes = 0
+    for child in node.children:
+        child_geodes = dfs(bp, child, stop_time, current_time + 1)
+        max_geodes = max(max_geodes, child_geodes)
+
+    return max_geodes
+
+
+# filename = "19/example"
+filename = "19/input"
 bps = parse(filename)
 
 
 sum_max_quality_levels = 0
+stop_time: int = 24
+
+tmp_max_children = 0
 
 for bp in bps:
-    stop_time: int = 24
-
-    bp_max_quality_level = 0
-
-    prev_states: set[State] = set()
-
+    print(f"Bp: {bp.blueprint_id}.")
     max_material_costs = bp.get_max_material_cost()
+    bp_max_quality_level = 0
+    state = get_initial_state(bp.blueprint_id)
+    root = TreeNode(value=state, parent=None)
+    max_geodes = dfs(bp, root, stop_time)
+    print(f"Max geodes: {max_geodes}.")
+    sum_max_quality_levels += max_geodes * bp.blueprint_id
 
-    for current_time in range(stop_time):
-        t1 = time.perf_counter()
-        current_states: set[State] = set()
 
-        if current_time == 0:
-            current_states.add(get_initial_state(bp.blueprint_id))
-        else:
-            for prev_state in prev_states:
-                current_states |= get_next_possible_states(prev_state, bp, current_time, stop_time)
+# t1 = time.perf_counter()
+# t2 = time.perf_counter()
 
-        max_geodes = sorted([s.material_count[Material.GEODE] for s in current_states], reverse=True)[0]
+# msg = ""
+# msg += f"Bp: {bp.blueprint_id}."
+# msg += f" Minute {str(current_time+1).ljust(2)}."
+# msg += f" States: {str(len(current_states)).ljust(7)}. Max geodes: {max_geodes}. Max quality level: {bp_max_quality_level}."
+# msg += f" Speed: {len(current_states)/(t2-t1):.2f} states/sec. Time: {(t2-t1):.2f} sec."
+# print(msg)
 
-        t2 = time.perf_counter()
-
-        if bp_max_quality_level < (bp.blueprint_id * max_geodes):
-            bp_max_quality_level = bp.blueprint_id * max_geodes
-
-        msg = ""
-        msg += f"Bp: {bp.blueprint_id}."
-        msg += f" Minute {str(current_time+1).ljust(2)}."
-        msg += f" States: {str(len(current_states)).ljust(7)}. Max geodes: {max_geodes}. Max quality level: {bp_max_quality_level}."
-        msg += f" Speed: {len(current_states)/(t2-t1):.2f} states/sec. Time: {(t2-t1):.2f} sec."
-        print(msg)
-
-        prev_states = current_states
-    sum_max_quality_levels += bp_max_quality_level
-
-    pass
 
 print("Part1:", sum_max_quality_levels)
 
