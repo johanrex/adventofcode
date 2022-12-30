@@ -77,6 +77,7 @@ class State:
         return msg
 
 
+# TODO don't need tree.
 @dataclass
 class TreeNode:
     value: State
@@ -93,12 +94,6 @@ def can_buy_robot(state: State, bp: Blueprint, material_to_produce: Material) ->
             return False
 
     return True
-
-
-def add_materials_to_state(state: State):
-    new_state = state.copy()
-    new_state.material_count[material_to_produce] = state.material_count[material_to_produce] + amount
-    return new_state
 
 
 def buy_new_robot(state: State, bp: Blueprint, material_to_produce: Material) -> State:
@@ -256,4 +251,6 @@ for bp in bps:
 # msg += f" Speed: {len(current_states)/(t2-t1):.2f} states/sec. Time: {(t2-t1):.2f} sec."
 # print(msg)
 
+# 1366 too low
+# 1395 troligen rätt svar.
 print("Part1:", sum_max_quality_levels)
