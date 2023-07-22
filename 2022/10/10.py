@@ -15,7 +15,7 @@ def op_addx(current_state: State, value: int) -> State:
     return State(current_state.cycle_nr + 2, current_state.reg_x_val + value)
 
 
-filename = "10/input"
+filename = "10/example"
 
 part1_sum_of_signal_strengths = 0
 cycles_to_check = [x for x in range(20, 220 + 1, 40)]
@@ -44,13 +44,13 @@ with open(filename) as f:
             signal_strength = cycle * val
             part1_sum_of_signal_strengths += signal_strength
             cycles_to_check.pop(0)
-            print(signal_strength)
+            # print(signal_strength)
             # print(part1_sum_of_signal_strengths)
 
 print("Part1:", part1_sum_of_signal_strengths)
 
 
-def print(crt):
+def print_crt(crt):
 
     for line in crt:
         print("".join(line))
