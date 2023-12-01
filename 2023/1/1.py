@@ -82,5 +82,11 @@ with open(filename) as f:
 # part1(data)
 
 
-# wrong 53355
+# Bloody edge cases:
+# 512ninexrqpvktwoner
+# mfourjcxsvss3oneightlxh
+# 188btpjkpdsix3oneightkpl
+# eight26vhjjz4foureightwojk
+# vgchkqhxrbjnlqnvpml77twonejcv
+
 part2(data)
