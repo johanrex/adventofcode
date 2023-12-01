@@ -20,7 +20,7 @@ def part1(data):
 
 
 def part2(data):
-    pattern = r"(?=(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty))"
+    pattern = r"(?=(\d+|one|two|three|four|five|six|seven|eight|nine))"
 
     number_map = {
         "one": 1,
@@ -32,30 +32,18 @@ def part2(data):
         "seven": 7,
         "eight": 8,
         "nine": 9,
-        "ten": 10,
-        "eleven": 11,
-        "twelve": 12,
-        "thirteen": 13,
-        "fourteen": 14,
-        "fifteen": 15,
-        "sixteen": 16,
-        "seventeen": 17,
-        "eighteen": 18,
-        "nineteen": 19,
-        "twenty": 20,
     }
 
     s = 0
     for line in data:
         matches = list(re.finditer(pattern, line, re.IGNORECASE))
         if len(matches) > 0:
-            first = matches[0].group(1)
-            first = str(first)
+            first = str(matches[0].group(1))
+            last = str(matches[-1].group(1))
+
             if first in number_map:
                 first = str(number_map[first])
 
-            last = matches[-1].group(1)
-            last = str(last)
             if last in number_map:
                 last = str(number_map[last])
 
@@ -64,11 +52,10 @@ def part2(data):
 
             line_number = int(first + last)
             s += line_number
-
-            print(line, " -> ", line_number)
         else:
             assert False
 
+    assert 53348 == s
     print("Part2", s)
 
     pass
@@ -79,7 +66,7 @@ filename = "1/input"
 with open(filename) as f:
     data = [line.strip() for line in f.readlines()]
 
-# part1(data)
+part1(data)
 
 
 # Bloody edge cases:
