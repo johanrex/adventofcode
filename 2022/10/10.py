@@ -1,59 +1,66 @@
-from dataclasses import dataclass
-
-
-@dataclass
-class State:
-    cycle_nr: int
-    reg_x_val: int
-
-
-def op_noop(current_state: State) -> State:
-    return State(current_state.cycle_nr + 1, current_state.reg_x_val)
-
-
-def op_addx(current_state: State, value: int) -> State:
-    return State(current_state.cycle_nr + 2, current_state.reg_x_val + value)
-
-
+#filename = "10/example"
 filename = "10/input"
 
-part1_sum_of_signal_strengths = 0
-cycles_to_check = [x for x in range(20, 220 + 1, 40)]
 
-current_state = State(0, 1)
-with open(filename) as f:
-    for line in f:
-        if len(cycles_to_check) == 0:
-            break
+def parse(filename):
+    curr_cycle = 1
+    x_reg = 1
+    cycle_x = {}
 
-        line = line.strip()
-        old_state = current_state
-        if line == "noop":
-            current_state = op_noop(old_state)
-        elif line.startswith("addx"):
-            instr, val = line.split()
-            current_state = op_addx(old_state, int(val))
+    with open(filename) as f:
+        for line in f:
+            line = line.strip()
+            if line == "noop":
+                cycle_x[curr_cycle] = x_reg
+                curr_cycle += 1
+            else:
+                instr, val = line.split()
+                if instr == "addx":
+                    cycle_x[curr_cycle] = x_reg
+                    cycle_x[curr_cycle + 1] = x_reg
 
-        cycle = cycles_to_check[0]
+                    x_reg += int(val)
+                    curr_cycle += 2
+                else:
+                    raise ValueError(f"Unknown instruction {instr}")
 
-        val = None
-        if old_state.cycle_nr <= cycle <= current_state.cycle_nr:
-            val = old_state.reg_x_val
-
-        if val is not None:
-            signal_strength = cycle * val
-            part1_sum_of_signal_strengths += signal_strength
-            cycles_to_check.pop(0)
-            print(signal_strength)
-            # print(part1_sum_of_signal_strengths)
-
-print("Part1:", part1_sum_of_signal_strengths)
+    return cycle_x
 
 
-def print(crt):
+def part1(mapper):
+    sum_of_signal_strengths = 0
+    cycles_to_check = [x for x in range(20, 220 + 1, 40)]
 
-    for line in crt:
-        print("".join(line))
+    for c in cycles_to_check:
+        sum_of_signal_strengths += c * mapper[c]
+
+    return sum_of_signal_strengths
 
 
-crt = [["."] * 40] * 6
+def part2(mapper):
+    crt_width = 40
+    crt_height = 6
+
+    crt = ["."] * (crt_width * crt_height)
+
+    def print_crt(crt):
+        start = 0
+        end = crt_width
+
+        while end <= len(crt):
+            print("".join(crt[start:end]))
+            start += crt_width
+            end += crt_width
+
+    for cycle in range(1, len(crt) + 1):
+        x_val = mapper[cycle]
+        cycle_mod = cycle % crt_width
+        if x_val <= cycle_mod <= x_val + 2:
+            crt[cycle - 1] = "#"
+
+    print_crt(crt)
+
+
+cycle_x_mapper = parse(filename)
+print("Part1:", part1(cycle_x_mapper))
+part2(cycle_x_mapper)
