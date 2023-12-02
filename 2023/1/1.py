@@ -22,7 +22,7 @@ def part1(data):
 def part2(data):
     words = "one two three four five six seven eight nine".split()
     number_map = {word: str(i) for i, word in enumerate(words, 1)}
-    pattern = "(?=(\d+|" + "|".join(words) + "))"
+    pattern = r"(?=(\d+|" + "|".join(words) + "))"
 
     s = 0
     for line in data:
