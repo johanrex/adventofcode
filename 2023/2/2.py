@@ -71,13 +71,11 @@ def part1(game_infos):
         valid = True
         for handful in gi.handfulls:
             for cube_info in handful.cube_infos:
-                if cube_info.color == RED and cube_info.amount > max_red:
-                    valid = False
-                    break
-                elif cube_info.color == GREEN and cube_info.amount > max_green:
-                    valid = False
-                    break
-                elif cube_info.color == BLUE and cube_info.amount > max_blue:
+                if (
+                    (cube_info.color == RED and cube_info.amount > max_red)
+                    or (cube_info.color == GREEN and cube_info.amount > max_green)
+                    or (cube_info.color == BLUE and cube_info.amount > max_blue)
+                ):
                     valid = False
                     break
             if not valid:
@@ -86,14 +84,37 @@ def part1(game_infos):
         if valid:
             game_id_sum += gi.game_id
 
+    assert game_id_sum == 2879
     print("Part1", game_id_sum)
+
+
+def part2(game_infos):
+    s = 0
+
+    for gi in game_infos:
+        max_red = 0
+        max_green = 0
+        max_blue = 0
+        for handful in gi.handfulls:
+            for cube_info in handful.cube_infos:
+                if cube_info.color == RED:
+                    max_red = max(max_red, cube_info.amount)
+                elif cube_info.color == GREEN:
+                    max_green = max(max_green, cube_info.amount)
+                elif cube_info.color == BLUE:
+                    max_blue = max(max_blue, cube_info.amount)
+
+        power = max_red * max_green * max_blue
+        # print("power:", power)
+        s += power
+
+    assert s == 65122
+    print("Part2", s)
 
 
 # filename = "2/example"
 filename = "2/input"
 game_infos = parse(filename)
 
-for gi in game_infos:
-    print(gi)
-
 part1(game_infos)
+part2(game_infos)
