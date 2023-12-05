@@ -22,6 +22,8 @@ So, seed number 10 corresponds to soil number 10.
 """
 
 from dataclasses import dataclass
+import math
+from multiprocessing import Pool
 
 
 @dataclass
@@ -90,24 +92,86 @@ def parse(filename):
     return seeds, category_maps
 
 
+def map_seed(seed, category_maps):
+    val = seed
+
+    for category_map in category_maps:
+        for cm in category_map:
+            if cm.src_start <= val <= cm.src_end:
+                offset = val - cm.src_start
+                val = cm.dst_start + offset
+                break
+    return val
+
+
 def part1(seeds, category_maps):
     location_nrs = []
     for seed in seeds:
-        val = seed
-
-        for category_map in category_maps:
-            for cm in category_map:
-                if cm.src_start <= val <= cm.src_end:
-                    offset = val - cm.src_start
-                    val = cm.dst_start + offset
-                    break
-        # print(seed, " -> ", val)
+        val = map_seed(seed, category_maps)
         location_nrs.append(val)
 
     print("Part1:", min(location_nrs))
 
 
-# filename = "5/example"
-filename = "5/input"
-seeds, category_maps = parse(filename)
-part1(seeds, category_maps)
+def eval_range(seed_range, category_maps):
+    min_location_nr = math.inf
+    location_nrs = []
+    for seed in seed_range:
+        val = map_seed(seed, category_maps)
+        min_location_nr = min(min_location_nr, val)
+        location_nrs.append(val)
+
+    return min_location_nr
+
+
+def eval_wrapper(args):
+    return eval_range(*args)
+
+
+def part2(seed_range_info, category_maps):
+    seed_ranges = []
+
+    for i in range(0, len(seed_range_info), 2):
+        seed_start = seed_range_info[i]
+        nr_seeds = seed_range_info[i + 1]
+
+        print(f"nr_seeds in range: {nr_seeds:,}")
+
+        seed_end = seed_start + nr_seeds - 1
+
+        seed_range = range(seed_start, seed_end + 1)
+        seed_ranges.append(seed_range)
+
+        # range_limit = 10_000_000
+
+        # if seed_end - seed_start < range_limit:
+        #     seed_range = range(seed_start, seed_end + 1)
+        #     seed_ranges.append(seed_range)
+        # else:
+        #     seed_range1 = range(seed_start, seed_start + range_limit)
+        #     seed_range2 = range(seed_end, seed_end - range_limit, -1)
+        #     seed_ranges.append(seed_range1)
+        #     seed_ranges.append(seed_range2)
+
+    print("nr seed ranges", len(seed_ranges))
+
+    with Pool() as p:
+        min_range_vals = p.map(
+            eval_wrapper, [(seed_range, category_maps) for seed_range in seed_ranges]
+        )
+
+    # min_range_vals = []
+    # for seed_range in seed_ranges:
+    #     min_val = eval_range(seed_range, category_maps)
+    #     min_range_vals.append(min_val)
+
+    # too high 49453128
+    print("Part2:", min(min_range_vals))
+
+
+if __name__ == "__main__":
+    # filename = "5/example"
+    filename = "5/input"
+    seeds, category_maps = parse(filename)
+    # part1(seeds, category_maps)
+    part2(seeds, category_maps)
