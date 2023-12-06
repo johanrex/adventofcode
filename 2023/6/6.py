@@ -35,6 +35,7 @@ def part1(times, distances):
         record_cnts.append(record_cnt)
 
     p = math.prod(record_cnts)
+    assert p == 608902
     print("Part 1:", p)
 
 
@@ -50,6 +51,7 @@ def part2(times, distances):
         if distance > max_distance:
             record_cnt += 1
 
+    assert record_cnt == 46173809
     print("Part 2:", record_cnt)
 
 
