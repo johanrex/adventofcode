@@ -1,11 +1,4 @@
-from dataclasses import dataclass
 import math
-
-
-@dataclass
-class Race:
-    time: int
-    distance: int
 
 
 def parse(filename):
