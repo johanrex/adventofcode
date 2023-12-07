@@ -106,7 +106,7 @@ def compare_hand_info(hi1, hi2):
     return compare_hand(hi1.hand, hi2.hand)
 
 
-def part1(hand_infos):
+def part2(hand_infos):
     hand_infos_sorted = sorted(hand_infos, key=cmp_to_key(compare_hand_info))
 
     total_winning = 0
@@ -114,7 +114,7 @@ def part1(hand_infos):
         winning = rank * hi.bid
         total_winning += winning
 
-    print("Part 1:", total_winning)
+    print("Part 2:", total_winning)
 
 
 # filename = "7/example"
@@ -122,4 +122,4 @@ filename = "7/input"
 
 hand_infos = parse(filename)
 
-part1(hand_infos)
+part2(hand_infos)
