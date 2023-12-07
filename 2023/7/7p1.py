@@ -73,9 +73,6 @@ def get_hand_type(hand):
 
 
 def compare_hand(h1, h2):
-    # Custom compare function
-    # Return negative if x < y, zero if x == y, positive if x > y.
-
     t1 = get_hand_type(h1)
     t2 = get_hand_type(h2)
 
