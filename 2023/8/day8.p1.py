@@ -1,6 +1,3 @@
-import re
-
-
 def parse(filename):
     with open(filename) as f:
         line = f.readline().strip()
@@ -36,7 +33,6 @@ def get_next_move(moves):
 
 def part1(moves, move_lookup):
     start = "AAA"
-    end = "ZZZ"
 
     move_gen = get_next_move(moves)
     curr = start
@@ -47,8 +43,6 @@ def part1(moves, move_lookup):
 
         key = curr + next_move
         step_to = move_lookup[key]
-
-        # print(f"{curr} going {next_move} to {step_to}")
 
         curr = step_to
         steps += 1
