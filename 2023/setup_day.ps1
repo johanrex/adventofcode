@@ -3,9 +3,11 @@ $day = (Get-Date).Day
 $folder = "day$day"
 
 if (-not (Test-Path $folder)) {
-    mkdir $day
+    mkdir $folder
     New-Item -Path ".\$folder\$day.py" -ItemType File # create the py file
     New-Item -Path ".\$folder\example" -ItemType File # create the example file
+
+    copy-item .\template.py $folder\day$day.py # copy the template file
 
     Write-Host "Created files for day $day"
 }
