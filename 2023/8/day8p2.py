@@ -1,5 +1,3 @@
-import re
-import networkx as nx
 import sympy
 import math
 
@@ -9,33 +7,28 @@ def parse(filename):
         line = f.readline().strip()
         moves = [c for c in line]
 
-        # G = nx.Graph()
-        G = nx.MultiDiGraph()
+        node_names = []
+        move_lookup = {}
 
         line = f.readline().strip()
         assert line == ""
 
         for line in f:
             line = line.strip()
+
             if line == "":
                 break
-            match = re.match(r"(\w+)\s*=\s*\((\w+),\s*(\w+)\)", line)
-            node_name = match.group(1)
-            left = match.group(2)
-            right = match.group(3)
 
-            if not G.has_node(node_name):
-                G.add_node(node_name, name=node_name)
-            if not G.has_node(left):
-                G.add_node(left, name=left)
-            if not G.has_node(right):
-                G.add_node(right, name=right)
+            node_name = line[0:3]
+            left = line[7:10]
+            right = line[12:15]
 
-            G.add_edge(node_name, left, label=f"{node_name}L")
-            G.add_edge(node_name, right, label=f"{node_name}R")
-            pass
+            node_names.append(node_name)
 
-    return moves, G
+            move_lookup[f"{node_name}L"] = left
+            move_lookup[f"{node_name}R"] = right
+
+    return moves, node_names, move_lookup
 
 
 def get_next_move_generator(moves):
@@ -51,15 +44,14 @@ def all_ends_with_z(lst):
     return True
 
 
-def get_steps(start, edge_lookup, move_gen):
-    curr = start
+def get_steps(curr, move_lookup, move_gen):
     steps = 0
     while not curr.endswith("Z"):
         next_move = next(move_gen)
 
         key = curr + next_move
 
-        step_to = edge_lookup[key]
+        step_to = move_lookup[key]
         curr = step_to
 
         steps += 1
@@ -67,24 +59,15 @@ def get_steps(start, edge_lookup, move_gen):
     return steps
 
 
-def part2(moves, G):
-    edge_lookup = {}
-    edges = G.edges(data=True)
-
-    # create edge lookup
-    for u, v, data in G.edges(data=True):
-        pass
-        edge_name = data.get("label")
-        edge_lookup[edge_name] = v
-
-    curr_nodes = [node_name for node_name in list(G.nodes()) if node_name.endswith("A")]
+def part2(moves, node_names, move_lookup):
+    curr_nodes = [node_name for node_name in node_names if node_name.endswith("A")]
 
     steps_list = []
     for curr in curr_nodes:
         # Start new generator for each starting node
         move_gen = get_next_move_generator(moves)
 
-        steps = get_steps(curr, edge_lookup, move_gen)
+        steps = get_steps(curr, move_lookup, move_gen)
         steps_list.append(steps)
 
     common_primes = set()
@@ -102,5 +85,5 @@ def part2(moves, G):
 # filename = "8/example_p2"
 filename = "8/input"
 
-moves, G = parse(filename)
-part2(moves, G)
+moves, node_names, move_lookup = parse(filename)
+part2(moves, node_names, move_lookup)
