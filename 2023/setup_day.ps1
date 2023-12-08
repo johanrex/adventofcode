@@ -33,3 +33,5 @@ if (-not (Test-Path $day/input)) {
 else {
     Write-Host "Input for day $day already exists"
 }
+
+#TODO template file with import, parser, timer, part1, part 2

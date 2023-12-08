@@ -1,5 +1,7 @@
 import re
 import networkx as nx
+import sympy
+import math
 
 
 def parse(filename):
@@ -36,7 +38,7 @@ def parse(filename):
     return moves, G
 
 
-def get_next_move(moves):
+def get_next_move_generator(moves):
     while True:
         for move in moves:
             yield move
@@ -49,10 +51,27 @@ def all_ends_with_z(lst):
     return True
 
 
+def get_steps(start, edge_lookup, move_gen):
+    curr = start
+    steps = 0
+    while not curr.endswith("Z"):
+        next_move = next(move_gen)
+
+        key = curr + next_move
+
+        step_to = edge_lookup[key]
+        curr = step_to
+
+        steps += 1
+
+    return steps
+
+
 def part2(moves, G):
     edge_lookup = {}
     edges = G.edges(data=True)
 
+    # create edge lookup
     for u, v, data in G.edges(data=True):
         pass
         edge_name = data.get("label")
@@ -60,20 +79,24 @@ def part2(moves, G):
 
     curr_nodes = [node_name for node_name in list(G.nodes()) if node_name.endswith("A")]
 
-    move_gen = get_next_move(moves)
-    steps = 0
-    print("starting part 2")
+    steps_list = []
+    for curr in curr_nodes:
+        # Start new generator for each starting node
+        move_gen = get_next_move_generator(moves)
 
-    while not all_ends_with_z(curr_nodes):
-        next_move = next(move_gen)
+        steps = get_steps(curr, edge_lookup, move_gen)
+        steps_list.append(steps)
 
-        keys = [curr + next_move for curr in curr_nodes]
-        step_tos = [edge_lookup[key] for key in keys]
+    common_primes = set()
 
-        curr_nodes = step_tos
-        steps += 1
+    for steps in steps_list:
+        primes = sympy.primefactors(steps)
+        print(f"{steps} has prime factors {primes}")
 
-    print("Part 2:", steps)
+        common_primes.update(primes)
+
+    print("all primes", common_primes)
+    print("prod", math.prod(common_primes))
 
 
 # filename = "8/example_p2"
