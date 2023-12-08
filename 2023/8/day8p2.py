@@ -113,6 +113,7 @@ def part2(moves, node_names, move_lookup):
 
     print("...")
 
+    # incidentally, this is already implemented in the math.lcm function
     print("Steps list", steps_list)
     print("lcm", math.lcm(*steps_list))
 
