@@ -1,8 +1,3 @@
-from dataclasses import dataclass
-import math
-import re
-
-
 def parse(filename):
     histories = []
     with open(filename) as f:
@@ -41,8 +36,10 @@ def extrapolate(history, last=True):
     for seq in reversed(sequences):
         if last:
             val = seq[-1]
-        # print(last_val)
-        new_val += val
+            new_val += val
+        else:
+            val = seq[0]
+            new_val = val - new_val
         pass
 
     return new_val
@@ -54,26 +51,23 @@ def part1(histories):
         nr = extrapolate(history)
         s += nr
 
-    # wrong 1974913326
+    assert s == 1974913025
     print("Part 1:", s)
 
 
 def part2(histories):
-    print("Part 2:", histories)
+    s = 0
+    for history in histories:
+        nr = extrapolate(history, last=False)
+        s += nr
+
+    assert 884 == s
+    print("Part 2:", s)
 
 
 # filename = "day9/example"
 filename = "day9/input"
 
-# nrs = list(
-#     map(
-#         int,
-#         "23 43 78 139 250 470 936 1950 4142 8745 18017 35839 68507 125720 221745 376714 617977 981399 1512448 2266875 3310736".split(),
-#     )
-# )
-# print(extrapolate(nrs))
-
-
 histories = parse(filename)
 part1(histories)
-# part2(histories)
+part2(histories)
