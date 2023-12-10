@@ -178,7 +178,7 @@ def part1(cycle):
     # print(path)
 
     cycle = find_cycle((row, col), grid)
-    # print_path(grid, cycle)
+    print_path(grid, cycle)
 
     farthest_cell = math.ceil(len(cycle) / 2)
 
@@ -212,6 +212,17 @@ def remove_border(bordered_grid) -> list[list[str]]:
     return stripped_grid
 
 
+def is_inside_polygon(vertex, grid, cycle) -> bool:
+    row, col = vertex
+    chars = "|LJ7F"
+    c = cycle
+    vertices_before = [(r, c) for r, c in c if r == row and c < col]
+    walls_before = [(r, c) for r, c in vertices_before if grid[r][c] in chars]
+    n = len(walls_before)
+
+    return n % 2 == 1
+
+
 def replace_s(grid):
     vertex_s = find_s(grid)
     vn = get_neighbors(grid, vertex_s)
@@ -234,65 +245,47 @@ def replace_s(grid):
     return grid
 
 
-def zoom_in_grid(grid) -> list[list[str]]:
-    def replace(row, col):
-        val = grid[row][col]
-        zoomed = zoom_lookup[val]
-        new_grid_row_offset = 3 * row
-        new_grid_col_offset = 3 * col
-        for r in range(len(zoomed)):
-            for c in range(len(zoomed[r])):
-                zoomed_in_grid[new_grid_row_offset + r][
-                    new_grid_col_offset + c
-                ] = zoomed[r][c]
-
-    row_3x = ["."] * 3 * len(grid[0])
-    zoomed_in_grid = [row_3x.copy() for _ in range(3 * len(grid))]
-
-    zoom_lookup = {
-        "|": [[".", "|", "."], [".", "|", "."], [".", "|", "."]],
-        "-": [[".", ".", "."], ["-", "-", "-"], [".", ".", "."]],
-        "L": [[".", "|", "."], [".", "L", "-"], [".", ".", "."]],
-        "J": [[".", "|", "."], ["-", "J", "."], [".", ".", "."]],
-        "7": [[".", ".", "."], ["-", "7", "."], [".", "|", "."]],
-        "F": [[".", ".", "."], [".", "F", "-"], [".", "|", "."]],
-        ".": [[".", ".", "."], [".", ".", "."], [".", ".", "."]],
-    }
-
-    for row in range(len(grid)):
-        for col in range(len(grid[row])):
-            replace(row, col)
-
-    return zoomed_in_grid
-
-
-def count_inside_zoomed_grid(grid):
-    nr_inside = 0
-    for row in range(1, len(grid), 3):
-        for col in range(1, len(grid[0]), 3):
-            if grid[row][col] == ".":
-                nr_inside += 1
-
-    return nr_inside
-
-
 def part2(grid):
     row, col = find_s(grid)
+    # row, col = 1, 1
+
+    # print(path)
+    # print_path(grid, path)
 
     cycle = find_cycle((row, col), grid)
     replace_s(grid)
+
     replace_not_in_cycle(grid, cycle, ".")
-    grid = zoom_in_grid(grid)
-    flood_fill(grid, 0, 0, "O")
+
     # print_grid(grid)
 
-    nr_inside = count_inside_zoomed_grid(grid)
-    print("Part 2:", nr_inside)
+    flood_fill(grid, 0, 0, "O")
+    print_grid(grid)
+
+    nr_inside_polygon = 0
+    for row in range(len(grid)):
+        for col in range(len(grid[row])):
+            # for col in range(len(grid[row]) - 1, -1, -1):
+            if grid[row][col] == ".":
+                if is_inside_polygon((row, col), grid, cycle):
+                    grid[row][col] = "I"
+                    nr_inside_polygon += 1
+                else:
+                    grid[row][col] = "O"
+
+    print_grid(grid)
+
+    print("Part 2:", nr_inside_polygon)
+
+    # row, col = 0, 0
+    # bordered_grid = add_border(grid, ".")
+    # flood_fill(bordered_grid, 1, 1, "O")
+    # grid = remove_border(bordered_grid)
 
 
 # filename = "day10/example"
 filename = "day10/input"
 
 grid = parse(filename)
-part1(grid)
+# part1(grid)
 part2(grid)
