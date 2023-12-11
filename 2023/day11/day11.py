@@ -50,6 +50,24 @@ def expand(grid):
     return grid
 
 
+def get_empty_row_cols(grid):
+    # rows
+    empty_rows = []
+    for r, line in enumerate(grid):
+        if all(c == "." for c in line):
+            empty_rows.append(r)
+
+    grid = flip_grid(grid)
+
+    # cols
+    empty_cols = []
+    for c_nr, line in enumerate(grid):
+        if all(c == "." for c in line):
+            empty_cols.append(c_nr)
+
+    return empty_rows, empty_cols
+
+
 def get_nodes(grid):
     nodes = []
     for row in range(len(grid)):
@@ -59,42 +77,9 @@ def get_nodes(grid):
     return nodes
 
 
-from collections import deque
-
-
-def shortest_path(grid, start, end):
-    rows, cols = len(grid), len(grid[0])
-    queue = deque([(start, 0)])
-    visited = set([start])
-
-    while queue:
-        (x, y), step = queue.popleft()
-
-        if (x, y) == end:
-            return step
-
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nx, ny = x + dx, y + dy
-
-            if (
-                0 <= nx < rows
-                and 0 <= ny < cols
-                # and grid[nx][ny] == "."
-                and (nx, ny) not in visited
-            ):
-                queue.append(((nx, ny), step + 1))
-                visited.add((nx, ny))
-
-    return -1  # No path found
-
-
 def part1(grid):
     grid = expand(grid)
-    # print("expanded:")
-    # print_grid(grid)
-
     nodes = get_nodes(grid)
-    # print("nodes:", nodes)
 
     # nodes pair-wise
     pairs = list(combinations(nodes, 2))
@@ -103,16 +88,54 @@ def part1(grid):
 
     for pair in pairs:
         start, end = pair
-        # print(start, end)
-        d = shortest_path(grid, start, end)
+        startx, starty = start
+        endx, endy = end
+        d = abs(startx - endx) + abs(starty - endy)
+
         s += d
 
     print("Part 1:", s)
 
 
 def part2(grid):
-    pass
-    # print("Part 2:", grid)
+    empty_rows, empty_cols = get_empty_row_cols(grid)
+
+    empty_rows.sort(reverse=True)
+    empty_cols.sort(reverse=True)
+
+    nodes = get_nodes(grid)
+
+    expansion_nr = 1_000_000
+    expansion_nr = expansion_nr - 1
+
+    nodes.sort()
+    for empty_row in empty_rows:
+        for i, node in enumerate(nodes):
+            if node[0] > empty_row:
+                new_node = (node[0] + expansion_nr, node[1])
+                nodes[i] = new_node
+
+    nodes.sort(key=lambda node: node[1])
+    for empty_col in empty_cols:
+        for i, node in enumerate(nodes):
+            if node[1] > empty_col:
+                new_node = (node[0], node[1] + expansion_nr)
+                nodes[i] = new_node
+
+    # nodes pair-wise
+    pairs = list(combinations(nodes, 2))
+
+    s = 0
+
+    for pair in pairs:
+        start, end = pair
+        startx, starty = start
+        endx, endy = end
+        d = abs(startx - endx) + abs(starty - endy)
+
+        s += d
+
+    print("Part 2:", s)
 
 
 # filename = "day11/example"
