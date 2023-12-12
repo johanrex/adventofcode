@@ -5,7 +5,7 @@ import re
 
 def parse(filename):
     with open(filename) as f:
-        lines = [line for line in f.readline().strip()]
+        lines = [line.strip() for line in f.readlines()]
         return lines
 
 
@@ -23,3 +23,5 @@ filename = "dayX/example"
 lines = parse(filename)
 part1(lines)
 part2(lines)
+
+# TODO add timer to measure performance
