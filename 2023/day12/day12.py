@@ -25,12 +25,11 @@ def parse(filename):
     return problem_infos
 
 
-def create_re_from_checksums(checksums):
+def create_regex_from_checksums(checksums):
     optional_sep_part = r"\.*"
     mandatory_sep_part = r"\.+"
     re_str = optional_sep_part
     for cnt in checksums:
-        # re_str += f"#{{{cnt, cnt}}}"
         re_str += "#" * cnt
         re_str += mandatory_sep_part
 
@@ -86,21 +85,19 @@ def get_valid_state_cnt(corrupt_state, checksums):
     elements = ["#", "."]
     gen = itertools.product(elements, repeat=corrupt_cnt)
 
-    re = create_re_from_checksums(checksums)
+    regex = create_regex_from_checksums(checksums)
 
     # print("".join(corrupt_state), ",".join([str(c) for c in checksums]))
     state_candidate = corrupt_state.copy()
     valid_cnt = 0
     while items := next(gen, None):
-        # TODO may not need to copy
-
         item_offset = 0
         for i, c in enumerate(corrupt_state):
             if c == "?":
                 state_candidate[i] = items[item_offset]
                 item_offset += 1
 
-        if is_valid(state_candidate, re):
+        if is_valid(state_candidate, regex):
             # print("\t", "".join(state_candidate))
             valid_cnt += 1
 
@@ -116,19 +113,22 @@ def unfold(corrupt_state: list[str], checksums: list[int]):
 
 
 def part1(problem_infos):
+    start_time = time.time()
+
     s = 0
     for problem_info in problem_infos:
         n = get_valid_state_cnt(problem_info.corrupt_state, problem_info.checksums)
         s += n
+
     print("Part 1:", s)
+    print("Time elapsed:", time.time() - start_time)
 
 
 def part2(problem_infos):
+    start_time = time.time()
+
     s = 0
     for problem_info in problem_infos:
-        corrupt_state = problem_info.corrupt_state
-        checksums = problem_info.checksums
-
         # unfold
         corrupt_state, checksums = unfold(
             problem_info.corrupt_state, problem_info.checksums
@@ -138,16 +138,13 @@ def part2(problem_infos):
         s += n
 
     print("Part 2:", s)
+    print("Time elapsed:", time.time() - start_time)
 
 
-start_time = time.time()
-# filename = "day12/example"
-filename = "day12/input"
+filename = "day12/example"
+# filename = "day12/input"
 
 problem_infos = parse(filename)
 part1(problem_infos)
 
 part2(problem_infos)
-
-end_time = time.time()
-print("Time elapsed:", end_time - start_time)
