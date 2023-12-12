@@ -10,40 +10,70 @@ def parse(filename):
         return rows
 
 
-def validate(state, checksums):
-    checksums_offset = 0
-    checksum_cnt = 0
-    dmg_cnt = 0
-    for s in state:
-        if s == ".":
-            if checksum_cnt != dmg_cnt:
-                return False
+def create_re_from_checksums(checksums):
+    optional_sep_part = r"\.*"
+    mandatory_sep_part = r"\.+"
+    re_str = optional_sep_part
+    for cnt in checksums:
+        # re_str += f"#{{{cnt, cnt}}}"
+        re_str += "#" * cnt
+        re_str += mandatory_sep_part
 
-            dmg_cnt = 0
-            continue
-        elif s == "#":
-            if dmg_cnt == 0:
-                if checksum_cnt == len(checksums):
-                    return False
+    # remove last mandatory sep part
+    re_str = re_str[: -len(mandatory_sep_part)]
 
-                checksum_cnt = checksums[checksums_offset]
-                checksums_offset += 1
+    # add optional sep part
+    re_str += optional_sep_part
 
-            dmg_cnt += 1
-        else:
-            # TODO optimize away this check
-            raise Exception("Unknown state: " + s)
+    # add EOL
+    re_str += "$"
 
-    if checksum_cnt != dmg_cnt:
-        return False
+    # print("using this re:", re_str)
+    return re.compile(re_str)
 
-    return True
+
+def is_valid(state, re):
+    return re.match("".join(state)) is not None
+
+
+# def validate(state, checksums):
+#     checksums_offset = 0
+#     checksum_cnt = 0
+#     dmg_cnt = 0
+#     for s in state:
+#         if s == ".":
+#             if checksum_cnt != dmg_cnt:
+#                 return False
+
+#             dmg_cnt = 0
+#             continue
+#         elif s == "#":
+#             if dmg_cnt == 0:
+#                 if checksum_cnt == len(checksums):
+#                     return False
+
+#                 checksum_cnt = checksums[checksums_offset]
+#                 checksums_offset += 1
+
+#             dmg_cnt += 1
+#         else:
+#             # TODO optimize away this check
+#             raise Exception("Unknown state: " + s)
+
+#     if checksum_cnt != dmg_cnt:
+#         return False
+
+#     return True
 
 
 def get_valid_state_cnt(corrupt_state, checksums):
     corrupt_cnt = corrupt_state.count("?")
     elements = ["#", "."]
     gen = itertools.product(elements, repeat=corrupt_cnt)
+
+    re = create_re_from_checksums(checksums)
+
+    # print("".join(corrupt_state), ",".join([str(c) for c in checksums]))
 
     valid_cnt = 0
     while items := next(gen, None):
@@ -55,7 +85,8 @@ def get_valid_state_cnt(corrupt_state, checksums):
                 state_candidate[i] = items[item_offset]
                 item_offset += 1
 
-        if validate(state_candidate, checksums):
+        if is_valid(state_candidate, re):
+            # print("\t", "".join(state_candidate))
             valid_cnt += 1
 
     return valid_cnt
@@ -64,7 +95,7 @@ def get_valid_state_cnt(corrupt_state, checksums):
 def part1(rows):
     s = 0
     for row in rows:
-        print(row, end="")
+        # print(row, end="")
 
         record, checksums = row.split(" ")
         record = [c for c in record]
@@ -72,7 +103,7 @@ def part1(rows):
         checksums = [int(c) for c in checksums]
 
         n = get_valid_state_cnt(record, checksums)
-        print(" -> ", n)
+        # print(" -> ", n)
         s += n
 
     print("Part 1:", s)
@@ -82,8 +113,8 @@ def part2(rows):
     print("Part 2:", rows)
 
 
-filename = "day12/example"
-# filename = "day12/input"
+# filename = "day12/example"
+filename = "day12/input"
 
 rows = parse(filename)
 part1(rows)
