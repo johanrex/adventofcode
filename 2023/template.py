@@ -10,11 +10,11 @@ def parse(filename):
 
 
 def part1(lines):
-    print("Part 1:", lines)
+    print("Part 1:", -1)
 
 
 def part2(lines):
-    print("Part 2:", lines)
+    print("Part 2:", -1)
 
 
 filename = "dayX/example"
