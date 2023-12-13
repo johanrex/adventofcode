@@ -1,13 +1,11 @@
-from dataclasses import dataclass
-import math
-import re
+import time
 
 Grid = list[str]
 
 
 def parse(filename: str) -> list[Grid]:
-    grids = []
-    grid = None
+    grids: list[Grid] = []
+    grid: Grid | None = None
     with open(filename) as f:
         for line in f:
             line = line.strip()
@@ -55,7 +53,6 @@ def get_perfect_mirror_idx(grid: Grid, skip: int = -1) -> int:
     return mirror_idx
 
 
-# TODO wtf happens if we have a grid with all identical rows/cols?
 def is_perfect_mirror(start_row_idx: int, grid: Grid) -> bool:
     assert start_row_idx >= 0 or start_row_idx < len(grid) - 1
 
@@ -106,7 +103,6 @@ def get_grid_sum(grid: Grid, skip_row=-1, skip_col=-1) -> int:
 
 
 def smudge(row_idx: int, col_idx: int, grid: Grid) -> Grid:
-    # TODO verify that our copy is a deep copy in practice
     grid = grid.copy()
 
     row = list(grid[row_idx])  # Convert the string to a list
@@ -158,6 +154,8 @@ def part2(grids: list[Grid]):
     print("Part 2:", s)
 
 
+start_time = time.time()
+
 # filename = "day13/example"
 filename = "day13/input"
 
@@ -165,4 +163,6 @@ grids = parse(filename)
 part1(grids)
 part2(grids)
 
-# TODO add timer to measure performance
+end_time = time.time()
+
+print("Time:", end_time - start_time)
