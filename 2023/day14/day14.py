@@ -132,7 +132,6 @@ def tilt_north(grid: Grid) -> Grid:
         for rock in all_round_rocks_in_col:
             while can_step(grid, rock, NORTH):
                 rock = step(grid, rock, NORTH)
-                # print(f"{rock} moved north one step")
 
     return grid
 
