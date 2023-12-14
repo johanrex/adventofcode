@@ -87,28 +87,33 @@ def print_grid(grid: Grid):
         print(s)
 
 
-def can_step_north(grid: Grid, rock: GridItem) -> bool:
+def can_step(grid: Grid, rock: GridItem, direction: int) -> bool:
     row, col, _ = rock
 
-    if row > 0:
-        row_dest = row - 1
-        return grid.get_at(row_dest, col) == "."
+    d_row, d_col = DIRECTIONS[direction]
 
-    return False
+    row_dest = row + d_row
+    col_dest = col + d_col
+    if (0 <= row_dest < grid.n_rows) and (0 <= col_dest < grid.n_cols):
+        return grid.get_at(row_dest, col_dest) == "."
+    else:
+        return False
 
 
-def step_north(grid: Grid, rock: GridItem) -> GridItem:
-    assert can_step_north(grid, rock)
+def step(grid: Grid, rock: GridItem, direction) -> GridItem:
+    assert can_step(grid, rock, direction)
 
     row, col, c = rock
+    d_row, d_col = DIRECTIONS[direction]
+    row_dest = row + d_row
+    col_dest = col + d_col
 
-    if row > 0:
-        row_dest = row - 1
-        t = grid.get_at(row_dest, col)
+    if (0 <= row_dest < grid.n_rows) and (0 <= col_dest < grid.n_cols):
+        t = grid.get_at(row_dest, col_dest)
         if t == ".":
             grid.remove_at(row, col)
-            grid.set_at(row_dest, col, c)
-            rock = (row_dest, col, c)
+            grid.set_at(row_dest, col_dest, c)
+            rock = (row_dest, col_dest, c)
 
     return rock
 
@@ -125,8 +130,8 @@ def tilt_north(grid: Grid) -> Grid:
         ]
 
         for rock in all_round_rocks_in_col:
-            while can_step_north(grid, rock):
-                rock = step_north(grid, rock)
+            while can_step(grid, rock, NORTH):
+                rock = step(grid, rock, NORTH)
                 # print(f"{rock} moved north one step")
 
     return grid
@@ -151,6 +156,7 @@ def part1(grid: Grid):
 
     total_load = calc_total_load(grid)
 
+    assert 109424 == total_load
     print("")
     print("Part 1:", total_load)
 
