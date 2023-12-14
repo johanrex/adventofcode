@@ -1,12 +1,13 @@
 from dataclasses import dataclass, field
 import math
 import re
+from tqdm import tqdm
 
 NORTH = 0
 WEST = 1
-EAST = 2
-SOUTH = 3
-DIRECTIONS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+SOUTH = 2
+EAST = 3
+DIRECTIONS = [(-1, 0), (0, -1), (1, 0), (0, 1)]
 
 GridItem = tuple[int, int, str]
 
@@ -22,6 +23,7 @@ class Grid:
         items = []
         for k, v in self._lookup.items():
             items.append((k[0], k[1], v))
+
         return items
 
     def is_empty(self, row: int, col: int) -> bool:
@@ -86,6 +88,8 @@ def print_grid(grid: Grid):
         s = "".join(r)
         print(s)
 
+    print("")
+
 
 def can_step(grid: Grid, rock: GridItem, direction: int) -> bool:
     row, col, _ = rock
@@ -118,21 +122,48 @@ def step(grid: Grid, rock: GridItem, direction) -> GridItem:
     return rock
 
 
-def tilt_north(grid: Grid) -> Grid:
+def tilt(grid: Grid, direction) -> Grid:
     # TODO verify that they are sorted
     all_rocks = grid.get_items()
 
-    # for each column
-    for col_idx in range(grid.n_cols):
-        pass
-        all_round_rocks_in_col = [
-            (r, c, t) for r, c, t in all_rocks if c == col_idx and t == "O"
-        ]
+    if direction == NORTH or direction == SOUTH:
+        for col_idx in range(grid.n_cols):
+            round_rocks_affected = [
+                (r, c, t) for r, c, t in all_rocks if c == col_idx and t == "O"
+            ]
 
-        for rock in all_round_rocks_in_col:
-            while can_step(grid, rock, NORTH):
-                rock = step(grid, rock, NORTH)
+            if direction == NORTH:
+                round_rocks_affected.sort()
 
+            else:
+                round_rocks_affected.sort(reverse=True)
+
+            for rock in round_rocks_affected:
+                while can_step(grid, rock, direction):
+                    rock = step(grid, rock, direction)
+    elif direction == WEST or direction == EAST:
+        for row_idx in range(grid.n_rows):
+            round_rocks_affected = [
+                (r, c, t) for r, c, t in all_rocks if r == row_idx and t == "O"
+            ]
+
+            if direction == WEST:
+                round_rocks_affected.sort()
+
+            else:
+                round_rocks_affected.sort(reverse=True)
+
+            for rock in round_rocks_affected:
+                while can_step(grid, rock, direction):
+                    rock = step(grid, rock, direction)
+    return grid
+
+
+def cycle(grid: Grid) -> Grid:
+    tilt(grid, NORTH)
+    tilt(grid, WEST)
+    tilt(grid, SOUTH)
+    tilt(grid, EAST)
     return grid
 
 
@@ -146,27 +177,37 @@ def calc_total_load(grid: Grid) -> int:
 
 
 def part1(grid: Grid):
-    print_grid(grid)
-
-    tilt_north(grid)
-    print("")
-    print("tilted north")
-    print_grid(grid)
-
+    tilt(grid, NORTH)
     total_load = calc_total_load(grid)
 
     assert 109424 == total_load
-    print("")
     print("Part 1:", total_load)
 
 
 def part2(grid: Grid):
-    print("Part 2:", -1)
+    # nr_of_cycles = 3
+    # nr_of_cycles = 1_000_000_000
+    total_loads = []
+    nr_of_cycles = 120
+    # for i in tqdm(range(nr_of_cycles)):
+    for i in tqdm(range(1, nr_of_cycles + 1)):
+        cycle(grid)
+        total_load = calc_total_load(grid)
+        total_loads.append(total_load)
+        # print(f"cycle {i}: total_load {total_load}")
+
+    candidates = sorted(set(total_loads[-10:]))
+    print("one of these should do:", candidates)
+
+    # total_load = calc_total_load(grid)
+
+    # assert 102509 == total_load
+    # print("Part 2:", total_load)
 
 
-# filename = "day14/example"
+filename = "day14/example"
 filename = "day14/input"
 
 grid = parse(filename)
-part1(grid)
-# part2(grid)
+# part1(grid)
+part2(grid)
