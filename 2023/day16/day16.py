@@ -176,25 +176,42 @@ def shine(grid: Grid, start_tile: TileInfo) -> set[TileInfo]:
     return visited
 
 
+def find_energized(grid: Grid, start_tile: TileInfo) -> int:
+    tile_infos = shine(grid, start_tile)
+    n = len(set([(t.row, t.col) for t in tile_infos]))
+    return n
+
+
 def part1(grid: Grid):
     start_tile = TileInfo(row=0, col=0, light_from=Direction.LEFT)
-    tile_infos = shine(grid, start_tile)
-
-    # print("Energized:")
-    # print_energized(grid, tile_infos)
-
-    n = len(set([(t.row, t.col) for t in tile_infos]))
+    n = find_energized(grid, start_tile)
 
     print("Part 1:", n)
 
 
 def part2(grid: Grid):
-    print("Part 2:", -1)
+    start_tiles: list[TileInfo] = []
+
+    for row in range(len(grid)):
+        start_tiles.append(TileInfo(row=row, col=0, light_from=Direction.LEFT))
+        start_tiles.append(
+            TileInfo(row=row, col=len(grid[0]) - 1, light_from=Direction.RIGHT)
+        )
+    for col in range(len(grid[0])):
+        start_tiles.append(TileInfo(row=0, col=col, light_from=Direction.UP))
+        start_tiles.append(
+            TileInfo(row=len(grid) - 1, col=col, light_from=Direction.DOWN)
+        )
+
+    max_energy = 0
+    for t in start_tiles:
+        max_energy = max(max_energy, find_energized(grid, t))
+    print("Part 2:", max_energy)
 
 
 # filename = "day16/example"
 filename = "day16/input"
 
 grid = parse(filename)
-part1(grid)
-# part2(grid)
+# part1(grid)
+part2(grid)
