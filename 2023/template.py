@@ -23,5 +23,3 @@ filename = "dayX/example"
 lines = parse(filename)
 part1(lines)
 part2(lines)
-
-# TODO add timer to measure performance
