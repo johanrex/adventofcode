@@ -143,8 +143,6 @@ def find_point_inside_grid(grid):
 
     return middle_row, cur_col
 
-    pass
-
 
 def part1(plan):
     min_row, min_col, max_row, max_col = get_bounds(plan)

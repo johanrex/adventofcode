@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import math
 import re
 import matplotlib.pyplot as plt
+import time
 
 
 @dataclass
@@ -63,7 +64,7 @@ def get_bounds(plan):
     return min_row, min_col, max_row, max_col
 
 
-def create_polygon(plan):
+def create_polygon(plan: list[Instruction]) -> list[tuple[int, int]]:
     min_row, min_col, _, _ = get_bounds(plan)
 
     corners: list[tuple[int, int]] = []
@@ -91,7 +92,7 @@ def create_polygon(plan):
     return corners
 
 
-def polygon_area(corners):
+def polygon_area(corners: list[tuple[int, int]]) -> int:
     n = len(corners)  # Number of vertices
     area = 0.0
     for i in range(n):
@@ -99,18 +100,24 @@ def polygon_area(corners):
         area += corners[i][0] * corners[j][1]
         area -= corners[j][0] * corners[i][1]
     area = abs(area) / 2.0
-    return area
+    return int(area)
 
 
 def polygon_circumference(corners):
-    n = len(corners)  # Number of vertices
+    n = len(corners)
+    circumference = 0
 
-    circumference = 0.0
-    for i in range(n):
-        j = (i + 1) % n
-        dx = corners[j][0] - corners[i][0]
-        dy = corners[j][1] - corners[i][1]
-        circumference += math.sqrt(dx * dx + dy * dy)
+    for i in range(1, n):
+        prev_row, prev_col = corners[i - 1]
+        row, col = corners[i]
+
+        circumference += abs(row - prev_row) + abs(col - prev_col)
+
+    prev_row, prev_col = corners[n - 1]
+    row, col = corners[0]
+
+    circumference += abs(row - prev_row) + abs(col - prev_col)
+
     return circumference
 
 
@@ -132,6 +139,8 @@ def plot(corners):
 
 
 def part2(plan):
+    start_time = time.time()
+
     corners = create_polygon(plan)
     # plot(corners)
 
@@ -139,6 +148,8 @@ def part2(plan):
     circumference = polygon_circumference(corners)
 
     n = int(area + (circumference // 2) + 1)
+
+    print("Time:", time.time() - start_time)
 
     assert n == 71262565063800
     print("Part 2:", n)
