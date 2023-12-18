@@ -23,9 +23,6 @@ def parse2(filename):
     with open(filename) as f:
         for line in f:
             line = line.strip()
-
-            # R 6 (#70c710)
-
             m = re.match(r"(\w) (\d+) \(#(\w+)\)", line)
 
             x = m.group(3)
@@ -67,7 +64,7 @@ def get_bounds(plan):
 
 
 def create_polygon(plan):
-    min_row, min_col, max_row, max_col = get_bounds(plan)
+    min_row, min_col, _, _ = get_bounds(plan)
 
     corners: list[tuple[int, int]] = []
 
@@ -129,11 +126,9 @@ def plot(corners):
     plt.figure()
     plt.plot(xs, ys, "b")  # 'b' specifies that the color of the polygon should be blue
     plt.fill(xs, ys, "b", alpha=0.3)  # Fill the polygon with a semi-transparent blue
-    plt.xlim(min_x, max_x)  # Set the limits of the x-axis
-    plt.ylim(min_y, max_y)  # Set the limits of the y-axis
-    # plt.gca().set_aspect("equal", adjustable="box")  # Make the plot square
+    plt.xlim(min_x, max_x)
+    plt.ylim(min_y, max_y)
     plt.show()
-    pass
 
 
 def part2(plan):
@@ -143,10 +138,7 @@ def part2(plan):
     area = polygon_area(corners)
     circumference = polygon_circumference(corners)
 
-    print(area)
-    print(circumference)
     n = int(area + (circumference // 2) + 1)
-    print(n)
 
     assert n == 71262565063800
     print("Part 2:", n)
@@ -156,5 +148,4 @@ filename = "day18/example"
 filename = "day18/input"
 
 plan = parse2(filename)
-# part1(plan)
 part2(plan)
