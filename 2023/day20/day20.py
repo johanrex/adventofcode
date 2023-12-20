@@ -109,24 +109,28 @@ def parse(filename: str) -> dict[str, Module]:
     return d
 
 
-def part1(modules):
-    lo_pulse_cnt = 0
-    hi_pulse_cnt = 0
-
+def push_button(modules) -> tuple[int, int]:
+    hi_cnt = 0
+    lo_cnt = 0
     q = deque()
 
-    # from to type
     pi = PulseInfo(None, modules["broadcaster"], PULSE_LO)
     q.append(pi)
 
     while q:
         pi = q.popleft()
 
-        print(
-            f"{pi.pulse_from.name if pi.pulse_from is not None else "button"} -{"low" if pi.pulse_type == PULSE_LO else "high"}-> {pi.pulse_to.name}"
-        )
+        if pi.pulse_type == PULSE_HI:
+            hi_cnt += 1
+        else:
+            lo_cnt += 1
+
+        # print(
+        #     f"{pi.pulse_from.name if pi.pulse_from is not None else "button"} -{"low" if pi.pulse_type == PULSE_LO else "high"}-> {pi.pulse_to.name}"
+        # )
 
         if pi.pulse_to.type == TYPE_CON:
+            assert isinstance(pi.pulse_from, Module)
             assert isinstance(pi.pulse_to, ConModule)
 
             pi.pulse_to.last_pulse_from[pi.pulse_from.name] = pi.pulse_type
@@ -159,11 +163,24 @@ def part1(modules):
             for dest in pi.pulse_to.destinations:
                 q.append(PulseInfo(pi.pulse_to, dest, next_pulse_type))
 
-    print("Part 1:", -1)
+    # print("")
+    return hi_cnt, lo_cnt
+
+
+def part1(modules):
+    total_hi_cnt = 0
+    total_lo_cnt = 0
+
+    for i in range(1000):
+        hi_cnt, lo_cnt = push_button(modules)
+        total_hi_cnt += hi_cnt
+        total_lo_cnt += lo_cnt
+
+    print("Part 1:", total_hi_cnt * total_lo_cnt)
 
 
 filename = "day20/example"
-# filename = "day20/input"
+filename = "day20/input"
 
 modules = parse(filename)
 part1(modules)
