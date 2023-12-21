@@ -2,6 +2,7 @@ from collections import defaultdict, deque
 from dataclasses import dataclass, field
 import math
 import re
+import copy
 
 
 PULSE_HI = "H"
@@ -17,6 +18,9 @@ class Module:
     name: str
     type: str | None
     destinations: list["Module"] = field(default_factory=list)
+
+    pulse_hi_cnt = 0
+    pulse_lo_cnt = 0
 
     def __str__(self) -> str:
         s = ", ".join([d.name for d in self.destinations])
@@ -112,7 +116,8 @@ def parse(filename: str) -> dict[str, Module]:
 def push_button(modules) -> tuple[int, int]:
     hi_cnt = 0
     lo_cnt = 0
-    q = deque()
+
+    q: deque = deque()
 
     pi = PulseInfo(None, modules["broadcaster"], PULSE_LO)
     q.append(pi)
@@ -120,10 +125,17 @@ def push_button(modules) -> tuple[int, int]:
     while q:
         pi = q.popleft()
 
+        # part 1
         if pi.pulse_type == PULSE_HI:
             hi_cnt += 1
         else:
             lo_cnt += 1
+
+        # part 2
+        if pi.pulse_type == PULSE_LO:
+            pi.pulse_to.pulse_lo_cnt += 1
+        else:
+            pi.pulse_to.pulse_hi_cnt += 1
 
         # print(
         #     f"{pi.pulse_from.name if pi.pulse_from is not None else "button"} -{"low" if pi.pulse_type == PULSE_LO else "high"}-> {pi.pulse_to.name}"
@@ -179,8 +191,28 @@ def part1(modules):
     print("Part 1:", total_hi_cnt * total_lo_cnt)
 
 
+def part2(modules):
+    i = 0
+    while True:
+        i += 1
+
+        push_button(modules)
+        m = modules["rx"]
+        # if m.pulse_lo_cnt == 1 and m.pulse_hi_cnt == 0:
+        print(m.pulse_lo_cnt, m.pulse_hi_cnt)
+        if m.pulse_lo_cnt == 1:
+            break
+
+        m.pulse_lo_cnt = 0
+        m.pulse_hi_cnt = 0
+
+    # 999 too low
+    print("Part 2:", i)
+
+
 filename = "day20/example"
 filename = "day20/input"
 
 modules = parse(filename)
-part1(modules)
+part1(copy.deepcopy(modules))
+part2(copy.deepcopy(modules))

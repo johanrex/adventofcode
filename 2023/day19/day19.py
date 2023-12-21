@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 import math
 import re
-
+import copy
+import operator
 
 re_workflow_s = r"(.+)\{(.+)\}"
 re_workflow = re.compile(re_workflow_s)
@@ -123,17 +124,80 @@ def part1(workflows: dict[str, Workflow], parts: list[Part]):
     print("Part 1:", s)
 
 
+def dfs(
+    workflows: dict[str, Workflow],
+    workflow: Workflow,
+    ranges: dict[str, tuple[int, int]],
+    leaf_states: list,
+) -> dict[str, tuple[int, int]] | None:
+    new_ranges = copy.deepcopy(ranges)
+
+    for rule in workflow.rules:
+        if rule.expression == "A":
+            leaf_states.append(new_ranges)
+        elif rule.expression == "R":
+            pass
+        elif (match := re_cond.match(rule.expression)) is not None:
+            rating = match.group(1)
+            val = int(match.group(3))
+            action = match.group(4)
+            start, stop = new_ranges[rating]
+
+            if match.group(2) == "<":
+                if action == "A":
+                    stop = min(stop, val - 1)
+                    new_ranges[rating] = (start, stop)
+
+                    leaf_states.append(new_ranges)
+                elif action == "R":
+                    pass
+                else:
+                    dfs(workflows, workflows[action], new_ranges, leaf_states)
+            elif match.group(2) == ">":
+                if action == "A":
+                    start = max(start, val + 1)
+                    new_ranges[rating] = (start, stop)
+
+                    leaf_states.append(new_ranges)
+                elif action == "R":
+                    pass
+                else:
+                    dfs(workflows, workflows[action], new_ranges, leaf_states)
+            else:
+                raise ValueError(f"Unknown operator: {match.group(2)}")
+
+            pass
+
+    return None
+
+
 def part2(workflows: dict[str, Workflow]):
     print("All workflows:")
     for w in workflows.values():
         print(w)
     print("")
 
-    # build dependency graph, start from in
-    # finns det workflows som inte används?
-    # 1 <= value <= 4000
-    # ringa in successivt hur många värden för varje rating.
-    pass
+    ranges = {
+        "x": (1, 4000),
+        "m": (1, 4000),
+        "a": (1, 4000),
+        "s": (1, 4000),
+    }
+
+    leaf_states = []
+    dfs(workflows, workflows["in"], ranges, leaf_states)
+
+    s = 0
+    for d in leaf_states:
+        print(d)
+        lst = []
+        for k, v in d.items():
+            from_, to = v
+            r = to + 1 - from_
+            lst.append(r)
+        s += math.prod(lst)
+    # Example 167409079868000
+    print("Part 2:", s)
 
 
 filename = "day19/example"

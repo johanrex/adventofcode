@@ -46,6 +46,29 @@ def create_regex_from_checksums(checksums):
     return re.compile(re_str)
 
 
+# def is_valid2(line, target_runs):
+def is_valid2(state, checksums):
+    n = len(state)
+    runs = []
+
+    i = 0
+    while i < n:
+        while i < n and state[i] == ".":
+            i += 1
+        if i == n:
+            break
+        j = i
+        c = 0
+        while j < n and state[j] == "#":
+            j += 1
+            c += 1
+
+        runs.append(c)
+        i = j
+
+    return runs == checksums
+
+
 def is_valid(state, re):
     return re.match("".join(state)) is not None
 
@@ -85,7 +108,7 @@ def get_valid_state_cnt(corrupt_state, checksums):
     elements = ["#", "."]
     gen = itertools.product(elements, repeat=corrupt_cnt)
 
-    regex = create_regex_from_checksums(checksums)
+    # regex = create_regex_from_checksums(checksums)
 
     # print("".join(corrupt_state), ",".join([str(c) for c in checksums]))
     state_candidate = corrupt_state.copy()
@@ -97,7 +120,10 @@ def get_valid_state_cnt(corrupt_state, checksums):
                 state_candidate[i] = items[item_offset]
                 item_offset += 1
 
-        if is_valid(state_candidate, regex):
+        b1 = is_valid2(state_candidate, checksums)
+        # b2 = is_valid(state_candidate, regex)
+        # assert b1 == b2
+        if b1:
             # print("\t", "".join(state_candidate))
             valid_cnt += 1
 
@@ -141,10 +167,12 @@ def part2(problem_infos):
     print("Time elapsed:", time.time() - start_time)
 
 
-filename = "day12/example"
-# filename = "day12/input"
+is_valid2(["#", ".", "#", ".", "#", "#", "#"], [1, 1, 3])
+
+# filename = "day12/example"
+filename = "day12/input"
 
 problem_infos = parse(filename)
 part1(problem_infos)
 
-part2(problem_infos)
+# part2(problem_infos)
