@@ -1,11 +1,4 @@
-from dataclasses import dataclass
-import math
-import re
 import heapq
-import copy
-from collections import deque
-import sys
-import json
 
 
 Grid = list[list[int]]
@@ -44,6 +37,7 @@ def search(grid):
 
         # print(heat_loss, cur_row, cur_col, d_row, d_col, steps_in_direction)
 
+        # Have we reached the goal?
         if end_coord == (cur_row, cur_col):
             break
 
@@ -53,6 +47,7 @@ def search(grid):
         seen.add((cur_row, cur_col, d_row, d_col, steps_in_direction))
 
         for next_d_row, next_d_col in directions:
+            # Don't go back to the same place we came from
             if (next_d_row, next_d_col) == (-d_row, -d_col):
                 continue
 
