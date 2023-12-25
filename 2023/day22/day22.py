@@ -112,10 +112,13 @@ def fall(coords: Coords) -> dict[tuple[Coord, Coord], tuple[Coord, Coord]]:
                     new_z = t2[2] + 1
                     break
 
-        dz = new_z - f[2]
+        height = t[2] - f[2]
 
         at_rest_f = (f[0], f[1], new_z)
-        at_rest_t = (t[0], t[1], new_z + dz)
+        at_rest_t = (t[0], t[1], new_z + height)
+
+        # print(f"Brick {f}{t} falls to {at_rest_f}{at_rest_t}")
+
         at_rest.append((at_rest_f, at_rest_t))
 
         lookup[(at_rest_f, at_rest_t)] = (f, t)
@@ -165,6 +168,11 @@ def part1(coords: Coords):
     at_rest = list(lookup.keys())
     assert_distinct(at_rest)
 
+    print("At rest:")
+    for brick in at_rest:
+        print(brick)
+    print("")
+
     s = 0
     for f, t in at_rest:
         tops = is_supporting(f, t, at_rest)
@@ -193,7 +201,7 @@ def part1(coords: Coords):
 
 
 filename = "day22/example"
-# filename = "day22/input"
+filename = "day22/input"
 
 coords = parse(filename)
 verify_assumption1(coords)
