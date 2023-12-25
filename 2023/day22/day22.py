@@ -90,13 +90,15 @@ def assert_all_is_at_rest(coords: Coords):
             pass
 
 
-def fall(coords: Coords) -> Coords:
+def fall(coords: Coords) -> dict[tuple[Coord, Coord], tuple[Coord, Coord]]:
     falling = deque(sorted(coords, key=sort_by_z_func))
 
+    lookup = {}
     at_rest: Coords = []
 
     while len(falling) > 0:
         f, t = falling.popleft()
+
         new_z = 1
 
         if len(at_rest) == 0:
@@ -116,7 +118,9 @@ def fall(coords: Coords) -> Coords:
         at_rest_t = (t[0], t[1], new_z + dz)
         at_rest.append((at_rest_f, at_rest_t))
 
-    return at_rest
+        lookup[(at_rest_f, at_rest_t)] = (f, t)
+
+    return lookup
 
 
 def is_resting_on(bottom_f: Coord, bottom_t: Coord, top_f: Coord, top_t: Coord) -> bool:
@@ -156,15 +160,16 @@ def is_supported_by(
     return bottoms
 
 
-def part1(coords):
-    at_rest = fall(coords)
+def part1(coords: Coords):
+    lookup = fall(coords)
+    at_rest = list(lookup.keys())
     assert_distinct(at_rest)
 
     s = 0
     for f, t in at_rest:
         tops = is_supporting(f, t, at_rest)
         if len(tops) == 0:
-            print(f"{f}{t} can be disintegrated. It doesn't support anything.")
+            print(f"{lookup[(f,t)]} can be disintegrated. It doesn't support anything.")
             s += 1
         else:
             is_lone_supporter_of_at_least_one = False
@@ -173,14 +178,14 @@ def part1(coords):
                 if len(bottoms) == 1:
                     is_lone_supporter_of_at_least_one = True
 
-            tops_strs = [f"({str(f)}, {str(t)})" for f, t in tops]
+            tops_strs = [f"{lookup[top]}" for top in tops]
             if is_lone_supporter_of_at_least_one:
                 print(
-                    f"{f}{t} cannot be disintegrated safely. If it were disintegrated, bricks {' and '.join(tops_strs)} would fall."
+                    f"{lookup[(f,t)]} cannot be disintegrated safely. If it were disintegrated, bricks {' and '.join(tops_strs)} would fall."
                 )
             else:
                 print(
-                    f"{f}{t} can be disintegrated. The bricks above it {'and'.join(tops_strs)} would still be supported."
+                    f"{lookup[(f,t)]} can be disintegrated. The bricks above it {'and'.join(tops_strs)} would still be supported."
                 )
                 s += 1
 
