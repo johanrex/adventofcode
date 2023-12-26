@@ -41,8 +41,13 @@ def verify_assumption2(coords: Coords):
             assert 0 <= t[i] < 1000
 
 
-def sort_by_z_func(tpl: tuple[Coord, Coord]) -> int:
+def sort_by_from_z_func(tpl: tuple[Coord, Coord]) -> int:
     key = tpl[0][2] * 1000 + tpl[1][2]
+    return key
+
+
+def sort_by_to_z_func(tpl: tuple[Coord, Coord]) -> int:
+    key = tpl[1][2] * 1000 + tpl[0][2]
     return key
 
 
@@ -91,7 +96,7 @@ def assert_all_is_at_rest(coords: Coords):
 
 
 def fall(coords: Coords) -> dict[tuple[Coord, Coord], tuple[Coord, Coord]]:
-    falling = deque(sorted(coords, key=sort_by_z_func))
+    falling = deque(sorted(coords, key=sort_by_from_z_func))
 
     lookup = {}
     at_rest: Coords = []
@@ -104,13 +109,18 @@ def fall(coords: Coords) -> dict[tuple[Coord, Coord], tuple[Coord, Coord]]:
         if len(at_rest) == 0:
             new_z = 1
         else:
-            for f2, t2 in reversed(at_rest):
-                assert f2 != f or t2 != t
-                # Are we directly above another?
-                if has_overlap_x_y(f, t, f2, t2):
-                    assert t2[2] < f[2]
-                    new_z = t2[2] + 1
-                    break
+            at_rest_overlap_xy = sorted(
+                [
+                    resting
+                    for resting in at_rest
+                    if has_overlap_x_y(f, t, resting[0], resting[1])
+                ],
+                key=sort_by_to_z_func,
+                reverse=True,
+            )
+            if len(at_rest_overlap_xy) > 0:
+                highest = at_rest_overlap_xy[0]
+                new_z = highest[1][2] + 1
 
         height = t[2] - f[2]
 
@@ -120,6 +130,8 @@ def fall(coords: Coords) -> dict[tuple[Coord, Coord], tuple[Coord, Coord]]:
         # print(f"Brick {f}{t} falls to {at_rest_f}{at_rest_t}")
 
         at_rest.append((at_rest_f, at_rest_t))
+        # dbg
+        # assert_distinct(at_rest)
 
         lookup[(at_rest_f, at_rest_t)] = (f, t)
 
@@ -166,18 +178,18 @@ def is_supported_by(
 def part1(coords: Coords):
     lookup = fall(coords)
     at_rest = list(lookup.keys())
-    assert_distinct(at_rest)
+    # assert_distinct(at_rest)
 
-    print("At rest:")
-    for brick in at_rest:
-        print(brick)
-    print("")
+    # print("At rest:")
+    # for brick in at_rest:
+    #     print(brick)
+    # print("")
 
     s = 0
     for f, t in at_rest:
         tops = is_supporting(f, t, at_rest)
         if len(tops) == 0:
-            print(f"{lookup[(f,t)]} can be disintegrated. It doesn't support anything.")
+            # print(f"{lookup[(f,t)]} can be disintegrated. It doesn't support anything.")
             s += 1
         else:
             is_lone_supporter_of_at_least_one = False
@@ -188,13 +200,14 @@ def part1(coords: Coords):
 
             tops_strs = [f"{lookup[top]}" for top in tops]
             if is_lone_supporter_of_at_least_one:
-                print(
-                    f"{lookup[(f,t)]} cannot be disintegrated safely. If it were disintegrated, bricks {' and '.join(tops_strs)} would fall."
-                )
+                pass
+                # print(
+                #     f"{lookup[(f,t)]} cannot be disintegrated safely. If it were disintegrated, bricks {' and '.join(tops_strs)} would fall."
+                # )
             else:
-                print(
-                    f"{lookup[(f,t)]} can be disintegrated. The bricks above it {'and'.join(tops_strs)} would still be supported."
-                )
+                # print(
+                #     f"{lookup[(f,t)]} can be disintegrated. The bricks above it {'and'.join(tops_strs)} would still be supported."
+                # )
                 s += 1
 
     print("Part 1:", s)
@@ -206,6 +219,6 @@ filename = "day22/input"
 coords = parse(filename)
 verify_assumption1(coords)
 verify_assumption2(coords)
-assert_distinct(coords)
+# assert_distinct(coords)
 part1(coords)
 # part2(coords)
