@@ -175,8 +175,7 @@ def is_supported_by(
     return bottoms
 
 
-def part1(coords: Coords):
-    lookup = fall(coords)
+def part1(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
     at_rest = list(lookup.keys())
     # assert_distinct(at_rest)
 
@@ -213,12 +212,22 @@ def part1(coords: Coords):
     print("Part 1:", s)
 
 
+def part2(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
+    at_rest = list(lookup.keys())
+
+    # create graph/tree
+
+    print("Part 2:", -1)
+
+
 filename = "day22/example"
 filename = "day22/input"
 
 coords = parse(filename)
+
 verify_assumption1(coords)
 verify_assumption2(coords)
 # assert_distinct(coords)
-part1(coords)
-# part2(coords)
+lookup = fall(coords)
+part1(lookup)
+part2(lookup)
