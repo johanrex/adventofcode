@@ -5,9 +5,18 @@ import re
 import copy
 import sys
 
-
 Coord = tuple[int, int, int]
 Coords = list[tuple[Coord, Coord]]
+
+
+class Node:
+    def __init__(self, value):
+        self.value = value
+        self.is_lone_supporter_of = []
+        self.is_connected_to = []
+
+        # to find count:
+        # visit all connected nodes north of the one that should be disintegrated.
 
 
 def parse(filename: str) -> Coords:
@@ -215,7 +224,19 @@ def part1(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
 def part2(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
     at_rest = list(lookup.keys())
 
-    # create graph/tree
+    # create Nodes
+    nodes = {}
+    for f, t in at_rest:
+        nodes[(f, t)] = Node((f, t))
+
+    # find lone supporters
+    for f, t in at_rest:
+        tops = is_supporting(f, t, at_rest)
+        if len(tops) == 1:
+            top_f, top_t = tops[0]
+            nodes[(f, t)].is_lone_supporter_of.append(nodes[(top_f, top_t)])
+
+    # find connected nodes
 
     print("Part 2:", -1)
 
