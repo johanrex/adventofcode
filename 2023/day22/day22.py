@@ -1,10 +1,5 @@
 from collections import deque
-from dataclasses import dataclass
-import math
-import re
-import copy
-import sys
-from typing import Self
+from functools import cache
 from tqdm import tqdm
 
 Coord = tuple[int, int, int]
@@ -16,20 +11,17 @@ class Node:
         self.value = value
         self.neighbors = set()
 
-    def get_supporting(self) -> list[Self]:
+    def get_supporting(self) -> list["Node"]:
         return [n for n in self.neighbors if self.is_supporting(n)]
 
     def get_supported_by(self):
         return [n for n in self.neighbors if self.is_supported_by(n)]
 
     def is_supporting(self, other):
-        under_f1, under_t1 = self.value
-        over_f2, over_t2 = other.value
+        _, under_t1 = self.value
+        over_f2, _ = other.value
 
-        if (
-            has_overlap_x_y(under_f1, under_t1, over_f2, over_t2)
-            and under_t1[2] + 1 == over_f2[2]
-        ):
+        if self.has_overlap_x_y(other) and under_t1[2] + 1 == over_f2[2]:
             return True
         else:
             return False
@@ -41,10 +33,7 @@ class Node:
         f1, t1 = self.value
         f2, t2 = other.value
 
-        overlap_x = max(f1[0], f2[0]) <= min(t1[0], t2[0])
-        overlap_y = max(f1[1], f2[1]) <= min(t1[1], t2[1])
-
-        return overlap_x and overlap_y
+        return has_overlap_x_y(f1, t1, f2, t2)
 
     def is_next_to(self, other):
         f1, t1 = self.value
@@ -105,48 +94,12 @@ def sort_by_to_z_func(tpl: tuple[Coord, Coord]) -> int:
     return key
 
 
+@cache
 def has_overlap_x_y(f1: Coord, t1: Coord, f2: Coord, t2: Coord) -> bool:
-    fx1, fy1, _ = f1
-    tx1, ty1, _ = t1
-    fx2, fy2, _ = f2
-    tx2, ty2, _ = t2
-
-    assert fx1 <= tx1
-    assert fy1 <= ty1
-    assert fx2 <= tx2
-    assert fy2 <= ty2
-
-    overlap_x = f1[0] <= t2[0] and t1[0] >= f2[0]
-    overlap_y = f1[1] <= t2[1] and t1[1] >= f2[1]
+    overlap_x = max(f1[0], f2[0]) <= min(t1[0], t2[0])
+    overlap_y = max(f1[1], f2[1]) <= min(t1[1], t2[1])
 
     return overlap_x and overlap_y
-
-
-def has_overlap_x_y_z(f1: Coord, t1: Coord, f2: Coord, t2: Coord) -> bool:
-    overlap_x = f1[0] <= t2[0] and t1[0] >= f2[0]
-    overlap_y = f1[1] <= t2[1] and t1[1] >= f2[1]
-    overlap_z = f1[2] <= t2[2] and t1[2] >= f2[2]
-
-    return overlap_x and overlap_y and overlap_z
-
-
-def assert_distinct(coords: Coords):
-    for i in range(len(coords)):
-        f1, t1 = coords[i]
-        for j in range(i + 1, len(coords)):
-            f2, t2 = coords[j]
-            assert not has_overlap_x_y_z(f1, t1, f2, t2)
-
-
-def assert_all_is_at_rest(coords: Coords):
-    for i in range(len(coords)):
-        f1, t1 = coords[i]
-        for j in range(len(coords)):
-            if i == j:
-                continue
-
-            f2, t2 = coords[j]
-            pass
 
 
 def fall(coords: Coords) -> dict[tuple[Coord, Coord], tuple[Coord, Coord]]:
@@ -192,43 +145,6 @@ def fall(coords: Coords) -> dict[tuple[Coord, Coord], tuple[Coord, Coord]]:
     return lookup
 
 
-def is_resting_on(bottom_f: Coord, bottom_t: Coord, top_f: Coord, top_t: Coord) -> bool:
-    assert not (bottom_f == top_f and bottom_t == top_t)
-
-    # check if top is directly above bottom
-    if top_f[2] != bottom_t[2] + 1:
-        return False
-
-    return has_overlap_x_y(bottom_f, bottom_t, top_f, top_t)
-
-
-def is_supporting(
-    bottom_f: Coord, bottom_t: Coord, at_rest: Coords
-) -> list[tuple[Coord, Coord]]:
-    tops = []
-    for top_f, top_t in at_rest:
-        if bottom_f == top_f and bottom_t == top_t:
-            continue
-        if is_resting_on(bottom_f, bottom_t, top_f, top_t):
-            tops.append((top_f, top_t))
-    return tops
-
-
-def is_supported_by(
-    top_f: Coord, top_t: Coord, at_rest: Coords
-) -> list[tuple[Coord, Coord]]:
-    bottoms = []
-
-    for bottom_f, bottom_t in at_rest:
-        if bottom_f == top_f and bottom_t == top_t:
-            continue
-
-        if is_resting_on(bottom_f, bottom_t, top_f, top_t):
-            bottoms.append((bottom_f, bottom_t))
-
-    return bottoms
-
-
 def part1(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
     at_rest = list(lookup.keys())
     # assert_distinct(at_rest)
@@ -256,29 +172,23 @@ def part1(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
 
     s = 0
     for f, t in at_rest:
-        tops = is_supporting(f, t, at_rest)
-
         node = nodes[(f, t)]
-        tops2 = node.get_supporting()
-        assert set(tops) == set(t.value for t in tops2)
+        tops = node.get_supporting()
 
         if len(tops) == 0:
             # print(f"{lookup[(f,t)]} can be disintegrated. It doesn't support anything.")
             s += 1
         else:
             is_lone_supporter_of_at_least_one = False
-            for top_f, top_t in tops:
-                bottoms = is_supported_by(top_f, top_t, at_rest)
 
+            for top_f, top_t in [node.value for node in tops]:
                 node = nodes[(top_f, top_t)]
-                bottoms2 = node.get_supported_by()
-
-                assert set(bottoms) == set(b.value for b in bottoms2)
+                bottoms = node.get_supported_by()
 
                 if len(bottoms) == 1:
                     is_lone_supporter_of_at_least_one = True
 
-            tops_strs = [f"{lookup[top]}" for top in tops]
+            # tops_strs = [f"{lookup[top]}" for top in tops]
             if is_lone_supporter_of_at_least_one:
                 pass
                 # print(
@@ -317,8 +227,8 @@ def part2(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
     for node in ns:
         supporting = node.get_supporting()
 
-        for s in supporting:
-            if len(s.get_supported_by()) == 1:
+        for sup in supporting:
+            if len(sup.get_supported_by()) == 1:
                 if node not in lone_supporters:
                     # print(node.value, "is the lone supporter of", s.value)
                     lone_supporters.append(node)
