@@ -4,6 +4,7 @@ import math
 import re
 import copy
 import sys
+from typing import Self
 from tqdm import tqdm
 
 Coord = tuple[int, int, int]
@@ -15,7 +16,7 @@ class Node:
         self.value = value
         self.neighbors = set()
 
-    def get_supporting(self):
+    def get_supporting(self) -> list[Self]:
         return [n for n in self.neighbors if self.is_supporting(n)]
 
     def get_supported_by(self):
@@ -53,11 +54,11 @@ class Node:
         overlap_y = max(f1[1], f2[1]) <= min(t1[1], t2[1])
         overlap_z = max(f1[2], f2[2]) <= min(t1[2], t2[2])
 
-        if overlap_x and overlap_y and abs(f1[2] - f2[2]) == 1:
+        if overlap_x and overlap_y and abs(f2[2] - t1[2]) == 1:
             return True
-        elif overlap_x and overlap_z and abs(f1[1] - f2[1]) == 1:
+        elif overlap_x and overlap_z and abs(f2[1] - t1[1]) == 1:
             return True
-        elif overlap_y and overlap_z and abs(f1[0] - f2[0]) == 1:
+        elif overlap_y and overlap_z and abs(f2[0] - t1[0]) == 1:
             return True
         else:
             return False
@@ -237,9 +238,30 @@ def part1(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
     #     print(brick)
     # print("")
 
+    # create Nodes
+    nodes = {}
+    for f, t in at_rest:
+        nodes[(f, t)] = Node((f, t))
+
+    # populate neighbors
+    ns = list(nodes.values())
+    for i in range(len(ns)):
+        for j in range(i + 1, len(ns)):
+            n1: Node = ns[i]
+            n2: Node = ns[j]
+
+            if n1.is_next_to(n2):
+                n1.neighbors.add(n2)
+                n2.neighbors.add(n1)
+
     s = 0
     for f, t in at_rest:
         tops = is_supporting(f, t, at_rest)
+
+        node = nodes[(f, t)]
+        tops2 = node.get_supporting()
+        assert set(tops) == set(t.value for t in tops2)
+
         if len(tops) == 0:
             # print(f"{lookup[(f,t)]} can be disintegrated. It doesn't support anything.")
             s += 1
@@ -247,6 +269,12 @@ def part1(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
             is_lone_supporter_of_at_least_one = False
             for top_f, top_t in tops:
                 bottoms = is_supported_by(top_f, top_t, at_rest)
+
+                node = nodes[(top_f, top_t)]
+                bottoms2 = node.get_supported_by()
+
+                assert set(bottoms) == set(b.value for b in bottoms2)
+
                 if len(bottoms) == 1:
                     is_lone_supporter_of_at_least_one = True
 
@@ -305,7 +333,7 @@ def part2(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
             if k != v:
                 s += 1
 
-    # 73675 too low
+    assert 79122 == s
     print("Part 2:", s)
 
 
