@@ -4,6 +4,7 @@ import math
 import re
 import copy
 import sys
+from tqdm import tqdm
 
 Coord = tuple[int, int, int]
 Coords = list[tuple[Coord, Coord]]
@@ -12,11 +13,54 @@ Coords = list[tuple[Coord, Coord]]
 class Node:
     def __init__(self, value):
         self.value = value
-        self.is_lone_supporter_of = []
-        self.is_connected_to = []
+        self.neighbors = set()
 
-        # to find count:
-        # visit all connected nodes north of the one that should be disintegrated.
+    def get_supporting(self):
+        return [n for n in self.neighbors if self.is_supporting(n)]
+
+    def get_supported_by(self):
+        return [n for n in self.neighbors if self.is_supported_by(n)]
+
+    def is_supporting(self, other):
+        under_f1, under_t1 = self.value
+        over_f2, over_t2 = other.value
+
+        if (
+            has_overlap_x_y(under_f1, under_t1, over_f2, over_t2)
+            and under_t1[2] + 1 == over_f2[2]
+        ):
+            return True
+        else:
+            return False
+
+    def is_supported_by(self, other):
+        return other.is_supporting(self)
+
+    def has_overlap_x_y(self, other):
+        f1, t1 = self.value
+        f2, t2 = other.value
+
+        overlap_x = max(f1[0], f2[0]) <= min(t1[0], t2[0])
+        overlap_y = max(f1[1], f2[1]) <= min(t1[1], t2[1])
+
+        return overlap_x and overlap_y
+
+    def is_next_to(self, other):
+        f1, t1 = self.value
+        f2, t2 = other.value
+
+        overlap_x = max(f1[0], f2[0]) <= min(t1[0], t2[0])
+        overlap_y = max(f1[1], f2[1]) <= min(t1[1], t2[1])
+        overlap_z = max(f1[2], f2[2]) <= min(t1[2], t2[2])
+
+        if overlap_x and overlap_y and abs(f1[2] - f2[2]) == 1:
+            return True
+        elif overlap_x and overlap_z and abs(f1[1] - f2[1]) == 1:
+            return True
+        elif overlap_y and overlap_z and abs(f1[0] - f2[0]) == 1:
+            return True
+        else:
+            return False
 
 
 def parse(filename: str) -> Coords:
@@ -229,16 +273,40 @@ def part2(lookup: dict[tuple[Coord, Coord], tuple[Coord, Coord]]):
     for f, t in at_rest:
         nodes[(f, t)] = Node((f, t))
 
-    # find lone supporters
-    for f, t in at_rest:
-        tops = is_supporting(f, t, at_rest)
-        if len(tops) == 1:
-            top_f, top_t = tops[0]
-            nodes[(f, t)].is_lone_supporter_of.append(nodes[(top_f, top_t)])
+    # populate neighbors
+    ns = list(nodes.values())
+    for i in range(len(ns)):
+        for j in range(i + 1, len(ns)):
+            n1: Node = ns[i]
+            n2: Node = ns[j]
 
-    # find connected nodes
+            if n1.is_next_to(n2):
+                n1.neighbors.add(n2)
+                n2.neighbors.add(n1)
 
-    print("Part 2:", -1)
+    # is this node the lone supporter of another node?
+    lone_supporters = []
+    for node in ns:
+        supporting = node.get_supporting()
+
+        for s in supporting:
+            if len(s.get_supported_by()) == 1:
+                if node not in lone_supporters:
+                    # print(node.value, "is the lone supporter of", s.value)
+                    lone_supporters.append(node)
+
+    # count nodes above each lone supporter.
+    s = 0
+    for node in tqdm(lone_supporters):
+        tmp = at_rest.copy()
+        tmp.remove(node.value)
+        d = fall(tmp)
+        for k, v in d.items():
+            if k != v:
+                s += 1
+
+    # 73675 too low
+    print("Part 2:", s)
 
 
 filename = "day22/example"
