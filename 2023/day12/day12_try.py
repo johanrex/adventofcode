@@ -28,36 +28,100 @@ def parse(filename: str) -> list[ProblemInfo]:
     return problem_infos
 
 
-def count_arrangements(state: str, checksums: Checksum):
+def replace_at_idx(s: str, idx: int, c: str):
+    if idx == len(s) - 1:
+        new_s = s[:idx] + c
+    else:
+        new_s = s[:idx] + c + s[idx + 1 :]
+
+    return new_s
+
+
+def get_group_sums_from_state(state) -> tuple[int, ...]:
+    lst = []
+    group_cnt = 0
+    for c in state:
+        if c == "#":
+            group_cnt += 1
+        else:
+            if group_cnt > 0:
+                lst.append(group_cnt)
+                group_cnt = 0
+
+    if group_cnt > 0:
+        lst.append(group_cnt)
+
+    return tuple(lst)
+
+
+def count_arrangements(
+    state: str,
+    checksums: Checksum,
+    state_idx: int,
+    checksum_idx: int,
+    group_cnt: int = 0,
+):
     arrangements = 0
 
     # the base case
-    if state == "" and len(checksums) == 0:
-        return 1
-    elif state == "" and len(checksums) > 0:
-        return 0
-    else:
-        if (q_idx := state.find("?")) != -1:
-            arrangements += count_arrangements(
-                state[:q_idx] + "." + state[q_idx + 1 :], checksums
-            )
-            arrangements += count_arrangements(
-                state[:q_idx] + "#" + state[q_idx + 1 :], checksums
-            )
+    if state_idx > len(state) - 1:
+        if checksum_idx > len(checksums) - 1:
+            # assert checksums == get_group_sums_from_state(state)
+            return 1
+        elif checksum_idx < len(checksums) - 1:
+            return 0
         else:
-            if state.startswith("."):
-                state = state.lstrip(".")
-                arrangements = count_arrangements(state, checksums)
-            elif state.startswith("#") and len(checksums) > 0:
-                broken_cnt = len(state) - len(state.lstrip("#"))
-                if broken_cnt == checksums[0]:
-                    arrangements += count_arrangements(
-                        state[broken_cnt:], checksums[1:]
-                    )
+            if group_cnt > 0:
+                if group_cnt == checksums[checksum_idx]:
+                    # assert checksums == get_group_sums_from_state(state)
+                    return 1
                 else:
                     return 0
             else:
                 return 0
+    else:
+        if state[state_idx] == "?":
+            arrangements += count_arrangements(
+                replace_at_idx(state, state_idx, "."),
+                checksums,
+                state_idx,
+                checksum_idx,
+                group_cnt,
+            )
+            arrangements += count_arrangements(
+                replace_at_idx(state, state_idx, "#"),
+                checksums,
+                state_idx,
+                checksum_idx,
+                group_cnt,
+            )
+        else:
+            if state[state_idx] == ".":
+                if group_cnt > 0:
+                    if checksums[checksum_idx] != group_cnt:
+                        return 0
+
+                    group_cnt = 0
+                    checksum_idx += 1
+
+                state_idx += 1
+                # while state_idx < len(state) - 1 and state[state_idx] == ".":
+                #     state_idx += 1
+
+                arrangements = count_arrangements(
+                    state, checksums, state_idx, checksum_idx, group_cnt
+                )
+
+            elif state[state_idx] == "#" and checksum_idx <= len(checksums) - 1:
+                group_cnt += 1
+                if group_cnt > checksums[checksum_idx]:
+                    return 0
+                else:
+                    arrangements += count_arrangements(
+                        state, checksums, state_idx + 1, checksum_idx, group_cnt
+                    )
+            else:
+                arrangements = 0
 
     return arrangements
 
@@ -65,15 +129,22 @@ def count_arrangements(state: str, checksums: Checksum):
 def part1(problem_infos: list[ProblemInfo]):
     s = 0
     for pi in problem_infos:
-        s += count_arrangements(pi.corrupt_state, pi.checksums)
+        cnt = count_arrangements(pi.corrupt_state, pi.checksums, 0, 0, 0)
+        # print(pi.corrupt_state, pi.checksums, f"{cnt} arrangements")
+        s += cnt
 
     print("Part 1:", s)
 
 
 def part2(problem_infos: list[ProblemInfo]):
     s = 0
-    for pi in tqdm(problem_infos):
-        s += count_arrangements(pi.corrupt_state, pi.checksums)
+    for pi in problem_infos:
+        corrupt_state = "?".join([pi.corrupt_state] * 5)
+        checksums = pi.checksums * 5
+
+        cnt = count_arrangements(corrupt_state, checksums, 0, 0, 0)
+        print(pi.corrupt_state, pi.checksums, f"{cnt} arrangements")
+        s += cnt
 
     print("Part 2:", s)
 
@@ -83,11 +154,4 @@ filename = "day12/example"
 
 problem_infos = parse(filename)
 part1(problem_infos)
-
-unfolded_problem_infos = []
-for pi in problem_infos:
-    new_currupt_state = "?".join([pi.corrupt_state] * 5)
-    new_checksums = pi.checksums * 5
-
-    unfolded_problem_infos.append(ProblemInfo(new_currupt_state, new_checksums))
-part2(unfolded_problem_infos)
+part2(problem_infos)
