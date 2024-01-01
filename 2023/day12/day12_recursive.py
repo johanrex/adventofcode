@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import multiprocessing
 
 Checksum = tuple[int, ...]
 
@@ -103,7 +104,11 @@ def count_arrangements(
                 #     state_idx += 1
 
                 arrangements = count_arrangements(
-                    state, checksums, state_idx, checksum_idx, group_cnt
+                    state,
+                    checksums,
+                    state_idx,
+                    checksum_idx,
+                    group_cnt,
                 )
 
             elif state[state_idx] == "#" and checksum_idx <= len(checksums) - 1:
@@ -112,7 +117,11 @@ def count_arrangements(
                     return 0
                 else:
                     arrangements += count_arrangements(
-                        state, checksums, state_idx + 1, checksum_idx, group_cnt
+                        state,
+                        checksums,
+                        state_idx + 1,
+                        checksum_idx,
+                        group_cnt,
                     )
             else:
                 arrangements = 0
@@ -130,25 +139,34 @@ def part1(problem_infos: list[ProblemInfo]):
     print("Part 1:", s)
 
 
+def worker(args):
+    pi, i, total = args
+    corrupt_state = "?".join([pi.corrupt_state] * 5)
+    checksums = pi.checksums * 5
+    cnt = count_arrangements(corrupt_state, checksums, 0, 0, 0)
+    print(pi.corrupt_state, pi.checksums, cnt, "arrangements. ", f"{i}/{total}")
+    return cnt
+
+
 def part2(problem_infos: list[ProblemInfo]):
-    s = 0
-    for i, pi in enumerate(problem_infos):
-        corrupt_state = "?".join([pi.corrupt_state] * 5)
-        checksums = pi.checksums * 5
-
-        print(pi.corrupt_state, pi.checksums, "", end="")
-        cnt = count_arrangements(corrupt_state, checksums, 0, 0, 0)
-        print(cnt, "arrangements. ", end="")
-        print(f"{i}/{len(problem_infos)}")
-
-        s += cnt
-
+    with multiprocessing.Pool() as pool:
+        s = sum(
+            pool.map(
+                worker,
+                [(pi, i, len(problem_infos)) for i, pi in enumerate(problem_infos)],
+            )
+        )
     print("Part 2:", s)
 
 
-filename = "day12/example"
-filename = "day12/input"
+def main():
+    filename = "day12/example"
+    filename = "day12/input"
 
-problem_infos = parse(filename)
-part1(problem_infos)
-part2(problem_infos)
+    problem_infos = parse(filename)
+    part1(problem_infos)
+    part2(problem_infos)
+
+
+if __name__ == "__main__":
+    main()
