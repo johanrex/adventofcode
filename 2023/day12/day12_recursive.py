@@ -1,10 +1,4 @@
 from dataclasses import dataclass
-from functools import cache
-import itertools
-import math
-import re
-import time
-from tqdm import tqdm
 
 Checksum = tuple[int, ...]
 
@@ -138,19 +132,22 @@ def part1(problem_infos: list[ProblemInfo]):
 
 def part2(problem_infos: list[ProblemInfo]):
     s = 0
-    for pi in problem_infos:
+    for i, pi in enumerate(problem_infos):
         corrupt_state = "?".join([pi.corrupt_state] * 5)
         checksums = pi.checksums * 5
 
+        print(pi.corrupt_state, pi.checksums, "", end="")
         cnt = count_arrangements(corrupt_state, checksums, 0, 0, 0)
-        print(pi.corrupt_state, pi.checksums, f"{cnt} arrangements")
+        print(cnt, "arrangements. ", end="")
+        print(f"{i}/{len(problem_infos)}")
+
         s += cnt
 
     print("Part 2:", s)
 
 
 filename = "day12/example"
-# filename = "day12/input"
+filename = "day12/input"
 
 problem_infos = parse(filename)
 part1(problem_infos)
