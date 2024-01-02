@@ -61,14 +61,12 @@ def count_arrangements(
     # the base case
     if state_idx > len(state) - 1:
         if checksum_idx > len(checksums) - 1:
-            # assert checksums == get_group_sums_from_state(state)
             return 1
         elif checksum_idx < len(checksums) - 1:
             return 0
         else:
             if group_cnt > 0:
                 if group_cnt == checksums[checksum_idx]:
-                    # assert checksums == get_group_sums_from_state(state)
                     return 1
                 else:
                     return 0
@@ -100,8 +98,6 @@ def count_arrangements(
                     checksum_idx += 1
 
                 state_idx += 1
-                # while state_idx < len(state) - 1 and state[state_idx] == ".":
-                #     state_idx += 1
 
                 arrangements = count_arrangements(
                     state,
@@ -133,35 +129,32 @@ def part1(problem_infos: list[ProblemInfo]):
     s = 0
     for pi in problem_infos:
         cnt = count_arrangements(pi.corrupt_state, pi.checksums, 0, 0, 0)
-        # print(pi.corrupt_state, pi.checksums, f"{cnt} arrangements")
         s += cnt
 
     print("Part 1:", s)
 
 
-def worker(args):
-    pi, i, total = args
-    corrupt_state = "?".join([pi.corrupt_state] * 5)
-    checksums = pi.checksums * 5
-    cnt = count_arrangements(corrupt_state, checksums, 0, 0, 0)
-    print(pi.corrupt_state, pi.checksums, cnt, "arrangements. ", f"{i}/{total}")
-    return cnt
-
-
 def part2(problem_infos: list[ProblemInfo]):
-    with multiprocessing.Pool() as pool:
-        s = sum(
-            pool.map(
-                worker,
-                [(pi, i, len(problem_infos)) for i, pi in enumerate(problem_infos)],
-            )
+    s = 0
+    for i, pi in enumerate(problem_infos):
+        corrupt_state = "?".join([pi.corrupt_state] * 5)
+        checksums = pi.checksums * 5
+        cnt = count_arrangements(corrupt_state, checksums, 0, 0, 0)
+        print(
+            pi.corrupt_state,
+            pi.checksums,
+            cnt,
+            "arrangements. ",
+            f"{i}/{len(problem_infos)}",
         )
+        s += cnt
+
     print("Part 2:", s)
 
 
 def main():
     filename = "day12/example"
-    filename = "day12/input"
+    # filename = "day12/input"
 
     problem_infos = parse(filename)
     part1(problem_infos)
