@@ -35,9 +35,9 @@ def search(grid):
             queue
         )
 
-        print(
-            f"{heat_loss=}, {cur_row=}, {cur_col=}, {d_row=}, {d_col=}, {steps_in_direction=}"
-        )
+        # print(
+        #     f"{heat_loss=}, {cur_row=}, {cur_col=}, {d_row=}, {d_col=}, {steps_in_direction=}"
+        # )
 
         if (cur_row, cur_col, d_row, d_col, steps_in_direction) in seen:
             continue
@@ -45,7 +45,7 @@ def search(grid):
         seen.add((cur_row, cur_col, d_row, d_col, steps_in_direction))
 
         # Have we reached the goal?
-        if end_coord == (cur_row, cur_col) and 1 <= steps_in_direction <= 10:
+        if end_coord == (cur_row, cur_col) and 4 <= steps_in_direction <= 10:
             break
 
         if (
@@ -94,7 +94,7 @@ def search(grid):
                             ),
                         )
 
-    print(heat_loss)
+    # print(heat_loss)
     # print_path(grid, seen, end_coord)
 
     return heat_loss
@@ -147,7 +147,7 @@ def part2(grid: Grid):
 
 
 filename = "day17/example"
-# filename = "day17/input"
+filename = "day17/input"
 
 grid = parse(filename)
 part1(grid)
