@@ -1,3 +1,4 @@
+from collections import Counter
 from dataclasses import dataclass
 import multiprocessing
 
@@ -54,9 +55,14 @@ def count_arrangements(
     checksums: Checksum,
     state_idx: int,
     checksum_idx: int,
-    group_cnt: int = 0,
+    current_group_cnt: int = 0,
+    cache={},
 ):
     arrangements = 0
+
+    key = f"{state[state_idx:]},{checksums[checksum_idx:]},{current_group_cnt}"
+    if key in cache:
+        return cache[key]
 
     # the base case
     if state_idx > len(state) - 1:
@@ -65,8 +71,8 @@ def count_arrangements(
         elif checksum_idx < len(checksums) - 1:
             return 0
         else:
-            if group_cnt > 0:
-                if group_cnt == checksums[checksum_idx]:
+            if current_group_cnt > 0:
+                if current_group_cnt == checksums[checksum_idx]:
                     return 1
                 else:
                     return 0
@@ -79,22 +85,24 @@ def count_arrangements(
                 checksums,
                 state_idx,
                 checksum_idx,
-                group_cnt,
+                current_group_cnt,
+                cache,
             )
             arrangements += count_arrangements(
                 replace_at_idx(state, state_idx, "#"),
                 checksums,
                 state_idx,
                 checksum_idx,
-                group_cnt,
+                current_group_cnt,
+                cache,
             )
         else:
             if state[state_idx] == ".":
-                if group_cnt > 0:
-                    if checksums[checksum_idx] != group_cnt:
+                if current_group_cnt > 0:
+                    if checksums[checksum_idx] != current_group_cnt:
                         return 0
 
-                    group_cnt = 0
+                    current_group_cnt = 0
                     checksum_idx += 1
 
                 state_idx += 1
@@ -104,12 +112,13 @@ def count_arrangements(
                     checksums,
                     state_idx,
                     checksum_idx,
-                    group_cnt,
+                    current_group_cnt,
+                    cache,
                 )
 
             elif state[state_idx] == "#" and checksum_idx <= len(checksums) - 1:
-                group_cnt += 1
-                if group_cnt > checksums[checksum_idx]:
+                current_group_cnt += 1
+                if current_group_cnt > checksums[checksum_idx]:
                     return 0
                 else:
                     arrangements += count_arrangements(
@@ -117,10 +126,13 @@ def count_arrangements(
                         checksums,
                         state_idx + 1,
                         checksum_idx,
-                        group_cnt,
+                        current_group_cnt,
+                        cache,
                     )
             else:
                 arrangements = 0
+
+    cache[key] = arrangements
 
     return arrangements
 
@@ -140,6 +152,7 @@ def part2(problem_infos: list[ProblemInfo]):
         corrupt_state = "?".join([pi.corrupt_state] * 5)
         checksums = pi.checksums * 5
         cnt = count_arrangements(corrupt_state, checksums, 0, 0, 0)
+
         print(
             pi.corrupt_state,
             pi.checksums,
@@ -154,7 +167,7 @@ def part2(problem_infos: list[ProblemInfo]):
 
 def main():
     filename = "day12/example"
-    # filename = "day12/input"
+    filename = "day12/input"
 
     problem_infos = parse(filename)
     part1(problem_infos)
