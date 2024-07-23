@@ -128,8 +128,9 @@ func main() {
 	part1 := part1(ints)
 	fmt.Println("Part 1:", part1)
 
-	part2 := part2(ints)
-	fmt.Println("Part 2:", part2)
+	// TODO wrong approach
+	// part2 := part2(ints)
+	// fmt.Println("Part 2:", part2)
 
 	fmt.Println("Done.")
 }
