@@ -128,36 +128,17 @@ func gridCount(grid Grid, val rune) int {
 	return count
 }
 
-func part1Rule1ShouldChangeState(grid Grid, row, col int) bool {
+func rule1ShouldChangeState(grid Grid, row, col int, seats []rune) bool {
 	// If a seat is empty (L) and there are no occupied seats adjacent to it, the seat becomes occupied (change state)
-	if grid[row][col] == 'L' && !any(getAdjacent(grid, row, col), '#') {
+	if grid[row][col] == 'L' && !any(seats, '#') {
 		return true
 	}
 	return false
 }
 
-func part1Rule2ShouldChangeState(grid Grid, row, col int) bool {
-	// If a seat is occupied (#) and four or more seats adjacent to it are also occupied, the seat becomes empty.
-	if grid[row][col] == '#' && arrCount(getAdjacent(grid, row, col), '#') >= 4 {
-		return true
-	}
-	return false
-}
-
-/*PART 2*/
-
-func part2Rule1ShouldChangeState(grid Grid, row, col int) bool {
-	// If a seat is empty (L) and there are no occupied seats adjacent to it, the seat becomes occupied (change state)
-
-	if grid[row][col] == 'L' && !any(getFirstVisibles(grid, row, col), '#') {
-		return true
-	}
-	return false
-}
-
-func part2Rule2ShouldChangeState(grid Grid, row, col int) bool {
-	// five or more visible occupied seats for an occupied seat to become empty
-	if grid[row][col] == '#' && arrCount(getFirstVisibles(grid, row, col), '#') >= 5 {
+func rule2ShouldChangeState(grid Grid, row, col int, seats []rune, threshold int) bool {
+	// If a seat is occupied (#) and [threshold] or more seats adjacent to it are also occupied, the seat becomes empty.
+	if grid[row][col] == '#' && arrCount(seats, '#') >= threshold {
 		return true
 	}
 	return false
@@ -166,18 +147,26 @@ func part2Rule2ShouldChangeState(grid Grid, row, col int) bool {
 func evalRound(grid *Grid, part int) bool {
 	var changes []GridChange
 
+	var threshold int
+	if part == 1 {
+		threshold = 4
+	} else {
+		threshold = 5
+	}
+
 	//check if we should change anything
 	for rowIdx := 0; rowIdx < len(*grid); rowIdx++ {
 		row := (*grid)[rowIdx]
 		for colIdx := 0; colIdx < len(row); colIdx++ {
-			var changed bool
+			var seats []rune
+
 			if part == 1 {
-				changed = part1Rule1ShouldChangeState(*grid, rowIdx, colIdx)
+				seats = getAdjacent(*grid, rowIdx, colIdx)
 			} else {
-				changed = part2Rule1ShouldChangeState(*grid, rowIdx, colIdx)
+				seats = getFirstVisibles(*grid, rowIdx, colIdx)
 			}
 
-			if changed {
+			if rule1ShouldChangeState(*grid, rowIdx, colIdx, seats) {
 				change := GridChange{
 					row:    rowIdx,
 					col:    colIdx,
@@ -185,13 +174,7 @@ func evalRound(grid *Grid, part int) bool {
 				}
 				changes = append(changes, change)
 			} else {
-				if part == 1 {
-					changed = part1Rule2ShouldChangeState(*grid, rowIdx, colIdx)
-				} else {
-					changed = part2Rule2ShouldChangeState(*grid, rowIdx, colIdx)
-				}
-
-				if changed {
+				if rule2ShouldChangeState(*grid, rowIdx, colIdx, seats, threshold) {
 					change := GridChange{
 						row:    rowIdx,
 						col:    colIdx,
@@ -200,41 +183,6 @@ func evalRound(grid *Grid, part int) bool {
 					changes = append(changes, change)
 				}
 
-			}
-		}
-	}
-
-	//apply changes
-	for _, change := range changes {
-		(*grid)[change.row][change.col] = change.newVal
-
-	}
-
-	//return if we changed anything
-	return len(changes) > 0
-}
-
-func part2EvalRound(grid *Grid) bool {
-	var changes []GridChange
-
-	//check if we should change anything
-	for rowIdx := 0; rowIdx < len(*grid); rowIdx++ {
-		row := (*grid)[rowIdx]
-		for colIdx := 0; colIdx < len(row); colIdx++ {
-			if part2Rule1ShouldChangeState(*grid, rowIdx, colIdx) {
-				change := GridChange{
-					row:    rowIdx,
-					col:    colIdx,
-					newVal: '#',
-				}
-				changes = append(changes, change)
-			} else if part2Rule2ShouldChangeState(*grid, rowIdx, colIdx) {
-				change := GridChange{
-					row:    rowIdx,
-					col:    colIdx,
-					newVal: 'L',
-				}
-				changes = append(changes, change)
 			}
 		}
 	}
