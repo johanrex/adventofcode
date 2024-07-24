@@ -163,27 +163,43 @@ func part2Rule2ShouldChangeState(grid Grid, row, col int) bool {
 	return false
 }
 
-func part1EvalRound(grid *Grid) bool {
+func evalRound(grid *Grid, part int) bool {
 	var changes []GridChange
 
 	//check if we should change anything
 	for rowIdx := 0; rowIdx < len(*grid); rowIdx++ {
 		row := (*grid)[rowIdx]
 		for colIdx := 0; colIdx < len(row); colIdx++ {
-			if part1Rule1ShouldChangeState(*grid, rowIdx, colIdx) {
+			var changed bool
+			if part == 1 {
+				changed = part1Rule1ShouldChangeState(*grid, rowIdx, colIdx)
+			} else {
+				changed = part2Rule1ShouldChangeState(*grid, rowIdx, colIdx)
+			}
+
+			if changed {
 				change := GridChange{
 					row:    rowIdx,
 					col:    colIdx,
 					newVal: '#',
 				}
 				changes = append(changes, change)
-			} else if part1Rule2ShouldChangeState(*grid, rowIdx, colIdx) {
-				change := GridChange{
-					row:    rowIdx,
-					col:    colIdx,
-					newVal: 'L',
+			} else {
+				if part == 1 {
+					changed = part1Rule2ShouldChangeState(*grid, rowIdx, colIdx)
+				} else {
+					changed = part2Rule2ShouldChangeState(*grid, rowIdx, colIdx)
 				}
-				changes = append(changes, change)
+
+				if changed {
+					change := GridChange{
+						row:    rowIdx,
+						col:    colIdx,
+						newVal: 'L',
+					}
+					changes = append(changes, change)
+				}
+
 			}
 		}
 	}
@@ -233,7 +249,7 @@ func part2EvalRound(grid *Grid) bool {
 	return len(changes) > 0
 }
 
-func part1(filename string) {
+func evaluate(filename string, part int) {
 	grid := readFile2dSlice(filename)
 
 	fmt.Println("Grid size is:")
@@ -244,7 +260,9 @@ func part1(filename string) {
 	// printGrid(grid)
 
 	for i := 0; true; i++ {
-		changed := part1EvalRound(&grid)
+		var changed bool
+
+		changed = evalRound(&grid, part)
 
 		// fmt.Println("")
 		// fmt.Println("Round", i+1)
@@ -257,42 +275,15 @@ func part1(filename string) {
 	}
 
 	cnt := gridCount(grid, '#')
-	fmt.Println("Part 1:", cnt)
-}
-
-func part2(filename string) {
-	grid := readFile2dSlice(filename)
-
-	fmt.Println("Grid size is:")
-	fmt.Println(len(grid), "rows")
-	fmt.Println(len(grid[0]), "columns")
-
-	// fmt.Println("Starting grid:")
-	// printGrid(grid)
-
-	for i := 0; true; i++ {
-		changed := part2EvalRound(&grid)
-
-		// fmt.Println("")
-		// fmt.Println("Round", i+1)
-		// printGrid(grid)
-
-		if !changed {
-			fmt.Println("No change in grid after round", i+1)
-			break
-		}
-	}
-
-	cnt := gridCount(grid, '#')
-	fmt.Println("Part 2:", cnt)
+	fmt.Println("Part", part, ":", cnt)
 }
 
 func main() {
 	// filename := "day11/example"
 	filename := "day11/input"
 
-	part1(filename)
-	part2(filename)
+	evaluate(filename, 1)
+	evaluate(filename, 2)
 
 	// (L) empty
 	// (#) occupied
