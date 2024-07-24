@@ -9,6 +9,12 @@ import (
 
 type Grid [][]rune
 
+type GridChange struct {
+	row    int
+	col    int
+	newVal rune
+}
+
 var dirs = []struct{ dcol, drow int }{
 	{-1, 0},  // up
 	{1, 0},   // down
@@ -51,7 +57,7 @@ func getAllAdjacent(grid Grid, row, col int) []rune {
 	adj := []rune{}
 	for _, dir := range dirs {
 		newCol, newRow := col+dir.dcol, row+dir.drow
-		if newRow >= 0 && newRow < len(grid) && newCol >= 0 && newCol < len(grid[newRow]) {
+		if newRow >= 0 && newRow < len(grid) && newCol >= 0 && newCol < len(grid[row]) {
 			adj = append(adj, grid[newRow][newCol])
 		}
 	}
@@ -136,48 +142,64 @@ func copyGrid(grid Grid) Grid {
 	return newGrid
 }
 
-func evalRound(grid Grid) Grid {
-	newGrid := copyGrid(grid)
+func evalRound(grid *Grid) bool {
+	var changes []GridChange
 
-	for rowIdx := 0; rowIdx < len(grid); rowIdx++ {
-		row := grid[rowIdx]
+	//check if we should change anything
+	for rowIdx := 0; rowIdx < len(*grid); rowIdx++ {
+		row := (*grid)[rowIdx]
 		for colIdx := 0; colIdx < len(row); colIdx++ {
-			if rule1ShouldChangeState(grid, rowIdx, colIdx) {
-				newGrid[rowIdx][colIdx] = '#'
-			} else if rule2ShouldChangeState(grid, rowIdx, colIdx) {
-				newGrid[rowIdx][colIdx] = 'L'
+			if rule1ShouldChangeState(*grid, rowIdx, colIdx) {
+				change := GridChange{
+					row:    rowIdx,
+					col:    colIdx,
+					newVal: '#',
+				}
+				changes = append(changes, change)
+			} else if rule2ShouldChangeState(*grid, rowIdx, colIdx) {
+				change := GridChange{
+					row:    rowIdx,
+					col:    colIdx,
+					newVal: 'L',
+				}
+				changes = append(changes, change)
 			}
 		}
 	}
 
-	return newGrid
+	//apply changes
+	for _, change := range changes {
+		(*grid)[change.row][change.col] = change.newVal
+
+	}
+
+	//return if we changed anything
+	return len(changes) > 0
 }
 
 func main() {
-	// filename := "day11/example"
-	filename := "day11/input"
+	filename := "day11/example"
+	// filename := "day11/input"
 	grid := readFile2dSlice(filename)
 
 	fmt.Println("Grid size is:")
 	fmt.Println(len(grid), "rows")
 	fmt.Println(len(grid[0]), "columns")
 
-	// fmt.Println("Starting grid:")
-	// printGrid(grid)
+	fmt.Println("Starting grid:")
+	printGrid(grid)
 
 	for i := 0; true; i++ {
-		newGrid := evalRound(grid)
+		changed := evalRound(&grid)
 
-		// fmt.Println("")
-		// fmt.Println("Round", i+1)
-		// printGrid(newGrid)
+		fmt.Println("")
+		fmt.Println("Round", i+1)
+		printGrid(grid)
 
-		if isEqual(grid, newGrid) {
+		if !changed {
 			fmt.Println("No change in grid after round", i+1)
 			break
 		}
-
-		grid = newGrid
 	}
 
 	cnt := gridCount(grid, '#')
