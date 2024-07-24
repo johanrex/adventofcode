@@ -97,23 +97,6 @@ func gridCount(grid Grid, val rune) int {
 	return count
 }
 
-func isEqual(grid1 Grid, grid2 Grid) bool {
-	if len(grid1) != len(grid2) {
-		log.Fatalf("grids have different number of rows")
-	}
-	for y := range grid1 {
-		if len(grid1[y]) != len(grid2[y]) {
-			log.Fatalf("grids have different number of columns")
-		}
-		for x := range grid1[y] {
-			if grid1[y][x] != grid2[y][x] {
-				return false // Different elements
-			}
-		}
-	}
-	return true
-}
-
 func rule1ShouldChangeState(grid Grid, row, col int) bool {
 	// If a seat is empty (L) and there are no occupied seats adjacent to it, the seat becomes occupied (change state)
 	if grid[row][col] == 'L' && !any(getAllAdjacent(grid, row, col), '#') {
@@ -128,18 +111,6 @@ func rule2ShouldChangeState(grid Grid, row, col int) bool {
 		return true
 	}
 	return false
-}
-
-func copyGrid(grid Grid) Grid {
-	newGrid := make(Grid, len(grid))
-	for rowIdx, row := range grid {
-		newGrid[rowIdx] = make([]rune, len(row))
-		for colIdx, cellVal := range row {
-			newGrid[rowIdx][colIdx] = cellVal
-		}
-	}
-
-	return newGrid
 }
 
 func evalRound(grid *Grid) bool {
@@ -178,23 +149,23 @@ func evalRound(grid *Grid) bool {
 }
 
 func main() {
-	filename := "day11/example"
-	// filename := "day11/input"
+	// filename := "day11/example"
+	filename := "day11/input"
 	grid := readFile2dSlice(filename)
 
 	fmt.Println("Grid size is:")
 	fmt.Println(len(grid), "rows")
 	fmt.Println(len(grid[0]), "columns")
 
-	fmt.Println("Starting grid:")
-	printGrid(grid)
+	// fmt.Println("Starting grid:")
+	// printGrid(grid)
 
 	for i := 0; true; i++ {
 		changed := evalRound(&grid)
 
-		fmt.Println("")
-		fmt.Println("Round", i+1)
-		printGrid(grid)
+		// fmt.Println("")
+		// fmt.Println("Round", i+1)
+		// printGrid(grid)
 
 		if !changed {
 			fmt.Println("No change in grid after round", i+1)
