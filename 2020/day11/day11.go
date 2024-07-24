@@ -53,7 +53,7 @@ func printGrid(grid Grid) {
 	}
 }
 
-func getAdjacent(grid Grid, row, col int) []rune {
+func getAdjacents(grid Grid, row, col int) []rune {
 	adj := []rune{}
 	for _, dir := range dirs {
 		newCol, newRow := col+dir.dcol, row+dir.drow
@@ -128,7 +128,7 @@ func gridCount(grid Grid, val rune) int {
 	return count
 }
 
-func rule1ShouldChangeState(grid Grid, row, col int, seats []rune) bool {
+func rule1ChangesState(grid Grid, row, col int, seats []rune) bool {
 	// If a seat is empty (L) and there are no occupied seats adjacent to it, the seat becomes occupied (change state)
 	if grid[row][col] == 'L' && !any(seats, '#') {
 		return true
@@ -136,7 +136,7 @@ func rule1ShouldChangeState(grid Grid, row, col int, seats []rune) bool {
 	return false
 }
 
-func rule2ShouldChangeState(grid Grid, row, col int, seats []rune, threshold int) bool {
+func rule2ChangesState(grid Grid, row, col int, seats []rune, threshold int) bool {
 	// If a seat is occupied (#) and [threshold] or more seats adjacent to it are also occupied, the seat becomes empty.
 	if grid[row][col] == '#' && arrCount(seats, '#') >= threshold {
 		return true
@@ -147,11 +147,16 @@ func rule2ShouldChangeState(grid Grid, row, col int, seats []rune, threshold int
 func evalRound(grid *Grid, part int) bool {
 	var changes []GridChange
 
-	var threshold int
+	type rule1SeatFuncType func(Grid, int, int) []rune
+	var rule1SeatFunc rule1SeatFuncType
+
+	var rule2Threshold int
 	if part == 1 {
-		threshold = 4
+		rule1SeatFunc = getAdjacents
+		rule2Threshold = 4
 	} else {
-		threshold = 5
+		rule1SeatFunc = getFirstVisibles
+		rule2Threshold = 5
 	}
 
 	//check if we should change anything
@@ -160,13 +165,9 @@ func evalRound(grid *Grid, part int) bool {
 		for colIdx := 0; colIdx < len(row); colIdx++ {
 			var seats []rune
 
-			if part == 1 {
-				seats = getAdjacent(*grid, rowIdx, colIdx)
-			} else {
-				seats = getFirstVisibles(*grid, rowIdx, colIdx)
-			}
+			seats = rule1SeatFunc(*grid, rowIdx, colIdx)
 
-			if rule1ShouldChangeState(*grid, rowIdx, colIdx, seats) {
+			if rule1ChangesState(*grid, rowIdx, colIdx, seats) {
 				change := GridChange{
 					row:    rowIdx,
 					col:    colIdx,
@@ -174,7 +175,7 @@ func evalRound(grid *Grid, part int) bool {
 				}
 				changes = append(changes, change)
 			} else {
-				if rule2ShouldChangeState(*grid, rowIdx, colIdx, seats, threshold) {
+				if rule2ChangesState(*grid, rowIdx, colIdx, seats, rule2Threshold) {
 					change := GridChange{
 						row:    rowIdx,
 						col:    colIdx,
@@ -182,7 +183,6 @@ func evalRound(grid *Grid, part int) bool {
 					}
 					changes = append(changes, change)
 				}
-
 			}
 		}
 	}
@@ -197,24 +197,10 @@ func evalRound(grid *Grid, part int) bool {
 	return len(changes) > 0
 }
 
-func evaluate(filename string, part int) {
-	grid := readFile2dSlice(filename)
-
-	fmt.Println("Grid size is:")
-	fmt.Println(len(grid), "rows")
-	fmt.Println(len(grid[0]), "columns")
-
-	// fmt.Println("Starting grid:")
-	// printGrid(grid)
+func evaluate(grid Grid, part int) {
 
 	for i := 0; true; i++ {
-		var changed bool
-
-		changed = evalRound(&grid, part)
-
-		// fmt.Println("")
-		// fmt.Println("Round", i+1)
-		// printGrid(grid)
+		changed := evalRound(&grid, part)
 
 		if !changed {
 			fmt.Println("No change in grid after round", i+1)
@@ -225,13 +211,30 @@ func evaluate(filename string, part int) {
 	cnt := gridCount(grid, '#')
 	fmt.Println("Part", part, ":", cnt)
 }
+func deepCopyGrid(grid [][]rune) [][]rune {
+	gridCopy := make([][]rune, len(grid))
+
+	for i, row := range grid {
+		newRow := make([]rune, len(row))
+		copy(newRow, row)
+		gridCopy[i] = newRow
+	}
+
+	return gridCopy
+}
 
 func main() {
 	// filename := "day11/example"
 	filename := "day11/input"
 
-	evaluate(filename, 1)
-	evaluate(filename, 2)
+	grid := readFile2dSlice(filename)
+
+	fmt.Println("Grid size is:")
+	fmt.Println(len(grid), "rows")
+	fmt.Println(len(grid[0]), "columns")
+
+	evaluate(deepCopyGrid(grid), 1)
+	evaluate(deepCopyGrid(grid), 2)
 
 	// (L) empty
 	// (#) occupied
