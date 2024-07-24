@@ -9,6 +9,17 @@ import (
 
 type Grid [][]rune
 
+var dirs = []struct{ dcol, drow int }{
+	{-1, 0},  // up
+	{1, 0},   // down
+	{0, -1},  // left
+	{0, 1},   // right
+	{-1, -1}, // up-left
+	{-1, 1},  // up-right
+	{1, -1},  // down-left
+	{1, 1},   // down-right
+}
+
 func readFile2dSlice(filename string) Grid {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -36,33 +47,15 @@ func printGrid(grid Grid) {
 	}
 }
 
-func getAllAdjacent(grid Grid, x, y int) []rune {
-
+func getAllAdjacent(grid Grid, row, col int) []rune {
 	adj := []rune{}
-	if y > 0 { //up
-		adj = append(adj, grid[y-1][x])
+	for _, dir := range dirs {
+		newCol, newRow := col+dir.dcol, row+dir.drow
+		if newRow >= 0 && newRow < len(grid) && newCol >= 0 && newCol < len(grid[newRow]) {
+			adj = append(adj, grid[newRow][newCol])
+		}
 	}
-	if y < len(grid)-1 { //down
-		adj = append(adj, grid[y+1][x])
-	}
-	if x > 0 { //left
-		adj = append(adj, grid[y][x-1])
-	}
-	if x < len(grid[y])-1 { //right
-		adj = append(adj, grid[y][x+1])
-	}
-	if y > 0 && x > 0 { //up left
-		adj = append(adj, grid[y-1][x-1])
-	}
-	if y > 0 && x < len(grid[y])-1 { //up right
-		adj = append(adj, grid[y-1][x+1])
-	}
-	if y < len(grid)-1 && x > 0 { //down left
-		adj = append(adj, grid[y+1][x-1])
-	}
-	if y < len(grid)-1 && x < len(grid[y])-1 { //down right
-		adj = append(adj, grid[y+1][x+1])
-	}
+
 	return adj
 }
 
@@ -115,33 +108,44 @@ func isEqual(grid1 Grid, grid2 Grid) bool {
 	return true
 }
 
-func rule1ShouldChangeState(grid Grid, x, y int) bool {
+func rule1ShouldChangeState(grid Grid, row, col int) bool {
 	// If a seat is empty (L) and there are no occupied seats adjacent to it, the seat becomes occupied (change state)
-	if grid[y][x] == 'L' && !any(getAllAdjacent(grid, x, y), '#') {
+	if grid[row][col] == 'L' && !any(getAllAdjacent(grid, row, col), '#') {
 		return true
 	}
 	return false
 }
 
-func rule2ShouldChangeState(grid Grid, x, y int) bool {
+func rule2ShouldChangeState(grid Grid, row, col int) bool {
 	// If a seat is occupied (#) and four or more seats adjacent to it are also occupied, the seat becomes empty.
-	if grid[y][x] == '#' && arrCount(getAllAdjacent(grid, x, y), '#') >= 4 {
+	if grid[row][col] == '#' && arrCount(getAllAdjacent(grid, row, col), '#') >= 4 {
 		return true
 	}
 	return false
+}
+
+func copyGrid(grid Grid) Grid {
+	newGrid := make(Grid, len(grid))
+	for rowIdx, row := range grid {
+		newGrid[rowIdx] = make([]rune, len(row))
+		for colIdx, cellVal := range row {
+			newGrid[rowIdx][colIdx] = cellVal
+		}
+	}
+
+	return newGrid
 }
 
 func evalRound(grid Grid) Grid {
-	newGrid := make(Grid, len(grid))
-	for y, row := range grid {
-		newGrid[y] = make([]rune, len(row))
-		for x, cell := range row {
-			if rule1ShouldChangeState(grid, x, y) {
-				newGrid[y][x] = '#'
-			} else if rule2ShouldChangeState(grid, x, y) {
-				newGrid[y][x] = 'L'
-			} else {
-				newGrid[y][x] = cell
+	newGrid := copyGrid(grid)
+
+	for rowIdx := 0; rowIdx < len(grid); rowIdx++ {
+		row := grid[rowIdx]
+		for colIdx := 0; colIdx < len(row); colIdx++ {
+			if rule1ShouldChangeState(grid, rowIdx, colIdx) {
+				newGrid[rowIdx][colIdx] = '#'
+			} else if rule2ShouldChangeState(grid, rowIdx, colIdx) {
+				newGrid[rowIdx][colIdx] = 'L'
 			}
 		}
 	}
@@ -153,6 +157,10 @@ func main() {
 	// filename := "day11/example"
 	filename := "day11/input"
 	grid := readFile2dSlice(filename)
+
+	fmt.Println("Grid size is:")
+	fmt.Println(len(grid), "rows")
+	fmt.Println(len(grid[0]), "columns")
 
 	// fmt.Println("Starting grid:")
 	// printGrid(grid)
