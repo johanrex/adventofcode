@@ -53,7 +53,7 @@ func printGrid(grid Grid) {
 	}
 }
 
-func getAllAdjacent(grid Grid, row, col int) []rune {
+func getAdjacent(grid Grid, row, col int) []rune {
 	adj := []rune{}
 	for _, dir := range dirs {
 		newCol, newRow := col+dir.dcol, row+dir.drow
@@ -99,7 +99,7 @@ func gridCount(grid Grid, val rune) int {
 
 func rule1ShouldChangeState(grid Grid, row, col int) bool {
 	// If a seat is empty (L) and there are no occupied seats adjacent to it, the seat becomes occupied (change state)
-	if grid[row][col] == 'L' && !any(getAllAdjacent(grid, row, col), '#') {
+	if grid[row][col] == 'L' && !any(getAdjacent(grid, row, col), '#') {
 		return true
 	}
 	return false
@@ -107,7 +107,7 @@ func rule1ShouldChangeState(grid Grid, row, col int) bool {
 
 func rule2ShouldChangeState(grid Grid, row, col int) bool {
 	// If a seat is occupied (#) and four or more seats adjacent to it are also occupied, the seat becomes empty.
-	if grid[row][col] == '#' && arrCount(getAllAdjacent(grid, row, col), '#') >= 4 {
+	if grid[row][col] == '#' && arrCount(getAdjacent(grid, row, col), '#') >= 4 {
 		return true
 	}
 	return false
