@@ -1,0 +1,5 @@
+name: adventofcode
+channels:
+  - defaults
+dependencies:
+  - python=3.13

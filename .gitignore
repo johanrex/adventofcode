@@ -2,3 +2,4 @@ __pycache__/
 2023/cookie.json
 build/
 *.pyd
+cookie.json
