@@ -6,14 +6,18 @@ $folder = "day$day"
 
 if (-not (Test-Path $folder)) {
     mkdir $folder
-    New-Item -Path ".\$folder\example" -ItemType File # create the example file
+}
 
-    copy-item .\template.py $folder\day$day.py # copy the template file
-
+$pythonFile = "$folder\day$day.py"
+if (-not (Test-Path $pythonFile)) {
+    copy-item .\template.py $pythonFile # copy the template file
+    (Get-Content $pythonFile) -replace 'dayX', "day$day" | Set-Content $pythonFile
     Write-Host "Created files for day $day"
 }
-else {
-    Write-Host "Folder '$folder' already exist"
+
+$exampleFile = "$folder\example"
+if (-not (Test-Path $exampleFile)) {
+    New-Item -Path ".\$folder\example" -ItemType File
 }
 
 $input_file = "$folder/input"
