@@ -1,7 +1,5 @@
-import math
 import re
 import copy
-from collections import Counter
 
 
 def parse_ints(filename: str):
@@ -13,10 +11,7 @@ def parse_ints(filename: str):
 
 
 def is_safe(line):
-    diffs = []
-    for i in range(1, len(line)):
-        diff = line[i - 1] - line[i]
-        diffs.append(diff)
+    diffs = [a - b for a, b in zip(line, line[1:])]
 
     same_sign = all(d > 0 for d in diffs) or all(d < 0 for d in diffs)
     nice_diff = all(1 <= abs(d) <= 3 for d in diffs)
@@ -40,7 +35,6 @@ def part2(data):
     for line in data:
         if is_safe(line):
             safe_cnt += 1
-            continue
         else:
             for k in range(len(line)):
                 line_copy = copy.deepcopy(line)
