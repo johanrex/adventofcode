@@ -25,7 +25,6 @@ def part1(filename: str):
 def get_all_matches(line, regex):
     matches = []
     for match in regex.finditer(line):
-        print(f"Match found at position {match.start()} {match.group()}")
         matches.append((match.start(), match.group()))
     return matches
 
@@ -34,13 +33,14 @@ def part2(filename):
     with open(filename) as f:
         lines = f.readlines()
 
-    # TODO varför blir det annorlunda om jag kör rad för rad?
     line = "".join(lines)
 
     instr_list = []
     instr_list.extend(get_all_matches(line, re_mul))
     instr_list.extend(get_all_matches(line, re_do))
     instr_list.extend(get_all_matches(line, re_dont))
+
+    # sort by position of match
     instr_list.sort(key=lambda x: x[0])
 
     mul_list = []
@@ -53,9 +53,6 @@ def part2(filename):
         elif instr[1].startswith("mul"):
             if do:
                 mul_list.append(instr[1])
-
-    print("mul_list")
-    print(mul_list)
 
     s = 0
     for mul in mul_list:
