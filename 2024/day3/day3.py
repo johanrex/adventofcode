@@ -1,8 +1,4 @@
-import math
 import re
-import copy
-from collections import Counter
-import sys
 
 re_mul = re.compile(r"mul\((\d+),(\d+)\)")
 re_do = re.compile(r"do\(\)")
@@ -37,13 +33,12 @@ def part2(filename):
     with open(filename) as f:
         lines = f.readlines()
 
+    line = "".join(lines)
+
     instr_list = []
-
-    for line in lines:
-        instr_list.extend(get_all_matches(line, re_mul))
-        instr_list.extend(get_all_matches(line, re_do))
-        instr_list.extend(get_all_matches(line, re_dont))
-
+    instr_list.extend(get_all_matches(line, re_mul))
+    instr_list.extend(get_all_matches(line, re_do))
+    instr_list.extend(get_all_matches(line, re_dont))
     instr_list.sort(key=lambda x: x[0])
 
     mul_list = []
@@ -69,12 +64,11 @@ def part2(filename):
 
         s += a * b
 
-    # not 86652275
     print("Part 2:", s)
 
 
 # filename = "day3/example"
 filename = "day3/input"
 
-# part1(filename)
+part1(filename)
 part2(filename)
