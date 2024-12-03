@@ -18,6 +18,7 @@ def part1(filename: str):
             b = int(mul[1])
             s += a * b
 
+    assert s == 161289189
     print("Part 1:", s)
 
 
@@ -33,6 +34,7 @@ def part2(filename):
     with open(filename) as f:
         lines = f.readlines()
 
+    # TODO varför blir det annorlunda om jag kör rad för rad?
     line = "".join(lines)
 
     instr_list = []
@@ -60,10 +62,10 @@ def part2(filename):
         m = re_mul.match(mul)
         a = int(m.group(1))
         b = int(m.group(2))
-        print(f"mul {a} {b}")
 
         s += a * b
 
+    assert s == 83595109
     print("Part 2:", s)
 
 
