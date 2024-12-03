@@ -12,10 +12,17 @@ def parse_ints(filename: str):
     return nrs
 
 
-def parse_strs(filename):
+def parse_strs(filename: str):
     with open(filename) as f:
         lines = [line.strip() for line in f.readlines()]
     return lines
+
+
+def parse_str(filename: str):
+    with open(filename) as f:
+        text = f.read()
+
+    return text
 
 
 def part1(data):
