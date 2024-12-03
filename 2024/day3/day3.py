@@ -4,15 +4,18 @@ re_instr = re.compile(r"mul\(\d+,\d+\)|do\(\)|don't\(\)")
 re_mul = re.compile(r"mul\((\d+),(\d+)\)")
 
 
-def part1(filename: str):
+def get_all_text(filename: str):
     with open(filename) as f:
-        lines = f.readlines()
+        line = f.read()
 
-    line = "".join(lines)
+    return line
+
+
+def part1(filename: str):
+    text = get_all_text(filename)
+    muls = re_mul.findall(text)
+
     s = 0
-
-    muls = re_mul.findall(line)
-
     for mul in muls:
         a = int(mul[0])
         b = int(mul[1])
@@ -22,20 +25,9 @@ def part1(filename: str):
     print("Part 1:", s)
 
 
-def get_all_matches(line, regex):
-    matches = []
-    for match in regex.finditer(line):
-        matches.append((match.start(), match.group()))
-    return matches
-
-
 def part2(filename):
-    with open(filename) as f:
-        lines = f.readlines()
-
-    line = "".join(lines)
-
-    instructions = re_instr.findall(line)
+    text = get_all_text(filename)
+    instructions = re_instr.findall(text)
 
     s = 0
     do = True
