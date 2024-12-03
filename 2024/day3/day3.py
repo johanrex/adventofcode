@@ -1,14 +1,6 @@
 import re
 
 re_instr = re.compile(r"mul\(\d+,\d+\)|do\(\)|don't\(\)")
-re_mul = re.compile(r"mul\(\d+,\d+\)")
-
-
-def get_all_text(filename: str):
-    with open(filename) as f:
-        text = f.read()
-
-    return text
 
 
 def get_operands(mul: str):
@@ -17,41 +9,28 @@ def get_operands(mul: str):
     return int(a), int(b)
 
 
-def part1(filename: str):
-    text = get_all_text(filename)
-    muls = re_mul.findall(text)
-
-    s = 0
-    for mul in muls:
-        a, b = get_operands(mul)
-        s += a * b
-
-    assert s == 161289189
-    print("Part 1:", s)
-
-
-def part2(filename):
-    text = get_all_text(filename)
-    instructions = re_instr.findall(text)
-
-    s = 0
-    do = True
-    for instr in instructions:
-        if instr.startswith("don't"):
-            do = False
-        elif instr.startswith("do"):
-            do = True
-        elif instr.startswith("mul"):
-            if do:
-                a, b = get_operands(instr)
-                s += a * b
-
-    assert s == 83595109
-    print("Part 2:", s)
-
-
 # filename = "day3/example"
 filename = "day3/input"
 
-part1(filename)
-part2(filename)
+with open(filename) as f:
+    instructions = re_instr.findall(f.read())
+
+s1 = 0
+s2 = 0
+do = True
+for instr in instructions:
+    if instr.startswith("mul"):
+        a, b = get_operands(instr)
+        s1 += a * b
+        if do:
+            s2 += a * b
+    elif instr.startswith("don't"):
+        do = False
+    elif instr.startswith("do"):
+        do = True
+
+assert s1 == 161289189
+print("Part 1:", s1)
+
+assert s2 == 83595109
+print("Part 2:", s2)
