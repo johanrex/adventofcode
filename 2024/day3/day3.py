@@ -1,7 +1,7 @@
 import re
 
 re_instr = re.compile(r"mul\(\d+,\d+\)|do\(\)|don't\(\)")
-re_mul = re.compile(r"mul\((\d+),(\d+)\)")
+re_mul = re.compile(r"mul\(\d+,\d+\)")
 
 
 def get_all_text(filename: str):
@@ -11,14 +11,19 @@ def get_all_text(filename: str):
     return text
 
 
+def get_operands(mul: str):
+    mul = mul[4:-1]
+    a, b = mul.split(",")
+    return int(a), int(b)
+
+
 def part1(filename: str):
     text = get_all_text(filename)
     muls = re_mul.findall(text)
 
     s = 0
     for mul in muls:
-        a = int(mul[0])
-        b = int(mul[1])
+        a, b = get_operands(mul)
         s += a * b
 
     assert s == 161289189
@@ -38,10 +43,7 @@ def part2(filename):
             do = True
         elif instr.startswith("mul"):
             if do:
-                m = re_mul.match(instr)
-                a = int(m.group(1))
-                b = int(m.group(2))
-
+                a, b = get_operands(instr)
                 s += a * b
 
     assert s == 83595109
