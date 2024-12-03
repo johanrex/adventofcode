@@ -6,9 +6,9 @@ re_mul = re.compile(r"mul\((\d+),(\d+)\)")
 
 def get_all_text(filename: str):
     with open(filename) as f:
-        line = f.read()
+        text = f.read()
 
-    return line
+    return text
 
 
 def part1(filename: str):
