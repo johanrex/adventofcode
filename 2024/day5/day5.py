@@ -2,23 +2,29 @@ from collections import defaultdict
 
 
 def parse_input(filename: str):
-    with open(filename) as f:
-        text = f.read()
-
-    rules_part, updates_part = text.strip().split("\n\n")
-
-    # glorious rules
     rules = defaultdict(set)
-    for line in rules_part.split("\n"):
-        before, after = map(int, line.split("|"))
-        rules[before].add(after)
-
-    # orders
     updates = []
-    for line in updates_part.split("\n"):
-        update = [int(x) for x in line.split(",")]
-        assert len(update) % 2 == 1
-        updates.append(update)
+
+    first_section = True
+    with open(filename) as f:
+        lines = f.readlines()
+
+    for line in lines:
+        line = line.strip()
+
+        if line == "":
+            first_section = False
+            continue
+
+        if first_section:
+            # we're parsing rules
+            before, after = map(int, line.split("|"))
+            rules[before].add(after)
+        else:
+            # we're parsing updates
+            update = [int(x) for x in line.split(",")]
+            updates.append(update)
+            assert len(update) % 2 == 1
 
     return rules, updates
 
@@ -91,14 +97,8 @@ filename = "day5/input"
 
 rules, updates = parse_input(filename)
 
-# which updates are in order?
-updates_in_order = []
-updates_not_in_order = []
-for update in updates:
-    if is_valid_order(update, rules):
-        updates_in_order.append(update)
-    else:
-        updates_not_in_order.append(update)
+updates_in_order = [u for u in updates if is_valid_order(u, rules)]
+updates_not_in_order = [u for u in updates if not is_valid_order(u, rules)]
 
 part1(updates_in_order)
 part2(rules, updates_not_in_order)
