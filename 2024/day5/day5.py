@@ -5,17 +5,17 @@ def parse_input(filename: str):
     with open(filename) as f:
         text = f.read()
 
-    rules_section, updates_section = text.strip().split("\n\n")
+    rules_part, updates_part = text.strip().split("\n\n")
 
+    # glorious rules
     rules = defaultdict(set)
-    # Parse rules into pairs
-    for line in rules_section.split("\n"):
+    for line in rules_part.split("\n"):
         before, after = map(int, line.split("|"))
         rules[before].add(after)
 
-    # Parse orders into lists of numbers
+    # orders
     updates = []
-    for line in updates_section.split("\n"):
+    for line in updates_part.split("\n"):
         update = [int(x) for x in line.split(",")]
         assert len(update) % 2 == 1
         updates.append(update)
@@ -23,16 +23,16 @@ def parse_input(filename: str):
     return rules, updates
 
 
-def is_valid_order(update, rule_graph):
-    # are all rules ok?
-    seen = set()
+def is_valid_order(update, rules):
+    # are all rules satisfied?
+    prevs = set()
     for num in update:
-        for prev in seen:
-            if num in rule_graph[prev]:
+        for prev in prevs:
+            if num in rules[prev]:
                 continue
             else:
                 return False
-        seen.add(num)
+        prevs.add(num)
     return True
 
 
@@ -80,6 +80,7 @@ def part2(rules, updates_not_in_order):
 
         # print("")
 
+    # at this point, all updates are in order
     s = sum_of_middle_elements(updates_not_in_order)
     assert s == 5479
     print("Part 2:", s)
@@ -90,6 +91,7 @@ filename = "day5/input"
 
 rules, updates = parse_input(filename)
 
+# which updates are in order?
 updates_in_order = []
 updates_not_in_order = []
 for update in updates:
@@ -97,6 +99,6 @@ for update in updates:
         updates_in_order.append(update)
     else:
         updates_not_in_order.append(update)
+
 part1(updates_in_order)
-print("")
 part2(rules, updates_not_in_order)
