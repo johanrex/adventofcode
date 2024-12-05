@@ -1,4 +1,3 @@
-
 $today = Get-Date
 $day = $today.Day
 $year = $today.Year
@@ -21,23 +20,21 @@ if (-not (Test-Path $exampleFile)) {
 }
 
 $input_file = "$folder/input"
-# should we download the input?
-if (-not (Test-Path $input_file)) {
 
-    # sleep until 6am to download the input
-    while ((Get-Date).Hour -lt 6) {
-        Start-Sleep -Seconds 1
-    }    
-
-    # read the cookie file
-    $json = Get-Content -Path "cookie.json" -Raw | ConvertFrom-Json
-    $session_cookie = $json."Content raw"
-
-    $url = "https://adventofcode.com/$year/day/$day/input"
-    curl --cookie "session=$session_cookie" $url > $input_file
-
-    Write-Host "Downloaded input for day $day"
+# sleep until 2 seconds past 6am to download the input. Have gotten error message when trying to download at exactly 6am.
+$target = [DateTime]::new($today.Year, $today.Month, $today.Day, 6, 0, 2)
+$timeToWait = $target - (Get-Date)
+if ($timeToWait.TotalSeconds -gt 0) {
+    $sleepSeconds = [math]::Ceiling($timeToWait.TotalSeconds)
+    write-host "Sleeping for $sleepSeconds seconds"
+    Start-Sleep -Seconds $sleepSeconds
 }
-else {
-    Write-Host "Input for day $day already exists"
-}
+
+# read the cookie file
+$json = Get-Content -Path "cookie.json" -Raw | ConvertFrom-Json
+$session_cookie = $json."Content raw"
+
+$url = "https://adventofcode.com/$year/day/$day/input"
+curl --cookie "session=$session_cookie" $url > $input_file
+
+Write-Host "Downloaded input file for day $day"
