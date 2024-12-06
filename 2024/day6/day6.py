@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import copy
 from collections import Counter
+import time
 
 DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 DIR_IDX_LBLS = ["^", ">", "v", "<"]
@@ -142,6 +143,9 @@ def part2(grid: Grid, guard: Guard):
 # filename = "day6/example"
 filename = "day6/input"
 
+start_time = time.perf_counter()
 grid, guard = parse(filename)
 part1(grid, copy.deepcopy(guard))
 part2(grid, copy.deepcopy(guard))
+end_time = time.perf_counter()
+print(f"Total time: {end_time - start_time:.2f} seconds")
