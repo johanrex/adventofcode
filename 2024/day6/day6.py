@@ -4,7 +4,6 @@ from collections import Counter
 
 DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 DIR_IDX_LBLS = ["^", ">", "v", "<"]
-dir_idx = 0
 
 
 @dataclass(frozen=True)
@@ -21,7 +20,7 @@ class Guard:
 
 Grid = list[list[str]]
 
-seen = set()
+visited = set()
 
 
 def print_grid(grid: Grid, guard: Guard):
@@ -102,30 +101,24 @@ def parse(filename: str) -> tuple[Grid, Guard]:
 
 
 def part1(grid: Grid, guard: Guard):
-    print("Initial grid:")
-    print_grid(grid, guard)
-
-    seen.add(guard.pos)
+    visited.add(guard.pos)
 
     while step(grid, guard):
-        # print("")
-        # print("After step:")
-        # print_grid(grid, guard)
+        visited.add(guard.pos)
 
-        seen.add(guard.pos)
-
-    print("Part 1:", len(seen))
+    s = len(visited)
+    assert s == 5208
+    print("Part 1:", s)
 
 
 def part2(grid: Grid, guard: Guard):
     loop_count = 0
 
-    seen.remove(guard.pos)
+    visited.remove(guard.pos)
 
-    for potential_pos in seen:
+    for potential_pos in visited:
         r, c = potential_pos.r, potential_pos.c
 
-        assert potential_pos != guard.pos
         assert grid[r][c] != "#"
 
         grid_copy = copy.deepcopy(grid)
@@ -141,9 +134,8 @@ def part2(grid: Grid, guard: Guard):
         # if we have hit an obstacle more than once, we have a loop
         if obstacles_hit.most_common(1)[0][1] > 1:
             loop_count += 1
-            print("Loop count:", loop_count)
 
-    # 1893 too low
+    assert loop_count == 1972
     print("Part 2:", loop_count)
 
 
