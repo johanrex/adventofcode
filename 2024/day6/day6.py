@@ -42,24 +42,29 @@ def step(grid, guard: Guard, obstacles_hit: Counter = None) -> bool:
     dir = DIRS[guard.dir_idx]
     g_r, g_c = guard.pos.r, guard.pos.c
 
-    potential_pos = Pos(g_r + dir[0], g_c + dir[1])
+    # must handle two turns in a row
+    found_valid_direction = False
+    while not found_valid_direction:
+        potential_pos = Pos(g_r + dir[0], g_c + dir[1])
 
-    # no step if outside grid
-    if not is_inside_grid(grid, potential_pos):
-        return False
+        # stop early if step is outside grid
+        if not is_inside_grid(grid, potential_pos):
+            return False
 
-    # is next cell an obstacle?
-    if grid[potential_pos.r][potential_pos.c] == "#":
-        if obstacles_hit is not None:
-            key = (potential_pos, guard.dir_idx)
-            obstacles_hit[key] += 1
+        # is next cell an obstacle?
+        if grid[potential_pos.r][potential_pos.c] == "#":
+            if obstacles_hit is not None:
+                key = (potential_pos, guard.dir_idx)
+                obstacles_hit[key] += 1
 
-            if obstacles_hit[key] > 1:
-                return False
+                if obstacles_hit[key] > 1:
+                    return False
 
-        # turn right
-        guard.dir_idx = turn(guard.dir_idx)
-        dir = DIRS[guard.dir_idx]
+            # turn right
+            guard.dir_idx = turn(guard.dir_idx)
+            dir = DIRS[guard.dir_idx]
+        else:
+            found_valid_direction = True
 
     # move forward
     g_r += dir[0]
