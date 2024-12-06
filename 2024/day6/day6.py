@@ -34,10 +34,6 @@ def print_grid(grid: Grid, guard: Guard):
         print("".join(row))
 
 
-def is_inside_grid(grid: Grid, pos: Pos) -> bool:
-    return 0 <= pos.r < len(grid) and 0 <= pos.c < len(grid[0])
-
-
 def step(grid, guard: Guard, obstacles_hit: Counter = None) -> bool:
     dir = DIRS[guard.dir_idx]
     g_r, g_c = guard.pos.r, guard.pos.c
@@ -48,7 +44,7 @@ def step(grid, guard: Guard, obstacles_hit: Counter = None) -> bool:
         potential_pos = Pos(g_r + dir[0], g_c + dir[1])
 
         # stop early if step is outside grid
-        if not is_inside_grid(grid, potential_pos):
+        if not (0 <= potential_pos.r < len(grid) and 0 <= potential_pos.c < len(grid[0])):
             return False
 
         # is next cell an obstacle?
@@ -117,20 +113,26 @@ def part2(grid: Grid, guard: Guard):
 
     visited.remove(guard.pos)
 
+    initial_pos = guard.pos
+    initial_dir_idx = guard.dir_idx
+
     for potential_pos in visited:
         r, c = potential_pos.r, potential_pos.c
 
         assert grid[r][c] != "#"
 
-        grid_copy = copy.deepcopy(grid)
-        guard_copy = copy.deepcopy(guard)
+        guard.pos = initial_pos
+        guard.dir_idx = initial_dir_idx
+
         obstacles_hit = Counter()
 
         # add an obstacle
-        grid_copy[r][c] = "#"
+        grid[r][c] = "#"
 
-        while step(grid_copy, guard_copy, obstacles_hit):
+        while step(grid, guard, obstacles_hit):
             pass
+
+        grid[r][c] = "."  # remove the obstacle
 
         # if we have hit an obstacle more than once, we have a loop
         if obstacles_hit.most_common(1)[0][1] > 1:
@@ -146,6 +148,6 @@ filename = "day6/input"
 start_time = time.perf_counter()
 grid, guard = parse(filename)
 part1(grid, copy.deepcopy(guard))
-part2(grid, copy.deepcopy(guard))
+part2(grid, guard)
 end_time = time.perf_counter()
 print(f"Total time: {end_time - start_time:.2f} seconds")
