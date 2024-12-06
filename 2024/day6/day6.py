@@ -22,6 +22,8 @@ class Guard:
 
 
 Grid = list[list[str]]
+
+# todo can use the obstacles_hit counter instead.
 seen = set()
 
 
@@ -39,7 +41,7 @@ def is_inside_grid(grid: Grid, pos: Pos) -> bool:
     return 0 <= pos.r < len(grid) and 0 <= pos.c < len(grid[0])
 
 
-def step(grid, guard: Guard) -> bool:
+def step(grid, guard: Guard, obstacles_hit: Counter = None) -> bool:
     dir = DIRS[guard.dir_idx]
     g_r, g_c = guard.pos.r, guard.pos.c
 
@@ -54,6 +56,13 @@ def step(grid, guard: Guard) -> bool:
         # turn right
         guard.dir_idx = turn(guard.dir_idx)
         dir = DIRS[guard.dir_idx]
+
+        if obstacles_hit is not None:
+            key = (guard.pos, guard.dir_idx)
+            obstacles_hit[key] += 1
+
+            if obstacles_hit[key] > 1:
+                return False
 
     # move forward
     g_r += dir[0]
@@ -90,7 +99,7 @@ def parse(filename: str) -> tuple[Grid, Guard]:
     return grid, guard
 
 
-def part1(grid, guard):
+def part1(grid: Grid, guard: Guard):
     print("Initial grid:")
     print_grid(grid, guard)
 
@@ -106,18 +115,47 @@ def part1(grid, guard):
     print("Part 1:", len(seen))
 
 
-def part2(grid):
+def part2(grid: Grid, guard: Guard):
     """
     add obstacle
     if entered obstacte from same direction twice, we have a cycle
+    how to keep track of obstacle-direction pairs?
+    Pos+Dir
     """
+    cycle_count = 0
 
-    print("Part 2:", -1)
+    for r in range(len(grid)):
+        row = grid[r]
+        for c in range(len(row)):
+            curr_pos = Pos(r, c)
+
+            if curr_pos == guard.pos:
+                continue
+
+            if grid[r][c] == "#":
+                continue
+
+            grid_copy = copy.deepcopy(grid)
+            guard_copy = copy.deepcopy(guard)
+            obstacles_hit = Counter()
+
+            # add an obstacle
+            grid_copy[r][c] = "#"
+
+            while step(grid_copy, guard_copy, obstacles_hit):
+                pass
+
+            if obstacles_hit.most_common(1)[0][1] > 1:
+                cycle_count += 1
+                print("Cycle count:", cycle_count)
+
+    # 1893 too low
+    print("Part 2:", cycle_count)
 
 
 # filename = "day6/example"
 filename = "day6/input"
 
 grid, guard = parse(filename)
-part1(grid, guard)
-part2(grid, guard)
+part1(grid, copy.deepcopy(guard))
+part2(grid, copy.deepcopy(guard))
