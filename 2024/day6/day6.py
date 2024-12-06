@@ -23,6 +23,7 @@ Grid = list[list[str]]
 
 seen = set()
 
+
 def print_grid(grid: Grid, guard: Guard):
     for r in range(len(grid)):
         row = grid[r].copy()  # copy to avoid modifying the original grid
@@ -49,7 +50,6 @@ def step(grid, guard: Guard, obstacles_hit: Counter = None) -> bool:
 
     # is next cell an obstacle?
     if grid[potential_pos.r][potential_pos.c] == "#":
-
         if obstacles_hit is not None:
             key = (potential_pos, guard.dir_idx)
             obstacles_hit[key] += 1
@@ -113,18 +113,15 @@ def part1(grid: Grid, guard: Guard):
 
 
 def part2(grid: Grid, guard: Guard):
+    loop_count = 0
 
-    cycle_count = 0
+    seen.remove(guard.pos)
 
     for potential_pos in seen:
-
-        if potential_pos == guard.pos:
-            continue
-
         r, c = potential_pos.r, potential_pos.c
 
-        if grid[r][c] == "#":
-            continue
+        assert potential_pos != guard.pos
+        assert grid[r][c] != "#"
 
         grid_copy = copy.deepcopy(grid)
         guard_copy = copy.deepcopy(guard)
@@ -136,12 +133,13 @@ def part2(grid: Grid, guard: Guard):
         while step(grid_copy, guard_copy, obstacles_hit):
             pass
 
+        # if we have hit an obstacle more than once, we have a loop
         if obstacles_hit.most_common(1)[0][1] > 1:
-            cycle_count += 1
-            print("Cycle count:", cycle_count)
+            loop_count += 1
+            print("Loop count:", loop_count)
 
     # 1893 too low
-    print("Part 2:", cycle_count)
+    print("Part 2:", loop_count)
 
 
 # filename = "day6/example"
