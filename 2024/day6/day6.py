@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-import math
-import re
 import copy
 from collections import Counter
 
@@ -23,9 +21,7 @@ class Guard:
 
 Grid = list[list[str]]
 
-# todo can use the obstacles_hit counter instead.
 seen = set()
-
 
 def print_grid(grid: Grid, guard: Guard):
     for r in range(len(grid)):
@@ -53,16 +49,17 @@ def step(grid, guard: Guard, obstacles_hit: Counter = None) -> bool:
 
     # is next cell an obstacle?
     if grid[potential_pos.r][potential_pos.c] == "#":
-        # turn right
-        guard.dir_idx = turn(guard.dir_idx)
-        dir = DIRS[guard.dir_idx]
 
         if obstacles_hit is not None:
-            key = (guard.pos, guard.dir_idx)
+            key = (potential_pos, guard.dir_idx)
             obstacles_hit[key] += 1
 
             if obstacles_hit[key] > 1:
                 return False
+
+        # turn right
+        guard.dir_idx = turn(guard.dir_idx)
+        dir = DIRS[guard.dir_idx]
 
     # move forward
     g_r += dir[0]
@@ -116,38 +113,32 @@ def part1(grid: Grid, guard: Guard):
 
 
 def part2(grid: Grid, guard: Guard):
-    """
-    add obstacle
-    if entered obstacte from same direction twice, we have a cycle
-    how to keep track of obstacle-direction pairs?
-    Pos+Dir
-    """
+
     cycle_count = 0
 
-    for r in range(len(grid)):
-        row = grid[r]
-        for c in range(len(row)):
-            curr_pos = Pos(r, c)
+    for potential_pos in seen:
 
-            if curr_pos == guard.pos:
-                continue
+        if potential_pos == guard.pos:
+            continue
 
-            if grid[r][c] == "#":
-                continue
+        r, c = potential_pos.r, potential_pos.c
 
-            grid_copy = copy.deepcopy(grid)
-            guard_copy = copy.deepcopy(guard)
-            obstacles_hit = Counter()
+        if grid[r][c] == "#":
+            continue
 
-            # add an obstacle
-            grid_copy[r][c] = "#"
+        grid_copy = copy.deepcopy(grid)
+        guard_copy = copy.deepcopy(guard)
+        obstacles_hit = Counter()
 
-            while step(grid_copy, guard_copy, obstacles_hit):
-                pass
+        # add an obstacle
+        grid_copy[r][c] = "#"
 
-            if obstacles_hit.most_common(1)[0][1] > 1:
-                cycle_count += 1
-                print("Cycle count:", cycle_count)
+        while step(grid_copy, guard_copy, obstacles_hit):
+            pass
+
+        if obstacles_hit.most_common(1)[0][1] > 1:
+            cycle_count += 1
+            print("Cycle count:", cycle_count)
 
     # 1893 too low
     print("Part 2:", cycle_count)
