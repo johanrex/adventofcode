@@ -51,10 +51,7 @@ def is_satisfiable(test_value, operands, list_of_operators):
 
 def sum_result_if_satisfiable(data, list_of_operators):
     s = 0
-    for eq in data:
-        test_value = eq[0]
-        operands = eq[1]
-
+    for test_value, operands in data:
         if is_satisfiable(test_value, operands, list_of_operators):
             s += test_value
     return s
