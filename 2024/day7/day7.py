@@ -1,13 +1,22 @@
-import math
+from functools import cache
 import re
-import copy
-from collections import Counter
+import time
 import operator
 from itertools import product
+from math import log10, floor
 
 
-def concat(a: int, b: int) -> int:
-    return int(str(a) + str(b))
+@cache
+def nr_of_digits(n: int) -> int:
+    if n == 0:
+        return 1
+
+    return floor(log10(abs(n))) + 1
+
+
+def operator_concat(a: int, b: int) -> int:
+    nr_of_digits_b = nr_of_digits(b)
+    return (a * 10**nr_of_digits_b) + b
 
 
 operators_p1 = [
@@ -15,7 +24,7 @@ operators_p1 = [
     operator.mul,
 ]
 
-operators_p2 = [*operators_p1, concat]
+operators_p2 = [*operators_p1, operator_concat]
 
 
 def parse(filename: str):
@@ -40,29 +49,30 @@ def is_satisfiable(test_value, operands, list_of_operators):
     return False
 
 
-def part1(data):
+def sum_result_if_satisfiable(data, list_of_operators):
     s = 0
     for eq in data:
         test_value = eq[0]
         operands = eq[1]
 
-        if is_satisfiable(test_value, operands, operators_p1):
+        if is_satisfiable(test_value, operands, list_of_operators):
             s += test_value
+    return s
 
+
+def part1(data):
+    s = sum_result_if_satisfiable(data, operators_p1)
+    assert s == 3119088655389
     print("Part 1:", s)
 
 
 def part2(data):
-    s = 0
-    for eq in data:
-        test_value = eq[0]
-        operands = eq[1]
-
-        if is_satisfiable(test_value, operands, operators_p2):
-            s += test_value
-
+    s = sum_result_if_satisfiable(data, operators_p2)
+    assert s == 264184041398847
     print("Part 2:", s)
 
+
+start_time = time.perf_counter()
 
 # filename = "day7/example"
 filename = "day7/input"
@@ -70,3 +80,6 @@ filename = "day7/input"
 data = parse(filename)
 part1(data)
 part2(data)
+
+end_time = time.perf_counter()
+print(f"Total time: {end_time - start_time:.2f} seconds")
