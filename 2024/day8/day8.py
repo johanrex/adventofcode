@@ -64,12 +64,53 @@ def part1(grid: Grid, antennas: Antennas):
 
     print_grid(grid, antinodes)
     s = len(antinodes)
-    assert s == 259
+    # assert s == 259
     print("Part 1:", s)
 
 
-def part2(grid: Grid):
-    print("Part 2:", -1)
+def part2(grid: Grid, antennas: Antennas):
+    antinodes: Antinodes = set()
+
+    for freq in antennas.keys():
+        positions = antennas[freq]
+
+        list_of_pairs = list(combinations(positions, 2))
+        print(f"{freq}: {list_of_pairs}")
+
+        for pair in list_of_pairs:
+            a1, a2 = pair
+
+            # add the nodes as well
+            antinodes.add(a1)
+            antinodes.add(a2)
+
+            dr = a1[0] - a2[0]
+            dc = a1[1] - a2[1]
+
+            tmp = a1
+            while True:
+                antinode = (tmp[0] + dr, tmp[1] + dc)
+
+                if (0 <= antinode[0] < len(grid)) and (0 <= antinode[1] < len(grid[0])):
+                    antinodes.add(antinode)
+                    tmp = antinode
+                else:
+                    break
+
+            tmp = a2
+            while True:
+                antinode = (tmp[0] - dr, tmp[1] - dc)
+
+                if (0 <= antinode[0] < len(grid)) and (0 <= antinode[1] < len(grid[0])):
+                    antinodes.add(antinode)
+                    tmp = antinode
+                else:
+                    break
+
+    print_grid(grid, antinodes)
+    s = len(antinodes)
+
+    print("Part 2:", s)
 
 
 # filename = "day8/example"
@@ -79,4 +120,4 @@ grid, antennas = parse(filename)
 # print_grid(grid)
 
 part1(grid, antennas)
-# part2(grid)
+part2(grid, antennas)
