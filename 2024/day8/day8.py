@@ -1,8 +1,5 @@
-import math
-import re
 import time
-import copy
-from collections import Counter, defaultdict
+from collections import defaultdict
 from itertools import combinations
 
 Grid = list[list[str]]
@@ -28,6 +25,8 @@ def parse(filename: str) -> tuple[Grid, Antennas]:
 
 
 def print_grid(grid: Grid, antinodes: Antinodes = None):
+    import copy
+
     grid = copy.deepcopy(grid)
 
     if antinodes:
@@ -116,7 +115,6 @@ start_time = time.perf_counter()
 filename = "day8/input"
 
 grid, antennas = parse(filename)
-# print_grid(grid)
 
 part1(grid, antennas)
 part2(grid, antennas)
