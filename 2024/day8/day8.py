@@ -1,5 +1,6 @@
 import math
 import re
+import time
 import copy
 from collections import Counter, defaultdict
 from itertools import combinations
@@ -46,7 +47,6 @@ def part1(grid: Grid, antennas: Antennas):
         positions = antennas[freq]
 
         list_of_pairs = list(combinations(positions, 2))
-        print(f"{freq}: {list_of_pairs}")
 
         for pair in list_of_pairs:
             a1, a2 = pair
@@ -62,7 +62,6 @@ def part1(grid: Grid, antennas: Antennas):
             if (0 <= antinode_2[0] < len(grid)) and (0 <= antinode_2[1] < len(grid[0])):
                 antinodes.add(antinode_2)
 
-    print_grid(grid, antinodes)
     s = len(antinodes)
     # assert s == 259
     print("Part 1:", s)
@@ -75,7 +74,6 @@ def part2(grid: Grid, antennas: Antennas):
         positions = antennas[freq]
 
         list_of_pairs = list(combinations(positions, 2))
-        print(f"{freq}: {list_of_pairs}")
 
         for pair in list_of_pairs:
             a1, a2 = pair
@@ -107,11 +105,12 @@ def part2(grid: Grid, antennas: Antennas):
                 else:
                     break
 
-    print_grid(grid, antinodes)
     s = len(antinodes)
-
+    assert s == 927
     print("Part 2:", s)
 
+
+start_time = time.perf_counter()
 
 # filename = "day8/example"
 filename = "day8/input"
@@ -121,3 +120,6 @@ grid, antennas = parse(filename)
 
 part1(grid, antennas)
 part2(grid, antennas)
+
+end_time = time.perf_counter()
+print(f"Total time: {end_time - start_time} seconds")
