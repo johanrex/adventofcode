@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from heapq import heappush, heappop, heapify
 
 
 @dataclass
@@ -33,7 +34,7 @@ def diskmap_to_layout(disk_map: DiskMap) -> Layout:
     return layout
 
 
-def diskregions_to_string(disk_regions: DiskRegions) -> str:
+def print_diskregions(disk_regions: DiskRegions):
     s = ""
     for region in disk_regions:
         region_size = region.block_end - region.block_start
@@ -41,7 +42,7 @@ def diskregions_to_string(disk_regions: DiskRegions) -> str:
             s += "." * region_size
         else:
             s += str(region.file_id) * region_size
-    return s
+    print(s)
 
 
 def compact1(layout: Layout) -> Layout:
@@ -74,6 +75,21 @@ def checksum1(layout: Layout) -> int:
     return s
 
 
+def checksum2(disk_regions: DiskRegions) -> int:
+    s = 0
+    block_id = 0
+    for region in disk_regions:
+        if region.file_id == -1:
+            block_id += region.block_end - region.block_start
+            continue
+
+        for _ in range(region.block_start, region.block_end):
+            s += region.file_id * block_id
+            block_id += 1
+
+    return s
+
+
 def diskmap_to_diskregions(disk_map: DiskMap) -> DiskRegions:
     disk_regions = []
 
@@ -100,7 +116,65 @@ def diskmap_to_diskregions(disk_map: DiskMap) -> DiskRegions:
     return disk_regions
 
 
-def compact2(disk_regions: DiskRegions) -> DiskRegions:
+def compact2_inplace(disk_regions: DiskRegions) -> DiskRegions:
+    attempted_file_ids = set()
+
+    assert disk_regions[0].file_id != -1
+
+    while True:
+        if disk_regions[0].file_id in attempted_file_ids:
+            break
+
+        # find last file that has not been attempted before.
+        src_file = None
+        for hi in range(len(disk_regions) - 1, -1, -1):
+            if disk_regions[hi].file_id != -1 and disk_regions[hi].file_id not in attempted_file_ids:
+                src_file = disk_regions[hi]
+                attempted_file_ids.add(src_file.file_id)
+                break
+            hi -= 1
+
+        if src_file is None:
+            break
+
+        src_file_size = src_file.block_end - src_file.block_start
+
+        # find first empty space that can fit the file
+        dst_free_region = None
+        for lo in range(len(disk_regions)):
+            if disk_regions[lo].file_id == -1 and disk_regions[lo].block_end - disk_regions[lo].block_start >= src_file_size:
+                dst_free_region = disk_regions[lo]
+                break
+
+        if dst_free_region is None:
+            continue
+
+        if lo >= hi:
+            continue
+
+        dst_free_region_size = dst_free_region.block_end - dst_free_region.block_start
+
+        # file fits perfectly
+        if dst_free_region_size == src_file_size:
+            dst_free_region.file_id = src_file.file_id
+            src_file.file_id = -1
+        else:
+            # we get some free space after the file
+            assert dst_free_region_size > src_file_size
+
+            # create new file object and insert it before the free space
+            file_in_transit = DiskRegion(src_file.block_start, src_file.block_end, src_file.file_id)
+            file_in_transit.block_start = dst_free_region.block_start
+            file_in_transit.block_end = dst_free_region.block_start + src_file_size
+            disk_regions.insert(lo, file_in_transit)
+
+            # subtract file size from free space
+            dst_free_region.block_start += src_file_size
+
+            # remove the original file (mark as empty space)
+            src_file.file_id = -1
+
+        # print(diskregions_to_string(disk_regions))
     pass
 
 
@@ -118,13 +192,17 @@ def part1(disk_map: DiskMap):
 def part2(disk_map: DiskMap):
     disk_regions = diskmap_to_diskregions(disk_map)
     print(disk_regions)
-    print(diskregions_to_string(disk_regions))
 
-    print("Part 2:", -1)
+    compact2_inplace(disk_regions)
+
+    s = checksum2(disk_regions)
+
+    # 85900447205 too low
+    print("Part 2:", s)
 
 
-filename = "day9/example"
-# filename = "day9/input"
+# filename = "day9/example"
+filename = "day9/input"
 
 disk_map = parse(filename)
 part1(disk_map)
