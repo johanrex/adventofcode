@@ -26,21 +26,18 @@ def compact(layout: Layout) -> Layout:
     lo = 0
     hi = len(layout) - 1
 
-    while lo < hi:
+    while True:
         while layout[lo] != ".":
             lo += 1
 
         while layout[hi] == ".":
             hi -= 1
 
+        if lo >= hi:
+            break
+
         # swap
         layout[lo], layout[hi] = layout[hi], layout[lo]
-
-        assert layout[lo] != "."
-        assert layout[hi] == "."
-
-        lo += 1
-        hi -= 1
 
     return layout
 
