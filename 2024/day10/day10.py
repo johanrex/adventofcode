@@ -64,11 +64,11 @@ def all_paths_recursive(grid: Grid, start_pos: Pos, end_value: int):
     visited.add(start_pos)
 
     def dfs(pos: Pos, path: list[Pos]):
-        if grid[pos[0]][pos[1]] == end_value:
+        curr_val = grid[pos[0]][pos[1]]
+
+        if curr_val == end_value:
             paths.append(path)
             return
-
-        curr_val = grid[pos[0]][pos[1]]
 
         neighbors = find_neighbors(grid, pos[0], pos[1])
         for neighbor in neighbors:
@@ -83,7 +83,6 @@ def all_paths_recursive(grid: Grid, start_pos: Pos, end_value: int):
 
 
 def part1(grid: Grid):
-    # print_grid(grid)
     all_zero_pos = find_all_pos(grid, 0)
 
     sum_of_scores = 0
@@ -102,18 +101,18 @@ def part1(grid: Grid):
         #     pass
 
     # print(all_paths)
+    assert sum_of_scores == 501
     print("Part 1:", sum_of_scores)
 
 
 def part2(grid: Grid):
-    # print_grid(grid)
     all_zero_pos = find_all_pos(grid, 0)
 
     sum_of_scores = 0
     for zero_pos in all_zero_pos:
         paths = all_paths_recursive(grid, zero_pos, 9)
 
-        # nr of unique 9s reached from trail head
+        # nr of unique paths from trail head to nines
         trailhead_score = len(paths)
 
         sum_of_scores += trailhead_score
@@ -125,7 +124,7 @@ def part2(grid: Grid):
         #     pass
 
     # print(all_paths)
-
+    assert sum_of_scores == 1017
     print("Part 2:", sum_of_scores)
 
 
