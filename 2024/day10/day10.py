@@ -1,10 +1,3 @@
-import math
-import re
-import copy
-from collections import Counter
-import sys
-
-
 DIRS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
 Pos = tuple[int, int]
@@ -90,7 +83,7 @@ def all_paths_recursive(grid: Grid, start_pos: Pos, end_value: int):
 
 
 def part1(grid: Grid):
-    print_grid(grid)
+    # print_grid(grid)
     all_zero_pos = find_all_pos(grid, 0)
 
     sum_of_scores = 0
@@ -113,7 +106,27 @@ def part1(grid: Grid):
 
 
 def part2(grid: Grid):
-    print("Part 2:", -1)
+    # print_grid(grid)
+    all_zero_pos = find_all_pos(grid, 0)
+
+    sum_of_scores = 0
+    for zero_pos in all_zero_pos:
+        paths = all_paths_recursive(grid, zero_pos, 9)
+
+        # nr of unique 9s reached from trail head
+        trailhead_score = len(paths)
+
+        sum_of_scores += trailhead_score
+
+        # for i, path in enumerate(paths):
+        #     print("path:", path)
+        #     print(f"({i+1}/{len(paths)})")
+        #     print_grid_and_color_path(grid, path)
+        #     pass
+
+    # print(all_paths)
+
+    print("Part 2:", sum_of_scores)
 
 
 # filename = "day10/example"
@@ -121,4 +134,4 @@ filename = "day10/input"
 
 grid = parse(filename)
 part1(grid)
-# part2(grid)
+part2(grid)
