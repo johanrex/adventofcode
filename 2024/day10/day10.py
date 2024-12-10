@@ -82,40 +82,17 @@ def all_paths_recursive(grid: Grid, start_pos: Pos, end_value: int):
     return paths
 
 
-def part1(grid: Grid):
+def solve(grid: Grid):
     all_zero_pos = find_all_pos(grid, 0)
 
-    sum_of_scores = 0
+    sum_p1 = 0
+    sum_p2 = 0
     for zero_pos in all_zero_pos:
         paths = all_paths_recursive(grid, zero_pos, 9)
 
         # nr of unique 9s reached from trail head
-        trailhead_score = len(set([path[-1] for path in paths]))
-
-        sum_of_scores += trailhead_score
-
-        # for i, path in enumerate(paths):
-        #     print("path:", path)
-        #     print(f"({i+1}/{len(paths)})")
-        #     print_grid_and_color_path(grid, path)
-        #     pass
-
-    # print(all_paths)
-    assert sum_of_scores == 501
-    print("Part 1:", sum_of_scores)
-
-
-def part2(grid: Grid):
-    all_zero_pos = find_all_pos(grid, 0)
-
-    sum_of_scores = 0
-    for zero_pos in all_zero_pos:
-        paths = all_paths_recursive(grid, zero_pos, 9)
-
-        # nr of unique paths from trail head to nines
-        trailhead_score = len(paths)
-
-        sum_of_scores += trailhead_score
+        sum_p1 += len(set([path[-1] for path in paths]))
+        sum_p2 += len(paths)
 
         # for i, path in enumerate(paths):
         #     print("path:", path)
@@ -124,13 +101,16 @@ def part2(grid: Grid):
         #     pass
 
     # print(all_paths)
-    assert sum_of_scores == 1017
-    print("Part 2:", sum_of_scores)
+    assert sum_p1 == 501
+    assert sum_p2 == 1017
+
+    print("Part 1:", sum_p1)
+    print("Part 2:", sum_p2)
 
 
 # filename = "day10/example"
 filename = "day10/input"
 
 grid = parse(filename)
-part1(grid)
-part2(grid)
+
+solve(grid)
