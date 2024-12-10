@@ -96,15 +96,17 @@ def part1(grid: Grid):
     sum_of_scores = 0
     for zero_pos in all_zero_pos:
         paths = all_paths_recursive(grid, zero_pos, 9)
-        trail_head_score = len(paths)
-        sum_of_scores += trail_head_score
-        print("Trail head score:", trail_head_score)
 
-        for i, path in enumerate(paths):
-            print("path:", path)
-            print(f"({i+1}/{len(paths)})")
-            print_grid_and_color_path(grid, path)
-            pass
+        # nr of unique 9s reached from trail head
+        trailhead_score = len(set([path[-1] for path in paths]))
+
+        sum_of_scores += trailhead_score
+
+        # for i, path in enumerate(paths):
+        #     print("path:", path)
+        #     print(f"({i+1}/{len(paths)})")
+        #     print_grid_and_color_path(grid, path)
+        #     pass
 
     # print(all_paths)
     print("Part 1:", sum_of_scores)
@@ -114,8 +116,8 @@ def part2(grid: Grid):
     print("Part 2:", -1)
 
 
-filename = "day10/example"
-# filename = "day10/input"
+# filename = "day10/example"
+filename = "day10/input"
 
 grid = parse(filename)
 part1(grid)
