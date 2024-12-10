@@ -2,8 +2,13 @@ import math
 import re
 import copy
 from collections import Counter
+import sys
+
 
 DIRS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
+Pos = tuple[int, int]
+Grid = list[list[int]]
 
 
 def parse(filename: str):
@@ -11,18 +16,36 @@ def parse(filename: str):
     with open(filename) as f:
         for line in f:
             line = line.strip()
-            line = list(map(int, [c for c in line]))
+            lst = [c if c.isdigit() else "-9" for c in line]
+            line = list(map(int, [c for c in lst]))
 
             grid.append(line)
     return grid
 
 
-def print_grid(grid):
+def print_grid(grid: Grid):
     for row in grid:
+        row = ["." if c == -9 else str(c) for c in row]
+
         print("".join(map(str, row)))
 
 
-def find_neighbors(grid, r, c):
+def print_grid_and_color_path(grid: Grid, path: list[Pos]):
+    for r, row in enumerate(grid):
+        row = ["." if c == -9 else str(c) for c in row]
+
+        for c, val in enumerate(row):
+            if (r, c) in path:
+                color_start = "\033[92m"
+                color_end = "\033[0m"
+                print(color_start + val + color_end, end="")
+            else:
+                print(val, end="")
+
+        print()  # newline
+
+
+def find_neighbors(grid: Grid, r: int, c: int) -> list[Pos]:
     neighbors = []
     for dir in DIRS:
         new_r = r + dir[0]
@@ -33,7 +56,7 @@ def find_neighbors(grid, r, c):
     return neighbors
 
 
-def find_all(grid, value):
+def find_all_pos(grid: Grid, value: int) -> list[Pos]:
     all = []
     for r in range(len(grid)):
         for c in range(len(grid[0])):
@@ -42,50 +65,52 @@ def find_all(grid, value):
     return all
 
 
-def dfs_with_path(grid, start, target):
-    def dfs_recursive(pos, visited, path):
-        r, c = pos
+def all_paths_recursive(grid: Grid, start_pos: Pos, end_value: int):
+    paths = []
+    visited = set()
+    visited.add(start_pos)
 
-        # Base cases
-        if not (0 <= r < len(grid) and 0 <= c < len(grid[0])):
-            return None
-        if pos in visited:
-            return None
-        if grid[r][c] == target:
-            return path + [pos]
+    def dfs(pos: Pos, path: list[Pos]):
+        if grid[pos[0]][pos[1]] == end_value:
+            paths.append(path)
+            return
 
-        # Mark as visited and add to current path
-        visited.add(pos)
+        curr_val = grid[pos[0]][pos[1]]
 
-        # Try all neighbors
-        for neighbor in find_neighbors(grid, r, c):
-            result = dfs_recursive(neighbor, visited, path + [pos])
-            if result:
-                return result
+        neighbors = find_neighbors(grid, pos[0], pos[1])
+        for neighbor in neighbors:
+            neighbor_val = grid[neighbor[0]][neighbor[1]]
+            if neighbor_val == curr_val + 1 and neighbor not in visited:
+                visited.add(neighbor)
+                dfs(neighbor, path + [neighbor])
+                visited.remove(neighbor)
 
-        return None
-
-    return dfs_recursive(start, set(), [])
+    dfs(start_pos, [start_pos])
+    return paths
 
 
-def part1(grid):
+def part1(grid: Grid):
     print_grid(grid)
-    starts = find_all(grid, 0)
+    all_zero_pos = find_all_pos(grid, 0)
 
-    shortest_path = None
-    for start in starts:
-        path = dfs_with_path(grid, start, 9)
-        if path and (not shortest_path or len(path) < len(shortest_path)):
-            shortest_path = path
+    sum_of_scores = 0
+    for zero_pos in all_zero_pos:
+        paths = all_paths_recursive(grid, zero_pos, 9)
+        trail_head_score = len(paths)
+        sum_of_scores += trail_head_score
+        print("Trail head score:", trail_head_score)
 
-    if shortest_path:
-        print("Found path:", shortest_path)
-        print("Part 1:", len(shortest_path) - 1)
-    else:
-        print("Part 1: No path found")
+        for i, path in enumerate(paths):
+            print("path:", path)
+            print(f"({i+1}/{len(paths)})")
+            print_grid_and_color_path(grid, path)
+            pass
+
+    # print(all_paths)
+    print("Part 1:", sum_of_scores)
 
 
-def part2(grid):
+def part2(grid: Grid):
     print("Part 2:", -1)
 
 
