@@ -1,5 +1,3 @@
-from functools import cache
-import math
 import re
 import copy
 from collections import Counter
@@ -13,44 +11,7 @@ def parse(filename: str) -> tuple[int, ...]:
     return nrs
 
 
-def apply_rules_p1(stones: tuple[int, ...]):
-    new_stones = []
-    i = 0
-    while i < len(stones):
-        stone = stones[i]
-
-        if stone == 0:  # rule 1
-            new_stones.append(1)
-        elif len(str(stone)) % 2 == 0:  # rule 2
-            stone = str(stone)
-            middle = len(stone) // 2
-            left = int(stone[:middle])
-            right = int(stone[middle:])
-            new_stones.append(left)
-            new_stones.append(right)
-        else:  # rule 3
-            new_stones.append(stone * 2024)
-
-        i += 1
-    return tuple(new_stones)
-
-
-def part1(stones: tuple[int, ...]):
-    print("Initial state:")
-    print(stones)
-    for i in range(25):
-        stones = apply_rules_p1(stones)
-
-        # print(f"After {i+1} blinks:", len(stones))
-
-        # print(" ".join(stones_str))
-        # pass
-
-    ans = len(stones)
-    print("Part 1:", ans)
-
-
-def apply_rules_p2(counter: Counter):
+def apply_rules(counter: Counter):
     counter_before = copy.deepcopy(counter)
 
     actual_stone_vals = [k for k, v in counter.items() if v > 0]
@@ -74,23 +35,26 @@ def apply_rules_p2(counter: Counter):
             counter[stone_val * 2024] += stone_count
 
 
-def part2(stones: tuple[int, ...]):
-    print("Initial state:")
-    print(stones)
+def solve(stones: tuple[int, ...]):
+    # initialize counter with stones
     for stone in stones:
         counter[stone] += 1
 
     for i in range(75):
-        apply_rules_p2(counter)
+        apply_rules(counter)
+        if i == 24:
+            p1 = sum(counter.values())
+            assert p1 == 217443
+            print("Part 1:", p1)
 
-    ans = sum(counter.values())
-    assert ans == 257246536026785
-    print("Part 2:", ans)
+        if i == 74:
+            p2 = sum(counter.values())
+            assert p2 == 257246536026785
+            print("Part 2:", p2)
 
 
 # filename = "day11/example"
 filename = "day11/input"
 
 stones = parse(filename)
-part1(stones)
-part2(stones)
+solve(stones)
