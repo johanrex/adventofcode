@@ -3,10 +3,13 @@ from collections import Counter
 import time
 
 
-def parse(filename: str) -> tuple[int, ...]:
+def parse(filename: str) -> Counter:
+    counter = Counter()
     with open(filename) as f:
-        nrs = tuple(map(int, re.findall(r"\d+", f.read().strip())))
-    return nrs
+        for nr in map(int, re.findall(r"\d+", f.read().strip())):
+            counter[nr] += 1
+
+    return counter
 
 
 def apply_rules(counter: Counter):
@@ -34,9 +37,7 @@ def apply_rules(counter: Counter):
             counter[stone_val * 2024] += stone_count
 
 
-def solve(stones: tuple[int, ...]):
-    counter = Counter(stones)
-
+def solve(counter: Counter):
     for i in range(75):
         apply_rules(counter)
         if i == 24:
@@ -55,8 +56,8 @@ start_time = time.perf_counter()
 # filename = "day11/example"
 filename = "day11/input"
 
-stones = parse(filename)
-solve(stones)
+counter = parse(filename)
+solve(counter)
 
 end_time = time.perf_counter()
 print(f"Total time: {end_time - start_time} seconds")
