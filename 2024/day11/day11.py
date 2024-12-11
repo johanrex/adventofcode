@@ -1,47 +1,77 @@
+from functools import cache
 import math
 import re
 import copy
 from collections import Counter
 
 
-def parse(filename: str):
+memo = dict()
+
+
+def parse(filename: str) -> tuple[int, ...]:
     with open(filename) as f:
-        nrs = list(map(int, re.findall(r"\d+", f.read().strip())))
+        nrs = tuple(map(int, re.findall(r"\d+", f.read().strip())))
     return nrs
 
 
-def apply_rules(stones):
+def apply_rules_p1(stones: tuple[int, ...]):
+    new_stones = []
     i = 0
     while i < len(stones):
         stone = stones[i]
 
         if stone == 0:  # rule 1
-            stones[i] = 1
+            new_stones.append(1)
         elif len(str(stone)) % 2 == 0:  # rule 2
             stone = str(stone)
             middle = len(stone) // 2
             left = int(stone[:middle])
             right = int(stone[middle:])
-            stones[i] = left
-            stones.insert(i + 1, right)
-
-            # increment i since we inserted a new stone
-            i += 1
+            new_stones.append(left)
+            new_stones.append(right)
         else:  # rule 3
-            stones[i] = stone * 2024
+            new_stones.append(stone * 2024)
 
         i += 1
+    return tuple(new_stones)
 
 
-def part1(stones):
-    # print("Initial state:")
-    # print(stones)
-    for i in range(75):
-        apply_rules(stones)
+def apply_rules_recursize(stones: tuple[int, ...]):
+    if stones in memo:
+        return memo[stones]
 
-        print(f"After {i+1} blinks:", len(stones))
+    if len(stones) == 1:
+        stone = stones[0]
 
-        # stones_str = list(map(str, stones))
+        if stone == 0:  # rule 1
+            ans = (1,)
+        elif len(str(stone)) % 2 == 0:  # rule 2
+            stone = str(stone)
+            middle = len(stone) // 2
+            left = int(stone[:middle])
+            right = int(stone[middle:])
+            ans = left, right
+        else:  # rule 3
+            ans = (stone * 2024,)
+    else:
+        # split in half
+        middle = len(stones) // 2
+        left = stones[:middle]
+        right = stones[middle:]
+        ans = apply_rules_recursize(left) + apply_rules_recursize(right)
+
+    memo[stones] = ans
+    return ans
+
+
+def part1(stones: tuple[int, ...]):
+    print("Initial state:")
+    print(stones)
+    for i in range(25):
+        stones = apply_rules_p1(stones)
+
+        # print(f"After {i+1} blinks:", len(stones))
+
         # print(" ".join(stones_str))
         # pass
 
@@ -49,8 +79,16 @@ def part1(stones):
     print("Part 1:", ans)
 
 
-def part2(stones):
-    print("Part 2:", -1)
+def part2(stones: tuple[int, ...]):
+    print("Initial state:")
+    print(stones)
+
+    for i in range(75):
+        stones = apply_rules_recursize(stones)
+        print(f"After {i+1} blinks:", len(stones))
+
+    ans = len(stones)
+    print("Part 2:", ans)
 
 
 # filename = "day11/example"
