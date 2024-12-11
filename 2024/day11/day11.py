@@ -1,8 +1,6 @@
 import re
-import copy
 from collections import Counter
-
-counter = Counter()
+import time
 
 
 def parse(filename: str) -> tuple[int, ...]:
@@ -12,11 +10,12 @@ def parse(filename: str) -> tuple[int, ...]:
 
 
 def apply_rules(counter: Counter):
-    counter_before = copy.deepcopy(counter)
+    counter_before = counter.copy()
 
-    actual_stone_vals = [k for k, v in counter.items() if v > 0]
-    for stone_val in actual_stone_vals:
-        stone_count = counter_before[stone_val]
+    for stone_val, stone_count in counter_before.items():
+        if stone_count == 0:
+            continue
+
         counter[stone_val] -= stone_count
         if counter[stone_val] < 0:
             counter[stone_val] = 0
@@ -36,9 +35,7 @@ def apply_rules(counter: Counter):
 
 
 def solve(stones: tuple[int, ...]):
-    # initialize counter with stones
-    for stone in stones:
-        counter[stone] += 1
+    counter = Counter(stones)
 
     for i in range(75):
         apply_rules(counter)
@@ -53,8 +50,13 @@ def solve(stones: tuple[int, ...]):
             print("Part 2:", p2)
 
 
+start_time = time.perf_counter()
+
 # filename = "day11/example"
 filename = "day11/input"
 
 stones = parse(filename)
 solve(stones)
+
+end_time = time.perf_counter()
+print(f"Total time: {end_time - start_time} seconds")
