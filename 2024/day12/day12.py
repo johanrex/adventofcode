@@ -1,7 +1,7 @@
 import math
 import re
 import copy
-from collections import Counter
+from collections import Counter, defaultdict
 
 Grid = list[list[str]]
 Pos = tuple[int, int]
@@ -96,15 +96,88 @@ def part1(grid):
 
             perimeter = perimeter_of_region(grid, region)
             price = area * perimeter
-            print(f"A Region of {grid[r][c]} plants with price {area} * {perimeter} = {price}:")
+            print(f"A Region of {grid[r][c]} plants with price {area} * {perimeter} = {price}.")
             total_price += price
             cumulative_regions.update(region)
 
     print("Part 1:", total_price)
 
 
+def count_corners(grid: Grid, region: list[Pos]) -> int:
+    assert len(region) > 0
+
+    if len(region) == 1 or len(region) == 2:
+        return 4
+
+    rows = len(grid)
+    cols = len(grid[0])
+
+    # make a friendly grid that defaults to "." when we're out of bounds
+    friendlygrid = defaultdict(str)
+    for r in range(rows):
+        for c in range(cols):
+            friendlygrid[(r, c)] = grid[r][c]
+
+    corners = 0
+    for r, c in region:
+        up = friendlygrid[(r - 1, c)]
+        right = friendlygrid[(r, c + 1)]
+        down = friendlygrid[(r + 1, c)]
+        left = friendlygrid[(r, c - 1)]
+        up_right = friendlygrid[(r - 1, c + 1)]
+        down_right = friendlygrid[(r + 1, c + 1)]
+        down_left = friendlygrid[(r + 1, c - 1)]
+        up_left = friendlygrid[(r - 1, c - 1)]
+
+        curr = friendlygrid[(r, c)]
+
+        # convex corners
+        if curr != up and curr != right:
+            corners += 1
+        if curr != up and curr != left:
+            corners += 1
+        if curr != down and curr != right:
+            corners += 1
+        if curr != down and curr != left:
+            corners += 1
+
+        # concave corners
+        if curr == up and curr == right and curr != up_right:
+            corners += 1
+        if curr == up and curr == left and curr != up_left:
+            corners += 1
+        if curr == down and curr == right and curr != down_right:
+            corners += 1
+        if curr == down and curr == left and curr != down_left:
+            corners += 1
+
+    return corners
+
+
 def part2(grid):
-    print("Part 2:", -1)
+    # https://www.reddit.com/r/adventofcode/comments/1hcpyic/comment/m1q1nrj/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+
+    cumulative_regions = set()
+
+    total_price = 0
+    for r in range(len(grid)):
+        for c in range(len(grid[0])):
+            if (r, c) in cumulative_regions:
+                continue
+            region = flood_fill_region(grid, r, c)
+
+            area = area_of_region(region)
+            assert area > 0
+
+            corners = count_corners(grid, region)
+
+            price = area * corners
+            print(f"P2: A Region of {grid[r][c]} plants with price {area} * {corners} = {price}.")
+
+            total_price += price
+            cumulative_regions.update(region)
+
+    print("Part 2:", total_price)
 
 
 # filename = "day12/example"
@@ -112,4 +185,4 @@ filename = "day12/input"
 
 grid = parse(filename)
 part1(grid)
-# part2(grid)
+part2(grid)
