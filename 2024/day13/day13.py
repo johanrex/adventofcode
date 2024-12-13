@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import re
+from sympy import solve, symbols, Eq
 
 
 COST_A = 3
@@ -35,46 +36,39 @@ def parse(filename: str) -> list[Machine]:
     return machines
 
 
-def get_solutions(a_x, a_y, b_x, b_y, price_x, price_y):
+def get_solution(a_x, a_y, b_x, b_y, price_x, price_y):
     """
     Solve system of equations for integer solutions:
     a_x * a + b_x * b = price_x
     a_y * a + b_y * b = price_y
     """
+    a, b = symbols("a, b", integer=True)
+    system = [Eq(a_x * a + b_x * b, price_x), Eq(a_y * a + b_y * b, price_y)]
+    set_of_solutions = solve(system, [a, b], dict=True)
 
-    """
-    First example:
-    94a + 22b = 8400
-    34a + 67b = 5400
-    """
-    solutions = []
+    if len(set_of_solutions) == 0:
+        return None, None
+    elif len(set_of_solutions) == 1:
+        a = set_of_solutions[0][a]
+        b = set_of_solutions[0][b]
 
-    for a in range(101):
-        for b in range(101):
-            if (a_x * a + b_x * b == price_x) and (a_y * a + b_y * b == price_y):
-                solutions.append((a, b))
-    return solutions
+        return a, b
+    else:
+        assert False
 
 
-def part1(machines: list[Machine]):
+def count_tokens(machines: list[Machine]):
     tokens = 0
     for machine in machines:
         a_x, a_y, b_x, b_y, price_x, price_y = machine.a_x, machine.a_y, machine.b_x, machine.b_y, machine.price_x, machine.price_y
-        solutions = get_solutions(a_x, a_y, b_x, b_y, price_x, price_y)
+        a, b = get_solution(a_x, a_y, b_x, b_y, price_x, price_y)
 
-        if len(solutions) == 0:
-            # print("No solution found")
+        if a is None and b is None:
             continue
-        elif len(solutions) == 1:
-            a, b = solutions[0]
-            # print(a, b)
 
-            tokens += a * COST_A + b * COST_B
-        else:
-            # assert that there is no more than one solution
-            assert False
+        tokens += a * COST_A + b * COST_B
 
-    print("Part 1:", tokens)
+    return tokens
 
 
 def part2(machines: list[Machine]):
@@ -85,5 +79,13 @@ def part2(machines: list[Machine]):
 filename = "day13/input"
 
 machines = parse(filename)
-part1(machines)
-# part2(machines)
+
+tokens = count_tokens(machines)
+print("Part 1:", tokens)
+
+for m in machines:
+    m.price_x += 10000000000000
+    m.price_y += 10000000000000
+
+tokens = count_tokens(machines)
+print("Part 2:", tokens)
