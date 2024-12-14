@@ -155,6 +155,7 @@ def count_corners(grid: Grid, region: list[Pos]) -> int:
 
 
 def part2(grid):
+    # corner explanation from:
     # https://www.reddit.com/r/adventofcode/comments/1hcpyic/comment/m1q1nrj/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
     cumulative_regions = set()
