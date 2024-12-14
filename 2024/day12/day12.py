@@ -81,28 +81,6 @@ def perimeter_of_region(grid: Grid, region: set[Pos]) -> int:
     return perimeter
 
 
-def part1(grid):
-    cumulative_regions = set()
-
-    total_price = 0
-    for r in range(len(grid)):
-        for c in range(len(grid[0])):
-            if (r, c) in cumulative_regions:
-                continue
-            region = flood_fill_region(grid, r, c)
-
-            area = area_of_region(region)
-            assert area > 0
-
-            perimeter = perimeter_of_region(grid, region)
-            price = area * perimeter
-            print(f"A Region of {grid[r][c]} plants with price {area} * {perimeter} = {price}.")
-            total_price += price
-            cumulative_regions.update(region)
-
-    print("Part 1:", total_price)
-
-
 def count_corners(grid: Grid, region: list[Pos]) -> int:
     assert len(region) > 0
 
@@ -154,13 +132,12 @@ def count_corners(grid: Grid, region: list[Pos]) -> int:
     return corners
 
 
-def part2(grid):
-    # corner explanation from:
-    # https://www.reddit.com/r/adventofcode/comments/1hcpyic/comment/m1q1nrj/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
-
+def solve(grid):
     cumulative_regions = set()
 
-    total_price = 0
+    total_price_p1 = 0
+    total_price_p2 = 0
+
     for r in range(len(grid)):
         for c in range(len(grid[0])):
             if (r, c) in cumulative_regions:
@@ -168,22 +145,28 @@ def part2(grid):
             region = flood_fill_region(grid, r, c)
 
             area = area_of_region(region)
-            assert area > 0
-
+            perimeter = perimeter_of_region(grid, region)
             corners = count_corners(grid, region)
 
-            price = area * corners
-            print(f"P2: A Region of {grid[r][c]} plants with price {area} * {corners} = {price}.")
+            price_p1 = area * perimeter
+            total_price_p1 += price_p1
 
-            total_price += price
+            price_p2 = area * corners
+            total_price_p2 += price_p2
+
+            # print(f"A Region of {grid[r][c]} plants with price {area} * {perimeter} = {price_p1}.")
+
             cumulative_regions.update(region)
 
-    print("Part 2:", total_price)
+    assert total_price_p1 == 1424472
+    print("Part 1:", total_price_p1)
+
+    assert total_price_p2 == 870202
+    print("Part 2:", total_price_p2)
 
 
 # filename = "day12/example"
 filename = "day12/input"
 
 grid = parse(filename)
-part1(grid)
-part2(grid)
+solve(grid)
