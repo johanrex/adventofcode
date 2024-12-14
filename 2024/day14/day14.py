@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-import math
 import re
-import copy
 from collections import Counter
+from PIL import Image
+from tqdm import tqdm
 
 
 @dataclass
@@ -76,30 +76,34 @@ def calc_safety_factor(robots: list[Robot], rows: int, cols: int):
     return q1 * q2 * q3 * q4
 
 
-def part1(robots):
-    # example
-    # robots = [robots[10]]
+# Create an image from a grid of pixels
+def create_image(robots: list[Robot], rows, cols, second):
+    grid = [["." for _ in range(cols)] for _ in range(rows)]
 
-    print("Initial state:")
-    print_grid(robots, rows, cols)
+    for robot in robots:
+        grid[robot.r][robot.c] = "1"
 
-    second = 0
-    for second in range(100):
+    image = Image.new("RGB", (cols, rows))
+    pixels = image.load()
+
+    for r in range(rows):
+        for c in range(cols):
+            pixels[c, r] = (0, 0, 0) if grid[r][c] == "." else (255, 255, 255)
+
+    filename = f"day14/images/robots_{str(second).zfill(4)}.png"
+    image.save(filename)
+
+
+def solve(robots):
+    for i in tqdm(range(10000), desc="Processing"):
+        second = i + 1
         move(robots, rows, cols)
-        # print(f"After {second+1} seconds:")
-        # print_grid(robots, rows, cols)
-        pass
 
-    print(f"After {second+1} seconds:")
-    print_grid(robots, rows, cols)
+        if second == 100:
+            safety_factor = calc_safety_factor(robots, rows, cols)
+            tqdm.write(f"Part 1: {safety_factor}")
 
-    safety_factor = calc_safety_factor(robots, rows, cols)
-
-    print("Part 1:", safety_factor)
-
-
-def part2(robots):
-    print("Part 2:", -1)
+        create_image(robots, rows, cols, second)
 
 
 # filename = "day14/example"
@@ -113,5 +117,4 @@ else:
     rows = 103
 
 robots = parse(filename)
-part1(robots)
-# part2(robots)
+solve(robots)
