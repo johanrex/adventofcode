@@ -55,7 +55,7 @@ def move(robots: list[Robot], rows: int, cols: int):
             robot.c = robot.c - cols
 
 
-def calc_safety_factor(robots: list[Robot], rows: int, cols: int):
+def quadrant_count(robots: list[Robot], rows: int, cols: int):
     q1 = 0
     q2 = 0
     q3 = 0
@@ -73,7 +73,7 @@ def calc_safety_factor(robots: list[Robot], rows: int, cols: int):
         else:
             q4 += 1
 
-    return q1 * q2 * q3 * q4
+    return q1, q2, q3, q4
 
 
 # Create an image from a grid of pixels
@@ -99,11 +99,17 @@ def solve(robots):
         second = i + 1
         move(robots, rows, cols)
 
+        q1, q2, q3, q4 = quadrant_count(robots, rows, cols)
+        if any(q > sum([q1, q2, q3, q4]) - q for q in [q1, q2, q3, q4]):
+            tqdm.write(f"At second {second}, one quadrant count is bigger than the other three combined.")
+            print_grid(robots, rows, cols)
+            break
+
         if second == 100:
-            safety_factor = calc_safety_factor(robots, rows, cols)
+            safety_factor = q1 * q2 * q3 * q4
             tqdm.write(f"Part 1: {safety_factor}")
 
-        create_image(robots, rows, cols, second)
+        # create_image(robots, rows, cols, second)
 
 
 # filename = "day14/example"
