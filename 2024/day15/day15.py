@@ -159,9 +159,9 @@ def sum_of_box_gps(grid, target="O"):
 
 
 def part1(grid, robot_pos: Pos, movements):
-    print("Initial state:")
-    grid.print_grid()
-    print(movements)
+    # print("Initial state:")
+    # grid.print_grid()
+    # print(movements)
 
     for m in movements:
         d = DIR_MAP[m]
@@ -240,12 +240,12 @@ def find_affected_grid_positions(grid: Grid, robot_pos: Pos, d: Pos):
 def part2(grid: Grid, movements):
     grid, robot_pos = create_wide_grid(grid)
 
-    print("Movements:")
-    print(movements)
+    # print("Movements:")
+    # print(movements)
 
-    print("Initial state:")
-    grid.print_grid()
-    print("")
+    # print("Initial state:")
+    # grid.print_grid()
+    # print("")
 
     for movement_idx, m in enumerate(movements):
         d = DIR_MAP[m]
@@ -291,7 +291,7 @@ def part2(grid: Grid, movements):
 # filename = "day15/example"
 filename = "day15/input"
 
-# grid, robot_pos, movements = parse(filename)
-# part1(grid, robot_pos, movements)
+grid, robot_pos, movements = parse(filename)
+part1(grid, robot_pos, movements)
 grid, robot_pos, movements = parse(filename)
 part2(grid, movements)
