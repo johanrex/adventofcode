@@ -1,7 +1,10 @@
-import math
-import re
-import copy
-from collections import Counter
+import sys
+import os
+
+# silly python path manipulation
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from utils.grid import Grid
 
 Pos = tuple[int, int]
 
@@ -14,50 +17,6 @@ DIR_MAP = {
     "v": DIRS[2],
     "^": DIRS[3],
 }
-
-
-class Grid:
-    def __init__(self, rows: int, cols: int):
-        self.rows = rows
-        self.cols = cols
-        self._dd = dict()
-
-    def is_within_bounds(self, row, col):
-        return 0 <= row < self.rows and 0 <= col < self.cols
-
-    def get(self, row, col, default_value: any = None):
-        key = (row, col)
-        if key not in self._dd:
-            if default_value is not None:
-                return default_value
-            else:
-                raise ValueError(f"Row {row} or col {col} is out of bounds")
-        return self._dd[key]
-
-    def set(self, row: int, col: int, value: any, allow_out_of_bounds: bool = False):
-        if not allow_out_of_bounds and not self.is_within_bounds(row, col):
-            raise ValueError(f"Row {row} or col {col} is out of bounds")
-
-        key = (row, col)
-        self._dd[key] = value
-
-    def move(self, row: int, col: int, drow: int, dcol: int, wrap_around: bool = False):
-        new_row, new_col = row + drow, col + dcol
-        if wrap_around:
-            new_row = new_row % self.rows
-            new_col = new_col % self.cols
-
-        if self.is_within_bounds(new_row, new_col):
-            return new_row, new_col
-        else:
-            return None, None
-
-    def print_grid(self):
-        for row in range(self.rows):
-            line = ""
-            for col in range(self.cols):
-                line += self.get(row, col)
-            print(line)
 
 
 def parse(filename: str):
@@ -174,6 +133,7 @@ def part1(grid, robot_pos: Pos, movements):
         # print("")
 
     ans = sum_of_box_gps(grid)
+    assert ans == 1413675
 
     print("Part 1:", ans)
 
@@ -273,9 +233,7 @@ def part2(grid: Grid, movements):
 
                     assert grid.get(dst_r, dst_c) == "."
 
-                    val_to_move = grid.get(src_r, src_c)
-                    grid.set(src_r, src_c, ".")
-                    grid.set(dst_r, dst_c, val_to_move)
+                    grid.swap(src_r, src_c, dst_r, dst_c)
 
             robot_pos = (robot_pos[0] + d_r, robot_pos[1])
 
@@ -284,7 +242,7 @@ def part2(grid: Grid, movements):
         # print("")
 
     ans = sum_of_box_gps(grid, target="[")
-
+    assert ans == 1399772
     print("Part 2:", ans)
 
 
