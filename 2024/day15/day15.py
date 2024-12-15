@@ -6,9 +6,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from utils.grid import Grid
 
-Pos = tuple[int, int]
+DIRS = [
+    Grid.Pos(0, 1),
+    Grid.Pos(0, -1),
+    Grid.Pos(1, 0),
+    Grid.Pos(-1, 0),
+]
 
-DIRS = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 DIR_LABELS = [">", "<", "^", "v"]
 
 DIR_MAP = {
@@ -19,10 +23,7 @@ DIR_MAP = {
 }
 
 
-def parse(filename: str):
-    row = 0
-
-    lines = []
+def parse(filename: str) -> tuple[Grid, Grid.Pos, list[str]]:
     first_section = True
     with open(filename) as f:
         content = f.read()
@@ -43,26 +44,26 @@ def parse(filename: str):
             grid.set(row, col, val)
             if val == "@":
                 assert robot_pos is None
-                robot_pos = (row, col)
+                robot_pos = Grid.Pos(row, col)
 
     movements = [m for m in second_section.replace("\n", "").replace("\r", "")]
 
     return grid, robot_pos, movements
 
 
-def find_empty_space(grid: Grid, robot_pos: Pos, d: Pos):
+def find_empty_space(grid: Grid, robot_pos: Grid.Pos, d: Grid.Pos):
     # check if there is open space (".") anywhere in the direction before a wall ("#")
 
     moves = 0
     steps_to_space = -1
-    d_r, d_c = d
-    tmp_r, tmp_c = robot_pos
+    tmp_pos = robot_pos
 
     while True:
         moves += 1
-        tmp_r, tmp_c = tmp_r + d_r, tmp_c + d_c
 
-        val = grid.get(tmp_r, tmp_c)
+        tmp_pos = tmp_pos + d
+
+        val = grid.get_by_pos(tmp_pos)
         if val == "#":
             break
         elif val == ".":
@@ -72,52 +73,49 @@ def find_empty_space(grid: Grid, robot_pos: Pos, d: Pos):
     return steps_to_space
 
 
-def move(grid: Grid, robot_pos: Pos, d: Pos, steps_to_space: int):
-    d_r, d_c = d
-    robot_r, robot_c = robot_pos
+def move(grid: Grid, robot_pos: Grid.Pos, d: Grid.Pos, steps_to_space: int):
+    # d_r, d_c = d
+    # robot_r, robot_c = robot_pos
 
     assert steps_to_space > 0  # check
-    if d_r != 0:  # check
-        assert grid.get(robot_r + d_r * steps_to_space, robot_c) == "."
-    if d_c != 0:  # check
-        assert grid.get(robot_r, robot_c + d_c * steps_to_space) == "."
+    if d.row != 0:  # check
+        spacepos = Grid.Pos(robot_pos.row + d.row * steps_to_space, robot_pos.col)
+        assert grid.get_by_pos(spacepos) == "."
+    if d.col != 0:  # check
+        spacepos = Grid.Pos(robot_pos.row, robot_pos.col + d.col * steps_to_space)
+        assert grid.get_by_pos(spacepos) == "."
 
     while steps_to_space > 0:
-        if d_r != 0:
-            dst_r = robot_r + d_r * steps_to_space
-            dst_c = robot_c
+        if d.row != 0:
+            dst_pos = Grid.Pos(robot_pos.row + d.row * steps_to_space, robot_pos.col)
+            src_pos = Grid.Pos(robot_pos.row + d.row * (steps_to_space - 1), robot_pos.col)
 
-            src_r = robot_r + d_r * (steps_to_space - 1)
-            src_c = robot_c
+        elif d.col != 0:
+            dst_pos = Grid.Pos(robot_pos.row, robot_pos.col + d.col * steps_to_space)
+            src_pos = Grid.Pos(robot_pos.row, robot_pos.col + d.col * (steps_to_space - 1))
 
-        elif d_c != 0:
-            dst_r = robot_r
-            dst_c = robot_c + d_c * steps_to_space
-
-            src_r = robot_r
-            src_c = robot_c + d_c * (steps_to_space - 1)
-
-        val_to_move = grid.get(src_r, src_c)
-        grid.set(src_r, src_c, ".")
-        grid.set(dst_r, dst_c, val_to_move)
+        assert grid.get_by_pos(dst_pos) == "."
+        grid.swap_by_pos(src_pos, dst_pos)
 
         steps_to_space -= 1
 
-    robot_pos = (robot_r + d_r, robot_c + d_c)
-    assert grid.get(robot_pos[0], robot_pos[1]) == "@"  # check
+    robot_pos = robot_pos + d
+    assert grid.get_by_pos(robot_pos) == "@"  # check
     return robot_pos
 
 
-def sum_of_box_gps(grid, target="O"):
-    sum = 0
+def sum_of_box_gps(grid: Grid, target="O"):
+    s = 0
+
+    ## TODO replace loop with Grid generator
     for r in range(grid.rows):
         for c in range(grid.cols):
             if grid.get(r, c) == target:
-                sum += r * 100 + c
-    return sum
+                s += r * 100 + c
+    return s
 
 
-def part1(grid, robot_pos: Pos, movements):
+def part1(grid: Grid, robot_pos: Grid.Pos, movements):
     # print("Initial state:")
     # grid.print_grid()
     # print(movements)
@@ -138,7 +136,7 @@ def part1(grid, robot_pos: Pos, movements):
     print("Part 1:", ans)
 
 
-def create_wide_grid(grid: Grid) -> tuple[Grid, Pos]:
+def create_wide_grid(grid: Grid) -> tuple[Grid, Grid.Pos]:
     wgrid = Grid(grid.rows, grid.cols * 2)
     robot_pos = None
 
@@ -149,7 +147,7 @@ def create_wide_grid(grid: Grid) -> tuple[Grid, Pos]:
                 wgrid.set(r, c * 2, "@")
                 wgrid.set(r, c * 2 + 1, ".")
 
-                robot_pos = (r, c * 2)
+                robot_pos = Grid.Pos(r, c * 2)
             elif val == "O":
                 wgrid.set(r, c * 2, "[")
                 wgrid.set(r, c * 2 + 1, "]")
@@ -161,19 +159,17 @@ def create_wide_grid(grid: Grid) -> tuple[Grid, Pos]:
     return wgrid, robot_pos
 
 
-def find_affected_grid_positions(grid: Grid, robot_pos: Pos, d: Pos):
+def find_affected_grid_positions(grid: Grid, robot_pos: Grid.Pos, d: Grid.Pos) -> set[Grid.Pos]:
     # find positions to push in the direction d.
     # a box is two positions wide.
-
-    d_r, d_c = d
 
     q = [robot_pos]
     affected_grid_pos = set([robot_pos])
 
     while len(q) > 0:
-        affected_grid_r, affected_grid_c = q.pop(0)
-        next_grid_r, next_grid_c = affected_grid_r + d_r, affected_grid_c + d_c
-        val = grid.get(next_grid_r, next_grid_c)
+        affected_pos = q.pop(0)
+        next_pos = affected_pos + d
+        val = grid.get_by_pos(next_pos)
 
         if val == "#":
             # if we hit a wall we can't move anything.
@@ -182,22 +178,22 @@ def find_affected_grid_positions(grid: Grid, robot_pos: Pos, d: Pos):
             break
 
         if val == "[":
-            q.append((next_grid_r, next_grid_c))
-            q.append((next_grid_r, next_grid_c + 1))
+            q.append(next_pos)
+            q.append(Grid.Pos(next_pos.row, next_pos.col + 1))
 
-            affected_grid_pos.add((next_grid_r, next_grid_c))
-            affected_grid_pos.add((next_grid_r, next_grid_c + 1))
+            affected_grid_pos.add(next_pos)
+            affected_grid_pos.add(Grid.Pos(next_pos.row, next_pos.col + 1))
         elif val == "]":
-            q.append((next_grid_r, next_grid_c))
-            q.append((next_grid_r, next_grid_c - 1))
+            q.append(Grid.Pos(next_pos.row, next_pos.col - 1))
+            q.append(next_pos)
 
-            affected_grid_pos.add((next_grid_r, next_grid_c - 1))
-            affected_grid_pos.add((next_grid_r, next_grid_c))
+            affected_grid_pos.add(Grid.Pos(next_pos.row, next_pos.col - 1))
+            affected_grid_pos.add(next_pos)
 
     return affected_grid_pos
 
 
-def part2(grid: Grid, movements):
+def part2(grid: Grid, movements: list[str]):
     grid, robot_pos = create_wide_grid(grid)
 
     # print("Movements:")
@@ -209,33 +205,31 @@ def part2(grid: Grid, movements):
 
     for movement_idx, m in enumerate(movements):
         d = DIR_MAP[m]
-        d_r, d_c = d
-        if d_c != 0:  # we can reuse function from part 1
+        if d.col != 0:  # we can reuse function from part 1
             steps_to_space = find_empty_space(grid, robot_pos, d)
             if steps_to_space != -1:
                 robot_pos = move(grid, robot_pos, d, steps_to_space)
         else:
-            # we are pushing up or down
+            # we are moving up or down
 
-            # find boxes involved in push
+            # find positions of robot + boxes involved in push
             affected_grid_pos = find_affected_grid_positions(grid, robot_pos, d)
             if affected_grid_pos is None:
                 continue
             else:
-                if d_r == -1:
-                    affected_grid_pos = sorted(affected_grid_pos, key=lambda x: x[0])
+                if d.row == -1:
+                    affected_grid_pos = sorted(affected_grid_pos)
                 else:
-                    affected_grid_pos = sorted(affected_grid_pos, key=lambda x: x[0], reverse=True)
+                    affected_grid_pos = sorted(affected_grid_pos, reverse=True)
 
                 for src_pos in affected_grid_pos:
-                    src_r, src_c = src_pos
-                    dst_r, dst_c = src_r + d_r, src_c
+                    dst_pos = src_pos + d
 
-                    assert grid.get(dst_r, dst_c) == "."
+                    assert grid.get_by_pos(dst_pos) == "."
 
-                    grid.swap(src_r, src_c, dst_r, dst_c)
+                    grid.swap_by_pos(src_pos, dst_pos)
 
-            robot_pos = (robot_pos[0] + d_r, robot_pos[1])
+            robot_pos = robot_pos + d
 
         # print(f"Move {m}. ({movement_idx=})")
         # grid.print_grid()
