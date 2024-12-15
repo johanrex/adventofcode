@@ -79,5 +79,3 @@ class Grid:
             for col in range(self.cols):
                 line += self.get(row, col)
             print(line)
-
-    # TODO make generator that yields all positions in grid from rows, cols

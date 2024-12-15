@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 # silly python path manipulation
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -74,10 +75,8 @@ def find_empty_space(grid: Grid, robot_pos: Grid.Pos, d: Grid.Pos):
 
 
 def move(grid: Grid, robot_pos: Grid.Pos, d: Grid.Pos, steps_to_space: int):
-    # d_r, d_c = d
-    # robot_r, robot_c = robot_pos
-
     assert steps_to_space > 0  # check
+
     if d.row != 0:  # check
         spacepos = Grid.Pos(robot_pos.row + d.row * steps_to_space, robot_pos.col)
         assert grid.get_by_pos(spacepos) == "."
@@ -106,8 +105,6 @@ def move(grid: Grid, robot_pos: Grid.Pos, d: Grid.Pos, steps_to_space: int):
 
 def sum_of_box_gps(grid: Grid, target="O"):
     s = 0
-
-    ## TODO replace loop with Grid generator
     for r in range(grid.rows):
         for c in range(grid.cols):
             if grid.get(r, c) == target:
@@ -137,7 +134,7 @@ def part1(grid: Grid, robot_pos: Grid.Pos, movements):
 
 
 def create_wide_grid(grid: Grid) -> tuple[Grid, Grid.Pos]:
-    wgrid = Grid(grid.rows, grid.cols * 2)
+    wgrid = Grid(grid.rows, grid.cols * 2, ".")
     robot_pos = None
 
     for r in range(grid.rows):
@@ -151,9 +148,9 @@ def create_wide_grid(grid: Grid) -> tuple[Grid, Grid.Pos]:
             elif val == "O":
                 wgrid.set(r, c * 2, "[")
                 wgrid.set(r, c * 2 + 1, "]")
-            else:
-                wgrid.set(r, c * 2, val)
-                wgrid.set(r, c * 2 + 1, val)
+            elif val == "#":
+                wgrid.set(r, c * 2, "#")
+                wgrid.set(r, c * 2 + 1, "#")
 
     assert robot_pos is not None
     return wgrid, robot_pos
@@ -178,17 +175,23 @@ def find_affected_grid_positions(grid: Grid, robot_pos: Grid.Pos, d: Grid.Pos) -
             break
 
         if val == "[":
-            q.append(next_pos)
-            q.append(Grid.Pos(next_pos.row, next_pos.col + 1))
+            first = next_pos
+            second = Grid.Pos(next_pos.row, next_pos.col + 1)
 
-            affected_grid_pos.add(next_pos)
-            affected_grid_pos.add(Grid.Pos(next_pos.row, next_pos.col + 1))
+            q.append(first)
+            q.append(second)
+
+            affected_grid_pos.add(first)
+            affected_grid_pos.add(second)
         elif val == "]":
-            q.append(Grid.Pos(next_pos.row, next_pos.col - 1))
-            q.append(next_pos)
+            first = Grid.Pos(next_pos.row, next_pos.col - 1)
+            second = next_pos
 
-            affected_grid_pos.add(Grid.Pos(next_pos.row, next_pos.col - 1))
-            affected_grid_pos.add(next_pos)
+            q.append(first)
+            q.append(second)
+
+            affected_grid_pos.add(first)
+            affected_grid_pos.add(second)
 
     return affected_grid_pos
 
@@ -240,6 +243,8 @@ def part2(grid: Grid, movements: list[str]):
     print("Part 2:", ans)
 
 
+start_time = time.perf_counter()
+
 # filename = "day15/example"
 filename = "day15/input"
 
@@ -247,3 +252,6 @@ grid, robot_pos, movements = parse(filename)
 part1(grid, robot_pos, movements)
 grid, robot_pos, movements = parse(filename)
 part2(grid, movements)
+
+end_time = time.perf_counter()
+print(f"Total time: {end_time - start_time} seconds")
