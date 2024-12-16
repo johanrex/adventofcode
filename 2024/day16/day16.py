@@ -48,7 +48,7 @@ def parse(filename: str) -> tuple[Grid, Grid.Pos, list[str]]:
     return grid, start, end
 
 
-def dijkstra(grid: Grid, start: Grid.Pos, end: Grid.Pos, cost: dict[str, int]) -> tuple[int, list[Grid.Pos]]:
+def dijkstra(grid: Grid, start: Grid.Pos, end: Grid.Pos) -> tuple[int, list[Grid.Pos]]:
     pq = [(0, start, EAST, [])]  # priority queue of tuples (accumulated cost, position, previous direction, path)
     visited = set()
 
@@ -83,19 +83,19 @@ def dijkstra(grid: Grid, start: Grid.Pos, end: Grid.Pos, cost: dict[str, int]) -
     return -1, []  # return -1 and empty path if no path is found
 
 
-def dfs_all_paths(grid: Grid, start: Grid.Pos, end: Grid.Pos, lowest_cost: int) -> list[list[Grid.Pos]]:
-    def dfs(curr_pos: Grid.Pos, facing: Grid.Pos, path: list[Grid.Pos], curr_cost: int):
+def dfs_all_paths(grid: Grid, start: Grid.Pos, end: Grid.Pos, lowest_cost: int) -> list[set[Grid.Pos]]:
+    def dfs(curr_pos: Grid.Pos, facing: Grid.Pos, visited: set[Grid.Pos], curr_cost: int):
         if curr_cost > lowest_cost:
             return
 
         if curr_pos == end:
-            all_paths_costs.append((curr_cost, path[:]))
+            tiles.update(visited)
             return
 
         for d in [EAST, WEST, NORTH, SOUTH]:
             new_pos = curr_pos + d
 
-            if new_pos in path:
+            if new_pos in visited:
                 continue
 
             if grid.get_by_pos(new_pos) == "#":
@@ -106,11 +106,13 @@ def dfs_all_paths(grid: Grid, start: Grid.Pos, end: Grid.Pos, lowest_cost: int) 
             if d != facing:
                 step_cost += 1000
 
-            dfs(new_pos, d, path + [new_pos], curr_cost + step_cost)
+            visited.add(new_pos)
+            dfs(new_pos, d, visited, curr_cost + step_cost)
+            visited.remove(new_pos)
 
-    all_paths_costs = []
-    dfs(start, EAST, [start], 0)
-    return all_paths_costs
+    tiles = set()
+    dfs(start, EAST, {start}, 0)
+    return tiles
 
 
 def print_path(grid: Grid, path: list[Grid.Pos]):
@@ -160,32 +162,24 @@ def print_tiles(grid: Grid, paths: list[list[Grid.Pos]]):
 
 def solve(grid: Grid, start: Grid.Pos, end: Grid.Pos):
     # grid.print_grid()
-    lowest_cost, path = dijkstra(grid, start, end, {"turn_east": 2})
-    print("Part 1:", lowest_cost)
+    lowest_cost, path = dijkstra(grid, start, end)
+    print("Part 1 lowest cost:", lowest_cost)
     # print_path(grid, path)
 
-    all_paths_costs = dfs_all_paths(grid, start, end, lowest_cost)
+    tiles = dfs_all_paths(grid, start, end, lowest_cost)
 
-    all_paths_costs = sorted(all_paths_costs, key=lambda x: x[0])
-    lowest_cost = all_paths_costs[0][0]
-    print("Lowest cost:", lowest_cost)
-
-    all_lowest_cost_paths = [path for cost, path in all_paths_costs if cost == lowest_cost]
-
-    print_tiles(grid, all_lowest_cost_paths)
-
-    set_of_tiles = set()
-    for path in all_lowest_cost_paths:
-        for pos in path:
-            set_of_tiles.add(pos)
-
-    ans = len(set_of_tiles)
+    ans = len(tiles)
 
     print("Part 2:", ans)
 
+
+start_time = time.perf_counter()
 
 # filename = "day16/example"
 filename = "day16/input"
 
 grid, start, end = parse(filename)
 solve(grid, start, end)
+
+end_time = time.perf_counter()
+print(f"Total time: {end_time - start_time} seconds")
