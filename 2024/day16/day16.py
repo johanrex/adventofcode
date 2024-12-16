@@ -13,6 +13,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from utils.grid import Grid
 
+EAST = Grid.Pos(0, 1)
+WEST = Grid.Pos(0, -1)
+NORTH = Grid.Pos(-1, 0)
+SOUTH = Grid.Pos(1, 0)
+
 
 def parse(filename: str) -> tuple[Grid, Grid.Pos, list[str]]:
     with open(filename) as f:
@@ -43,12 +48,12 @@ def parse(filename: str) -> tuple[Grid, Grid.Pos, list[str]]:
     return grid, start, end
 
 
-def dijkstra(grid: Grid, start: Grid.Pos, end: Grid.Pos) -> int:
-    pq = [(0, start)]  # priority queue of tuples (accumulated cost, position)
+def dijkstra(grid: Grid, start: Grid.Pos, end: Grid.Pos, cost: dict[str, int]) -> int:
+    pq = [(0, start, EAST)]  # priority queue of tuples (accumulated cost, position, previous direction)
     visited = set()
 
     while pq:
-        acc_cost, pos = heapq.heappop(pq)
+        acc_cost, pos, prev_direction = heapq.heappop(pq)
         if pos in visited:
             continue
         visited.add(pos)
@@ -56,8 +61,8 @@ def dijkstra(grid: Grid, start: Grid.Pos, end: Grid.Pos) -> int:
         if pos == end:
             return acc_cost
 
-        for direction in [Grid.Pos(0, 1), Grid.Pos(0, -1), Grid.Pos(1, 0), Grid.Pos(-1, 0)]:
-            new_pos = pos + direction
+        for new_direction in [Grid.Pos(0, 1), Grid.Pos(0, -1), Grid.Pos(1, 0), Grid.Pos(-1, 0)]:
+            new_pos = pos + new_direction
 
             cell_value = grid.get_by_pos(new_pos)
             if cell_value == "#":
@@ -66,15 +71,20 @@ def dijkstra(grid: Grid, start: Grid.Pos, end: Grid.Pos) -> int:
             if new_pos in visited:
                 continue
 
-            new_cost = acc_cost + 1
-            heapq.heappush(pq, (new_cost, new_pos))
+            if prev_direction.row != new_direction.row and prev_direction.col != new_direction.col:
+                step_cost = 1000
+            else:
+                step_cost = 1
+
+            new_cost = acc_cost + step_cost
+            heapq.heappush(pq, (new_cost, new_pos, new_direction))
 
     return -1  # return -1 if no path is found
 
 
 def part1(grid: Grid, start: Grid.Pos, end: Grid.Pos):
     grid.print_grid()
-    cost = dijkstra(grid, start, end)
+    cost = dijkstra(grid, start, end, {"turn_east": 2})
     print(cost)
     print("Part 1:", -1)
 
