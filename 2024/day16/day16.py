@@ -1,8 +1,3 @@
-import math
-import re
-import copy
-from collections import Counter
-
 import sys
 import os
 import time
@@ -77,146 +72,9 @@ def print_path(grid: Grid, path: list[Grid.Pos]):
         print(line)
 
 
-def print_tiles(grid: Grid, paths: list[list[Grid.Pos]]):
-    grid_copy = grid.copy()
-
-    for path in paths:
-        for pos in path:
-            grid_copy.set_by_pos(pos, "O")
-
-    # draw glorious grid with path
-    for row in range(grid_copy.rows):
-        line = ""
-        for col in range(grid_copy.cols):
-            pos = Grid.Pos(row, col)
-            line += grid_copy.get_by_pos(pos)
-        print(line)
-
-
-def dijkstra(grid: Grid, start: Grid.Pos, end: Grid.Pos) -> tuple[int, list[Grid.Pos]]:
-    pq = [(0, start, EAST, [])]  # priority queue of tuples (accumulated cost, position, previous direction, path)
-    visited = set()
-
-    while pq:
-        curr_cost, curr_pos, prev_d, path = heapq.heappop(pq)
-        if curr_pos in visited:
-            continue
-        visited.add(curr_pos)
-
-        path = path + [curr_pos]
-
-        if curr_pos == end:
-            return curr_cost, path
-
-        for d in [EAST, WEST, NORTH, SOUTH]:
-            next_pos = curr_pos + d
-
-            cell_value = grid.get_by_pos(next_pos)
-            if cell_value == "#":
-                continue
-
-            if next_pos in visited:
-                continue
-
-            step_cost = 1
-
-            if prev_d.row != d.row and prev_d.col != d.col:
-                step_cost += 1000
-
-            heapq.heappush(pq, (curr_cost + step_cost, next_pos, d, path))
-
-    return -1, []  # return -1 and empty path if no path is found
-
-
-def dfs_all_paths(grid: Grid, start: Grid.Pos, end: Grid.Pos, lowest_cost: int) -> list[set[Grid.Pos]]:
-    def dfs(curr_pos: Grid.Pos, facing: Grid.Pos, visited: set[Grid.Pos], curr_cost: int):
-        if curr_cost > lowest_cost:
-            return
-
-        if curr_pos == end:
-            tiles.update(visited)
-            return
-
-        for d in [EAST, WEST, NORTH, SOUTH]:
-            new_pos = curr_pos + d
-
-            if new_pos in visited:
-                continue
-
-            if grid.get_by_pos(new_pos) == "#":
-                continue
-
-            step_cost = 1
-
-            if d != facing:
-                step_cost += 1000
-
-            visited.add(new_pos)
-            dfs(new_pos, d, visited, curr_cost + step_cost)
-            visited.remove(new_pos)
-
-    tiles = set()
-    dfs(start, EAST, {start}, 0)
-    return tiles
-
-
-def dijkstra2(grid: Grid, start: Grid.Pos, end: Grid.Pos, target_cost) -> tuple[int, list[Grid.Pos]]:
-    """
-    pq: (
-        cost including current pos,
-        current position,
-        previous direction,
-        path excl current pos
-    )
-    visited: (pos, facing)
-
-    """
-
-    all_tiles_all_paths = set()
-
-    pq = [(0, start, EAST, set())]  # priority queue of tuples (accumulated cost, position, previous direction, path)
-    # visited = set((start, EAST))
-
-    while pq:
-        curr_cost, curr_pos, facing, tiles = heapq.heappop(pq)
-
-        if curr_cost > target_cost:
-            break
-
-        # visited_key = (curr_pos, facing)
-        # if visited_key in visited:
-        #     continue
-        # visited.add(visited_key)
-        if curr_pos in tiles:
-            continue
-
-        tiles.add(curr_pos)
-
-        if curr_pos == end:
-            all_tiles_all_paths.update(tiles)
-            continue
-
-        for next_facing in [EAST, WEST, NORTH, SOUTH]:
-            next_pos = curr_pos + next_facing
-
-            cell_value = grid.get_by_pos(next_pos)
-            if cell_value == "#":
-                continue
-
-            step_cost = 1
-
-            if facing != next_facing:
-                step_cost += 1000
-
-            heapq.heappush(pq, (curr_cost + step_cost, next_pos, next_facing, tiles.copy()))
-
-    return all_tiles_all_paths
-
-
-def dijkstra3(grid, start, facing_dir):
-    pq = []
-    # (distance, node, facing direction)
-    heapq.heappush(pq, (0, start, facing_dir))
+def dijkstra(grid: Grid, start: Grid.Pos, facing_dir: Grid.Pos) -> dict[Grid.Pos, int]:
+    # (distance, pos, facing direction)
+    pq = [(0, start, facing_dir)]
 
     # init distances
     distances = dict()
@@ -231,16 +89,16 @@ def dijkstra3(grid, start, facing_dir):
     visited = set()
 
     while pq:
-        curr_dist, curr_node, facing = heapq.heappop(pq)
+        curr_dist, curr_pos, facing = heapq.heappop(pq)
 
-        if curr_node in visited:
+        if curr_pos in visited:
             continue
-        visited.add(curr_node)
+        visited.add(curr_pos)
 
         for next_facing in [EAST, WEST, NORTH, SOUTH]:
-            next_node = curr_node + next_facing
+            next_pos = curr_pos + next_facing
 
-            val = grid.get_by_pos(next_node)
+            val = grid.get_by_pos(next_pos)
             if val == "#":
                 continue
 
@@ -249,28 +107,23 @@ def dijkstra3(grid, start, facing_dir):
                 next_dist += 1000
 
             # If a shorter path to the neighbor is found
-            if next_dist < distances[next_node]:
-                distances[next_node] = next_dist
-                heapq.heappush(pq, (next_dist, next_node, next_facing))
+            if next_dist < distances[next_pos]:
+                distances[next_pos] = next_dist
+                heapq.heappush(pq, (next_dist, next_pos, next_facing))
 
     return distances
 
 
 def solve(grid: Grid, start: Grid.Pos, end: Grid.Pos):
-    # grid.print_grid()
-    lowest_cost, path = dijkstra(grid, start, end)
-    print("Part 1 lowest cost:", lowest_cost)
-    # print_path(grid, path)
-
-    distances = dijkstra3(grid, start, EAST)
+    distances = dijkstra(grid, start, EAST)
 
     min_dist = distances[end]
-    print("Part 1 lowest cost:", min_dist)
+    print("Part 1:", min_dist)
 
-    d1 = dijkstra3(grid, end, EAST)
-    d2 = dijkstra3(grid, end, WEST)
-    d3 = dijkstra3(grid, end, NORTH)
-    d4 = dijkstra3(grid, end, SOUTH)
+    d1 = dijkstra(grid, end, EAST)
+    d2 = dijkstra(grid, end, WEST)
+    d3 = dijkstra(grid, end, NORTH)
+    d4 = dijkstra(grid, end, SOUTH)
 
     tiles = set()
 
@@ -284,23 +137,15 @@ def solve(grid: Grid, start: Grid.Pos, end: Grid.Pos):
                 e_to_s_dist3 = d3[pos]
                 e_to_s_dist4 = d4[pos]
 
-                if s_to_e_dist + e_to_s_dist1 == min_dist:
-                    tiles.add(pos)
-                elif s_to_e_dist + e_to_s_dist2 == min_dist:
-                    tiles.add(pos)
-                elif s_to_e_dist + e_to_s_dist3 == min_dist:
-                    tiles.add(pos)
-                elif s_to_e_dist + e_to_s_dist4 == min_dist:
+                if (
+                    (s_to_e_dist + e_to_s_dist1 == min_dist)
+                    or (s_to_e_dist + e_to_s_dist2 == min_dist)
+                    or (s_to_e_dist + e_to_s_dist3 == min_dist)
+                    or (s_to_e_dist + e_to_s_dist4 == min_dist)
+                ):
                     tiles.add(pos)
 
     print("Part 2:", len(tiles))
-
-    # # tiles = dfs_all_paths(grid, start, end, lowest_cost)
-    # all_tiles_all_paths = dijkstra2(grid, start, end, lowest_cost)
-
-    # ans = len(all_tiles_all_paths)
-
-    # print("Part 2:", ans)
 
 
 start_time = time.perf_counter()
