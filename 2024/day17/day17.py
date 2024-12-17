@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import time
 import sys
 import math
 import re
@@ -193,13 +194,27 @@ def part1(computer: Computer):
 def part2(computer: Computer):
     initial_program = computer.program.copy()
 
-    for reg_a_val in range(0, sys.maxsize):
-        if reg_a_val % 10000 == 0:
-            print("Trying reg_a value:", reg_a_val)
+    start_time = time.perf_counter()
 
-        new_computer = Computer(reg_a_val, computer.reg_b, computer.reg_c, 0, initial_program)
-        new_computer.execute()
-        if new_computer.output == initial_program:
+    reg_a_val = None
+    for reg_a_val in range(0, sys.maxsize):
+        if reg_a_val % 1000000 == 0:
+            time_elapsed = time.perf_counter() - start_time
+            msg = f"Trying reg_a value: {reg_a_val}. "
+            msg += f"Elapsed time: {time_elapsed:.2f}s. "
+            msg += f"Vals/s: {reg_a_val / time_elapsed:.2f}."
+
+            print(msg)
+
+        # reset computer
+        computer.reg_a = reg_a_val
+        computer.reg_b = 0
+        computer.reg_c = 0
+        computer.ip = 0
+        computer.output.clear()
+
+        computer.execute()
+        if computer.output == initial_program:
             break
 
     print("Part 2:", reg_a_val)
