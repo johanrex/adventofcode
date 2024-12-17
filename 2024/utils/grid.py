@@ -79,3 +79,8 @@ class Grid:
             for col in range(self.cols):
                 line += self.get(row, col)
             print(line)
+
+    def copy(self):
+        new_grid = Grid(self.rows, self.cols)
+        new_grid._dict = self._dict.copy()
+        return new_grid
