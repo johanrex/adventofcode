@@ -1,9 +1,6 @@
+from collections import defaultdict
 import heapq
-import time
-import math
 import re
-import copy
-from collections import Counter
 import sys
 import os
 
@@ -13,9 +10,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from utils.grid import Grid
 
-rows = None
-cols = None
-
 EAST = Grid.Pos(0, 1)
 WEST = Grid.Pos(0, -1)
 NORTH = Grid.Pos(-1, 0)
@@ -23,22 +17,22 @@ SOUTH = Grid.Pos(1, 0)
 
 
 def parse(filename: str) -> list[Grid.Pos]:
+    rows = -1
+    cols = -1
     positions = []
     with open(filename) as f:
         for line in f:
             tmp = list(map(int, re.findall(r"\d+", line)))
-            positions.append(Grid.Pos(tmp[1], tmp[0]))
-    return positions
+            row = tmp[1]
+            col = tmp[0]
+            rows = max(rows, row + 1)
+            cols = max(cols, col + 1)
+            positions.append(Grid.Pos(row, col))
+    return positions, rows, cols
 
 
-def make_grid(positions: list[Grid.Pos]) -> Grid:
-    global rows, cols
-    if rows is None:
-        rows = max([pos.row for pos in positions]) + 1
-        cols = max([pos.col for pos in positions]) + 1
+def make_grid(positions: list[Grid.Pos], rows, cols) -> Grid:
     grid = Grid(rows, cols, ".")
-
-    # print(grid.rows, grid.cols)
 
     for pos in positions:
         grid.set_by_pos(pos, "#")
@@ -46,19 +40,12 @@ def make_grid(positions: list[Grid.Pos]) -> Grid:
 
 
 def dijkstra(grid: Grid, start: Grid.Pos) -> dict[Grid.Pos, int]:
-    # (distance, pos)
+    # priority queue: (distance, pos)
     pq = [(0, start)]
 
-    # init distances
-    distances = dict()
-    for row in range(grid.rows):
-        for col in range(grid.cols):
-            pos = Grid.Pos(row, col)
-            val = grid.get_by_pos(pos)
-            if val != "#":
-                distances[pos] = float("inf")
-
+    distances = defaultdict(lambda: float("inf"))
     distances[start] = 0
+
     visited = set()
 
     while pq:
@@ -66,6 +53,7 @@ def dijkstra(grid: Grid, start: Grid.Pos) -> dict[Grid.Pos, int]:
 
         if curr_pos in visited:
             continue
+
         visited.add(curr_pos)
 
         for step in [EAST, WEST, NORTH, SOUTH]:
@@ -89,14 +77,14 @@ def dijkstra(grid: Grid, start: Grid.Pos) -> dict[Grid.Pos, int]:
 
 
 def part1(filename: str):
-    positions = parse(filename)
+    positions, rows, cols = parse(filename)
 
     if "example" in filename:
         positions = positions[:12]
     else:
         positions = positions[:1024]
 
-    grid = make_grid(positions)
+    grid = make_grid(positions, rows, cols)
     start = Grid.Pos(0, 0)
     end = Grid.Pos(grid.rows - 1, grid.cols - 1)
 
@@ -110,43 +98,35 @@ def part1(filename: str):
     print("Part 1:", shortest_dist)
 
 
+def is_path_blocked(positions: list[Grid.Pos], rows, cols) -> bool:
+    grid = make_grid(positions, rows, cols)
+    start = Grid.Pos(0, 0)
+    end = Grid.Pos(grid.rows - 1, grid.cols - 1)
+
+    distances = dijkstra(grid, start)
+    shortest_dist = distances[end]
+
+    return shortest_dist == float("inf")
+
+
 def part2(filename: str):
-    positions = parse(filename)
+    positions, rows, cols = parse(filename)
 
-    if "example" in filename:
-        lower_bound = 1
-    else:
-        lower_bound = 1024
+    left = 1
+    right = len(positions) - 1
+    while left < right:
+        mid = (left + right) // 2
+        if is_path_blocked(positions[:mid], rows, cols):
+            right = mid
+        else:
+            left = mid + 1
 
-    found = False
-    for i in range(lower_bound, len(positions)):
-        print(i)
-        tmp_positions = positions[:i]
+    assert is_path_blocked(positions[:mid], rows, cols)
+    assert not is_path_blocked(positions[: mid - 1], rows, cols)
 
-        grid = make_grid(tmp_positions)
-        start = Grid.Pos(0, 0)
-        end = Grid.Pos(grid.rows - 1, grid.cols - 1)
-
-        assert grid.get_by_pos(start) == "."
-        assert grid.get_by_pos(end) == "."
-
-        distances = dijkstra(grid, start)
-
-        shortest_dist = distances[end]
-
-        # grid.print_grid()
-        # print("")
-
-        if shortest_dist == float("inf"):
-            found = True
-            break
-
-    if found:
-        pos = positions[i - 1]
-        msg = f"{pos.col},{pos.row}"
-        print("Part 2:", msg)
-    else:
-        print("Part 2: Not found")
+    pos = positions[left - 1]
+    msg = f"{pos.col},{pos.row}"
+    print("Part 2:", msg)
 
 
 # filename = "day18/example"
