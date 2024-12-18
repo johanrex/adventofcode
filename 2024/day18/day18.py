@@ -33,9 +33,9 @@ def parse(filename: str) -> list[Grid.Pos]:
 
 def make_grid(positions: list[Grid.Pos], rows, cols) -> Grid:
     grid = Grid(rows, cols, ".")
-
     for pos in positions:
         grid.set_by_pos(pos, "#")
+
     return grid
 
 
@@ -43,7 +43,7 @@ def dijkstra(grid: Grid, start: Grid.Pos) -> dict[Grid.Pos, int]:
     # priority queue: (distance, pos)
     pq = [(0, start)]
 
-    distances = defaultdict(lambda: float("inf"))
+    distances = defaultdict(lambda: sys.maxsize)
     distances[start] = 0
 
     visited = set()
@@ -88,11 +88,7 @@ def part1(filename: str):
     start = Grid.Pos(0, 0)
     end = Grid.Pos(grid.rows - 1, grid.cols - 1)
 
-    assert grid.get_by_pos(start) == "."
-    assert grid.get_by_pos(end) == "."
-
     distances = dijkstra(grid, start)
-
     shortest_dist = distances[end]
 
     print("Part 1:", shortest_dist)
@@ -106,7 +102,7 @@ def is_path_blocked(positions: list[Grid.Pos], rows, cols) -> bool:
     distances = dijkstra(grid, start)
     shortest_dist = distances[end]
 
-    return shortest_dist == float("inf")
+    return shortest_dist == sys.maxsize
 
 
 def part2(filename: str):
