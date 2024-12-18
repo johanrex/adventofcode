@@ -108,6 +108,9 @@ def is_path_blocked(positions: list[Grid.Pos], rows, cols) -> bool:
 def part2(filename: str):
     positions, rows, cols = parse(filename)
 
+    # binary search for the first position that blocks the path
+    # when done, left will be at the first position that blocks the path
+    # the position we're looking for is left-1
     left = 1
     right = len(positions) - 1
     while left < right:
