@@ -1,7 +1,15 @@
+import time
 import math
 import re
 import copy
 from collections import Counter
+import sys
+import os
+
+# silly python path manipulation
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from utils.grid import Grid
 
 
 def parse_ints(filename: str):

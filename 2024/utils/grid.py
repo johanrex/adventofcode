@@ -37,7 +37,7 @@ class Grid:
         self._dict = defaultdict(lambda: default_value)
 
     def is_pos_within_bounds(self, pos: Pos) -> bool:
-        return 0 <= pos.row < self.rows and 0 <= pos.col
+        return 0 <= pos.row < self.rows and 0 <= pos.col < self.cols
 
     def is_within_bounds(self, row, col):
         return 0 <= row < self.rows and 0 <= col < self.cols
