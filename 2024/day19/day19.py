@@ -14,17 +14,6 @@ def parse(filename: str) -> tuple[set[str], list[str]]:
 
 
 @cache
-def is_possible(design: str) -> bool:
-    if len(design) == 0:
-        return True
-    else:
-        for pattern in available_patterns:
-            if design.startswith(pattern) and is_possible(design[len(pattern) :]):
-                return True
-    return False
-
-
-@cache
 def count_possible(design: str) -> int:
     if len(design) == 0:
         return 1
@@ -38,19 +27,19 @@ def count_possible(design: str) -> int:
 
 def solve():
     is_possible_count = 0
-    all_possible_count = 0
+    all_combinations_count = 0
 
     for design in designs:
-        if is_possible(design):
+        tmp = count_possible(design)
+        if tmp > 0:
             is_possible_count += 1
-
-        all_possible_count += count_possible(design)
+            all_combinations_count += tmp
 
     assert is_possible_count == 338
-    assert all_possible_count == 841533074412361
+    assert all_combinations_count == 841533074412361
 
     print("Part 1:", is_possible_count)
-    print("Part 2:", all_possible_count)
+    print("Part 2:", all_combinations_count)
 
 
 # filename = "day19/example"
