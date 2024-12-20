@@ -1,8 +1,5 @@
 import heapq
 import time
-import math
-import re
-import copy
 from collections import Counter
 import sys
 import os
@@ -14,7 +11,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils.grid import Grid
 # from tqdm import tqdm
 
-import utils.parse_utils as parse_utils
 
 EAST = Grid.Pos(0, 1)
 WEST = Grid.Pos(0, -1)
