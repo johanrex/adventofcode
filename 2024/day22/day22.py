@@ -1,18 +1,5 @@
-from functools import cache
 import time
-import math
-import re
-import copy
-from collections import Counter
-import sys
-import os
-from collections import defaultdict
-import pandas as pd
-
-# silly python path manipulation
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-import utils.parse_utils as parse_utils
+from multiprocessing import Pool
 
 
 def parse(filename: str):
@@ -50,6 +37,17 @@ def part1(secrets):
     print("Part 1:", s)
 
 
+def calculate_banana_count(sequence_of_changes, monkey_secrets):
+    total_banana_count = 0
+    for monkey_id, batch in monkey_secrets.items():
+        for i in range(3, len(batch)):
+            if (batch[i - 3][2], batch[i - 2][2], batch[i - 1][2], batch[i][2]) == sequence_of_changes:
+                banana_count = batch[i][1]
+                total_banana_count += banana_count
+                break
+    return total_banana_count
+
+
 def part2(secrets):
     all_sequences_of_changes = set()
 
@@ -79,29 +77,24 @@ def part2(secrets):
 
     all_total_banana_counts = []
 
-    for sequence_of_changes in all_sequences_of_changes:
-        # get banana count for current sequence
-        total_banana_count = 0
-        for monkey_id, batch in monkey_secrets.items():
-            for i in range(3, len(batch)):
-                if (batch[i - 3][2], batch[i - 2][2], batch[i - 1][2], batch[i][2]) == sequence_of_changes:
-                    banana_count = batch[i][1]
-                    total_banana_count += banana_count
-                    break
-        all_total_banana_counts.append(total_banana_count)
+    with Pool() as pool:
+        args = [(sequence_of_changes, monkey_secrets) for sequence_of_changes in all_sequences_of_changes]
+        all_total_banana_counts = pool.starmap(calculate_banana_count, args)
 
     max_bananas = max(all_total_banana_counts)
-
-    # df = pd.DataFrame(batch, columns=["secret", "ones_digit", "diff"]).astype("Int64")
-    # print(df)
-
     print("Part 2:", max_bananas)
 
 
-filename = "day22/example"
-filename = "day22/input"
+if __name__ == "__main__":
+    start_time = time.perf_counter()
 
-secrets = parse(filename)
-# part1(secrets)
-part2(secrets)
-# part2([123])
+    filename = "day22/example"
+    filename = "day22/input"
+
+    secrets = parse(filename)
+
+    part1(secrets)
+    part2(secrets)
+
+    end_time = time.perf_counter()
+    print(f"Total time: {end_time - start_time} seconds")
