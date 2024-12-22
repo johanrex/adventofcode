@@ -11,15 +11,12 @@ def parse(filename: str):
 
 
 def evolve(secret: int) -> int:
-    tmp = secret * 64
-    secret ^= tmp  # mix
-    secret %= 16777216  # prune
-    tmp = secret // 32
-    secret ^= tmp  # mix
-    secret %= 16777216  # prune
-    tmp = secret * 2048
-    secret ^= tmp  # mix
-    secret %= 16777216  # prune
+    secret ^= secret * 64
+    secret %= 16777216
+    secret ^= secret // 32
+    secret %= 16777216
+    secret ^= secret * 2048
+    secret %= 16777216
 
     return secret
 
@@ -27,11 +24,9 @@ def evolve(secret: int) -> int:
 def part1(secrets):
     s = 0
     for secret in secrets:
-        original = secret
         for _ in range(2000):
             secret = evolve(secret)
         s += secret
-        # print(f"{original} -> {secret}.")
 
     assert s == 13429191512
     print("Part 1:", s)
@@ -39,7 +34,7 @@ def part1(secrets):
 
 def calculate_banana_count(sequence_of_changes, monkey_secrets):
     total_banana_count = 0
-    for monkey_id, batch in monkey_secrets.items():
+    for _, batch in monkey_secrets.items():
         for i in range(3, len(batch)):
             if (batch[i - 3][2], batch[i - 2][2], batch[i - 1][2], batch[i][2]) == sequence_of_changes:
                 banana_count = batch[i][1]
@@ -54,23 +49,19 @@ def part2(secrets):
     monkey_secrets = dict()
     for monkey_id, secret in enumerate(secrets):
         # store tuple of (secret, ones_digit, diff)
-        batch = []
-        batch.append((secret, secret % 10, None))
-        # print(batch[-1])
+        batch = [(secret, secret % 10, None)]
 
         for i in range(2000):
             secret = evolve(secret)
 
             ones_digit = secret % 10
             diff = ones_digit - batch[-1][1]
-
             batch.append((secret, ones_digit, diff))
-            # print(batch[-1])
 
             if i >= 3:
                 all_sequences_of_changes.add((batch[-4][2], batch[-3][2], batch[-2][2], batch[-1][2]))
 
-        # remove first element
+        # remove first element that don't have a diff
         batch = batch[1:]
 
         monkey_secrets[monkey_id] = batch
@@ -82,6 +73,8 @@ def part2(secrets):
         all_total_banana_counts = pool.starmap(calculate_banana_count, args)
 
     max_bananas = max(all_total_banana_counts)
+
+    assert max_bananas == 1582
     print("Part 2:", max_bananas)
 
 
