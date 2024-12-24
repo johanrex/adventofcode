@@ -52,10 +52,7 @@ def parse(filename: str):
     return wire_values, gates
 
 
-def part1(wire_values, gates):
-    gates = copy.deepcopy(gates)
-    wire_values = copy.deepcopy(wire_values)
-
+def execute(wire_values, gates):
     while len(gates) > 0:
         tmp_gates = []
         for i in range(len(gates)):
@@ -66,20 +63,36 @@ def part1(wire_values, gates):
                 tmp_gates.append(gate)
         gates = tmp_gates
 
-    z_values = {k: v for k, v in wire_values.items() if k.startswith("z")}
-    z_wire_names = sorted([name for name in z_values.keys()], reverse=True)
+
+def get_val(wire_values: defaultdict, wire_startswith: str):
+    relevant_wire_values = {k: v for k, v in wire_values.items() if k.startswith(wire_startswith)}
+    relevant_wire_names = sorted([name for name in relevant_wire_values.keys()], reverse=True)
 
     ans = ""
-    for wire_name in z_wire_names:
-        ans += str(z_values[wire_name])
+    for wire_name in relevant_wire_names:
+        ans += str(relevant_wire_values[wire_name])
 
     ans = int(ans, 2)
+    return ans
 
+
+def part1(wire_values, gates):
+    execute(wire_values, gates)
+
+    ans = get_val(wire_values, "z")
+
+    assert ans == 53190357879014
     print("Part 1:", ans)
+
+
+def part2(wire_values, gates):
+    pass
+    # swap
 
 
 filename = "day24/example"
 filename = "day24/input"
 
 wire_values, gates = parse(filename)
-part1(wire_values, gates)
+part1(copy.deepcopy(wire_values), copy.deepcopy(gates))
+part2(copy.deepcopy(wire_values), copy.deepcopy(gates))
