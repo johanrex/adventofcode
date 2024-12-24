@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import time
 import math
 import re
