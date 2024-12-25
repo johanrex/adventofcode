@@ -1,18 +1,10 @@
-from dataclasses import dataclass
-import time
-import math
-import re
-import copy
-from collections import Counter
 import sys
 import os
-from collections import defaultdict
 
 # silly python path manipulation
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from utils.grid import Grid
-import utils.parse_utils as parse_utils
 
 rows = 7
 cols = 5
@@ -67,15 +59,16 @@ def part1(locks: list[Grid], keys: list[Grid]):
                     fits = False
                     break
             if fits:
-                print(f"Lock {lock_heights} and key {key_heights}: all columns fit.")
+                # print(f"Lock {lock_heights} and key {key_heights}: all columns fit.")
                 fit_cnt += 1
             else:
-                print(f"Lock {lock_heights} and key {key_heights}: not all columns fit.")
+                pass
+                # print(f"Lock {lock_heights} and key {key_heights}: not all columns fit.")
 
     print("Part 1:", fit_cnt)
 
 
-filename = "day25/example"
+# filename = "day25/example"
 filename = "day25/input"
 
 locks, keys = parse(filename)
