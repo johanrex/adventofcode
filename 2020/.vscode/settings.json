@@ -3,5 +3,22 @@
         "."
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "terminal.integrated.profiles.windows": {
+        "Command Prompt": {
+            "path": "C:\\Windows\\System32\\cmd.exe",
+            "args": [
+                "/k",
+                "call",
+                "\"C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\Tools\\VsDevCmd.bat\""
+            ]
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "files.associations": {
+        "*.erd": "json",
+        "*.vuerd": "json",
+        "string": "cpp",
+        "filesystem": "cpp"
+    }
 }

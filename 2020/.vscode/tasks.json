@@ -1,0 +1,26 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build current file (MSVC)",
+            "type": "process",
+            "command": "C:\\Windows\\System32\\cmd.exe",
+            "args": [
+                "/c",
+                "call",
+                "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\Tools\\VsDevCmd.bat",
+                "&&",
+                "cl.exe",
+                "/Zi",
+                "/Od",
+                "/std:c++latest",        // <--- use latest C++ for MSVC
+                "/EHsc",
+                "${file}",
+                "/Fe:${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": { "cwd": "${fileDirname}" },
+            "problemMatcher": [ "$msCompile" ],
+            "group": { "kind": "build", "isDefault": true }
+        }
+    ]
+}
