@@ -4,10 +4,10 @@
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
+#include <algorithm>
 
+namespace fs = std::filesystem;
 using namespace std;
-namespace fs = std::filesystem; // changed to std::filesystem
-
 
 vector<int> readInts(const string& filename)
 {
@@ -52,7 +52,7 @@ int64_t stepCounter(const vector<int>& input, int i)
     if (i == input.size()-1)
         return 1;
 
-    if (memo.find(i) != memo.end())
+    if (memo.contains(i))
         return memo[i]; 
 
     int64_t ans = 0;
@@ -75,7 +75,7 @@ void part2(const vector<int>& input)
 
 int main()
 {
-    auto input = readInts("day10/input");
+    auto input = readInts("day10/example");
 
     sort(input.begin(), input.end());
     input.insert(input.begin(), 0); // add the charging outlet

@@ -8,18 +8,20 @@
             "args": [
                 "/c",
                 "call",
-                "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\Tools\\VsDevCmd.bat",
+                "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat",
                 "&&",
                 "cl.exe",
+                "/std:c++20",
+                "/Zc:__cplusplus",
                 "/Zi",
                 "/Od",
-                "/std:c++latest",        // <--- use latest C++ for MSVC
+                "/W4",
                 "/EHsc",
                 "${file}",
                 "/Fe:${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": { "cwd": "${fileDirname}" },
-            "problemMatcher": [ "$msCompile" ],
+            "problemMatcher": ["$msCompile"],
             "group": { "kind": "build", "isDefault": true }
         }
     ]
