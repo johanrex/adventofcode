@@ -6,3 +6,7 @@ cookie.json
 example
 input
 images/
+*.exe
+*.ilk
+*.obj
+*.pdb
