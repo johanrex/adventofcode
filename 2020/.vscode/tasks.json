@@ -4,23 +4,10 @@
         {
             "label": "Build current file (MSVC)",
             "type": "process",
-            "command": "C:\\Windows\\System32\\cmd.exe",
+            "command": "${workspaceFolder}\\.vscode\\msvc_build.bat",
             "args": [
-                "/c",
-                "call",
-                "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "&&",
-                "cl.exe",
-                "/std:c++20",
-                "/Zc:__cplusplus",
-                "/Zi",
-                "/Od",
-                "/W4",
-                "/EHsc",
-                "${file}",
-                "/Fe:${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${file}"
             ],
-            "options": { "cwd": "${fileDirname}" },
             "problemMatcher": ["$msCompile"],
             "group": { "kind": "build", "isDefault": true }
         }
