@@ -56,13 +56,6 @@ def part2(data):
 
         pwd += passing_zero_cnt
 
-        # if passing_zero_cnt > 0:
-        #     print(
-        #         f"The dial is rotated {rot} to point at {curr}. during this rotation, it points at 0 {passing_zero_cnt}."
-        #     )
-        # else:
-        #     print(f"The dial is rotated {rot} to point at {curr}.")
-
     print("Last position:", curr)
 
     assert pwd == 6166
