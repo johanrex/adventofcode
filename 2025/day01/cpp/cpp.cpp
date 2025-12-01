@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 
 namespace fs = std::filesystem;
 using namespace std;
@@ -77,10 +77,10 @@ void part2(const vector<int>& input)
         else { // steps < 0
             if ((curr + steps) <= 0) {
                 if (curr == 0) {
-                    passing_zero_cnt = std::llabs(static_cast<long long>(curr + steps)) / 100;
+                    passing_zero_cnt = abs(static_cast<long long>(curr + steps)) / 100;
                 }
                 else {
-                    passing_zero_cnt = (std::llabs(static_cast<long long>(curr + steps)) / 100) + 1;
+                    passing_zero_cnt = (abs(static_cast<long long>(curr + steps)) / 100) + 1;
                 }
             }
         }
