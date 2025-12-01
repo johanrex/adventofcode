@@ -34,6 +34,7 @@ if ($timeToWait.TotalSeconds -gt 0) {
 $json = Get-Content -Path "cookie.json" -Raw | ConvertFrom-Json
 $session_cookie = $json."Content raw"
 
+$day = [int]$day # remove the leading zero for the URL
 $url = "https://adventofcode.com/$year/day/$day/input"
 curl --cookie "session=$session_cookie" $url > $input_file
 
