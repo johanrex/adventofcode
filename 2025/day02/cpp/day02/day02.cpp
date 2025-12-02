@@ -14,6 +14,11 @@
 
 using namespace std;
 
+using ll = long long;
+using Interval = std::pair<ll, ll>;
+using Intervals = std::vector<Interval>;
+
+
 static string strip(const string& s)
 {
     // Remove leading and trailing whitespaces.
@@ -59,7 +64,7 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_set<T>& s)
     return os << '}';
 }
 
-vector<pair<long long, long long>> parse(const string& filename)
+vector<Interval> parse(const string& filename)
 {
     auto absPath = filesystem::absolute(filename);
 
@@ -79,21 +84,20 @@ vector<pair<long long, long long>> parse(const string& filename)
 
 	auto tmp = split(content, ',');
 
-    vector<pair<long long, long long>> intervals;
+    vector<Interval> intervals;
 
     for(auto part: tmp)
     {
 		auto toks = split(part, '-');
-        long long a = stoll(toks[0]);
-        long long b = stoll(toks[1]);
+        ll a = stoll(toks[0]);
+        ll b = stoll(toks[1]);
         intervals.emplace_back(a, b);
     }
 
     return intervals;
 }
 
-
-static bool is_repeated_twice(long long num)
+static bool is_repeated_twice(ll num)
 {
     if (num < 10)
         return false;
@@ -107,7 +111,7 @@ static bool is_repeated_twice(long long num)
     return repeated == s;
 }
 
-static bool is_repeated_at_least_twice(long long num)
+static bool is_repeated_at_least_twice(ll num)
 {
     if (num < 10)
         return false;
@@ -136,14 +140,14 @@ static bool is_repeated_at_least_twice(long long num)
     return false;
 }
 
-static void part1(const vector<pair<long long, long long>>& intervals)
+static void part1(const vector<Interval>& intervals)
 {
-    unordered_set<long long> invalids;
+    unordered_set<ll> invalids;
     for (const auto& interval : intervals)
     {
-        long long start = interval.first;
-        long long end = interval.second;
-        for (long long i = start; i <= end; ++i)
+        ll start = interval.first;
+        ll end = interval.second;
+        for (ll i = start; i <= end; ++i)
         {
             if (is_repeated_twice(i))
                 invalids.insert(i);
@@ -152,21 +156,21 @@ static void part1(const vector<pair<long long, long long>>& intervals)
         //cout << interval << " -> " << invalids << endl;
     }
 
-    long long ans = 0;
-    for (long long v : invalids) 
+    ll ans = 0;
+    for (ll v : invalids) 
         ans += v;
 
     cout << "Part 1: " << ans << endl;
 }
 
-static void part2(const vector<pair<long long, long long>>& intervals)
+static void part2(const vector<Interval>& intervals)
 {
-    unordered_set<long long> invalids;
+    unordered_set<ll> invalids;
     for (const auto& interval : intervals)
     {
-        long long start = interval.first;
-        long long end = interval.second;
-        for (long long i = start; i <= end; ++i)
+        ll start = interval.first;
+        ll end = interval.second;
+        for (ll i = start; i <= end; ++i)
         {
             if (is_repeated_at_least_twice(i))
                 invalids.insert(i);
@@ -175,8 +179,8 @@ static void part2(const vector<pair<long long, long long>>& intervals)
         // cout << interval << " -> " << invalids << endl;
     }
 
-    long long ans = 0;
-    for (long long v : invalids) 
+    ll ans = 0;
+    for (ll v : invalids) 
         ans += v;
 
     cout << "Part 2: " << ans << endl;
