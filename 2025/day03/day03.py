@@ -43,7 +43,6 @@ filename = "day03/example"
 filename = "day03/input"
 
 data = parse(filename)
-# ans = part1(data)
 
 p1 = find_joltage(data, 2)
 print("Part 1:", p1)
