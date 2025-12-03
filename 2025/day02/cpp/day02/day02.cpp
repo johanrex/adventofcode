@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <regex>
 #include <unordered_set>
+#include <cassert>
 
 using namespace std;
 
@@ -160,6 +161,8 @@ static void part1(const vector<Interval>& intervals)
     for (ll v : invalids) 
         ans += v;
 
+    assert(ans == 44487518055);
+
     cout << "Part 1: " << ans << endl;
 }
 
@@ -182,6 +185,9 @@ static void part2(const vector<Interval>& intervals)
     ll ans = 0;
     for (ll v : invalids) 
         ans += v;
+
+
+    assert(ans == 53481866137);
 
     cout << "Part 2: " << ans << endl;
 }
