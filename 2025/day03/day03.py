@@ -39,10 +39,6 @@ def find_joltage(data, size):
     return ans
 
 
-def part2(data):
-    print("Part 2:", -1)
-
-
 filename = "day03/example"
 filename = "day03/input"
 
