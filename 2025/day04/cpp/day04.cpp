@@ -99,17 +99,17 @@ vector<pair<int, int>> find_removable(Grid& grid)
             char curr_val = grid.get_or_default(r, c);
             if (curr_val == '@')
             {
-				int rolls = 0;
-                if (grid.get_or_default(r - 1, c - 1) == '@') rolls++;
-                if (grid.get_or_default(r - 1, c) == '@') rolls++;
-                if (grid.get_or_default(r - 1, c + 1) == '@') rolls++;
-                if (grid.get_or_default(r, c - 1) == '@') rolls++;
-                if (grid.get_or_default(r, c + 1) == '@') rolls++;
-                if (grid.get_or_default(r + 1, c - 1) == '@') rolls++;
-                if (grid.get_or_default(r + 1, c) == '@') rolls++;
-                if (grid.get_or_default(r + 1, c + 1) == '@') rolls++;
+				int neighboring_rolls = 0;
+                if (grid.get_or_default(r - 1, c - 1) == '@') neighboring_rolls++;
+                if (grid.get_or_default(r - 1, c) == '@') neighboring_rolls++;
+                if (grid.get_or_default(r - 1, c + 1) == '@') neighboring_rolls++;
+                if (grid.get_or_default(r, c - 1) == '@') neighboring_rolls++;
+                if (grid.get_or_default(r, c + 1) == '@') neighboring_rolls++;
+                if (grid.get_or_default(r + 1, c - 1) == '@') neighboring_rolls++;
+                if (grid.get_or_default(r + 1, c) == '@') neighboring_rolls++;
+                if (grid.get_or_default(r + 1, c + 1) == '@') neighboring_rolls++;
 
-                if (rolls < 4)
+                if (neighboring_rolls < 4)
                 {
                     removable.push_back({r, c});
                 }
