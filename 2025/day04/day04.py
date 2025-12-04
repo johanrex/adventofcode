@@ -1,0 +1,70 @@
+from dataclasses import dataclass
+import time
+import math
+import re
+import copy
+from collections import Counter
+import sys
+import os
+from collections import defaultdict
+import itertools
+
+# silly python path manipulation
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from utils.grid import Grid
+import utils.parse_utils as parse_utils
+
+
+def parse(filename) -> Grid:
+    with open(filename) as f:
+        lines = [line.strip() for line in f.readlines()]
+
+    rows = len(lines)
+    cols = len(lines[0])
+
+    grid = Grid(rows, cols)
+
+    for r in range(rows):
+        for c in range(cols):
+            grid.set(r, c, lines[r][c])
+
+    return grid
+
+
+def part1(grid: Grid):
+    can_move_cnt = 0
+    for r in range(grid.rows):
+        for c in range(grid.cols):
+            curr_val = grid.get(r, c)
+            if curr_val == "@":
+                # get neighbors in all 8 directions
+                neighbor_vals = [
+                    grid.get(r - 1, c - 1, default_value="."),
+                    grid.get(r - 1, c, default_value="."),
+                    grid.get(r - 1, c + 1, default_value="."),
+                    grid.get(r, c - 1, default_value="."),
+                    grid.get(r, c + 1, default_value="."),
+                    grid.get(r + 1, c - 1, default_value="."),
+                    grid.get(r + 1, c, default_value="."),
+                    grid.get(r + 1, c + 1, default_value="."),
+                ]
+
+                cnt = neighbor_vals.count("@")
+                if cnt < 4:
+                    can_move_cnt += 1
+
+    print("Part 1:", can_move_cnt)
+
+
+def part2(data):
+    print("Part 2:", -1)
+
+
+filename = "day04/example"
+filename = "day04/input"
+
+grid = parse(filename)
+
+part1(grid)
+# part2(grid)
