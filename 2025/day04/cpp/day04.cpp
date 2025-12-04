@@ -9,20 +9,18 @@ using namespace std;
 class Grid
 {
     private:
-		char defaultValue;
         vector<char> vect;
 
     public:
         size_t row_cnt = -1;
         size_t col_cnt = -1;
 
-        Grid(size_t rowCnt, size_t colCnt, char defaultValue)
+        Grid(size_t row_cnt, size_t col_cnt, char default_value)
         {
-			this->row_cnt = rowCnt;
-			this->col_cnt = colCnt;
-			this->defaultValue = defaultValue;
+			this->row_cnt = row_cnt;
+			this->col_cnt = col_cnt;
 
-            vect.resize(rowCnt * colCnt, defaultValue);
+            vect.resize(row_cnt * col_cnt, default_value);
         }   
 
         void set_at(int row, int col, char value)
@@ -30,26 +28,26 @@ class Grid
 			vect[row * col_cnt + col] = value;
 		}
 
-        inline char get_or_default(int row, int col) const
+        inline bool is_roll_at(int row, int col) const
         {
             if (row < 0 || row >= row_cnt || col < 0 || col >= col_cnt)
             {
-                return this->defaultValue;
+                return false;
             }
-            return vect[row * col_cnt + col];
+            return vect[row * col_cnt + col] == '@';
         }
 };
 
 
 static Grid parse(const string& filename)
 {
-    string fileInfo;
-    fileInfo += "This is the current working directory: " + filesystem::current_path().string() + ".\n";
-	fileInfo += "Filename supplied: " + filename + ".\n";
-	fileInfo += "Resolves to absolute path: " + filesystem::absolute(filename).string() + ".\n";
-
     if (!filesystem::exists(filename))
     {
+        string fileInfo;
+        fileInfo += "This is the current working directory: " + filesystem::current_path().string() + ".\n";
+        fileInfo += "Filename supplied: " + filename + ".\n";
+        fileInfo += "Resolves to absolute path: " + filesystem::absolute(filename).string() + ".\n";
+
         cerr << fileInfo << endl;
         cerr << "Error: file does not exist: " << filesystem::absolute(filename) << endl;
 		throw runtime_error("file does not exist");
@@ -73,7 +71,7 @@ static Grid parse(const string& filename)
     int row = 0;
     int col = 0;
 
-    for (auto line : lines)
+    for (const auto& line : lines)
     {
         col = 0;
         for (char c : line)
@@ -96,22 +94,21 @@ vector<pair<int, int>> find_removable(Grid& grid)
     {
         for (int c = 0; c < grid.col_cnt; c++)
         {
-            char curr_val = grid.get_or_default(r, c);
-            if (curr_val == '@')
+            if (grid.is_roll_at(r, c))
             {
 				int neighboring_rolls = 0;
-                if (grid.get_or_default(r - 1, c - 1) == '@') neighboring_rolls++;
-                if (grid.get_or_default(r - 1, c) == '@') neighboring_rolls++;
-                if (grid.get_or_default(r - 1, c + 1) == '@') neighboring_rolls++;
-                if (grid.get_or_default(r, c - 1) == '@') neighboring_rolls++;
-                if (grid.get_or_default(r, c + 1) == '@') neighboring_rolls++;
-                if (grid.get_or_default(r + 1, c - 1) == '@') neighboring_rolls++;
-                if (grid.get_or_default(r + 1, c) == '@') neighboring_rolls++;
-                if (grid.get_or_default(r + 1, c + 1) == '@') neighboring_rolls++;
+                if (grid.is_roll_at(r - 1, c - 1)) neighboring_rolls++;
+                if (grid.is_roll_at(r - 1, c)) neighboring_rolls++;
+                if (grid.is_roll_at(r - 1, c + 1)) neighboring_rolls++;
+                if (grid.is_roll_at(r, c - 1)) neighboring_rolls++;
+                if (grid.is_roll_at(r, c + 1)) neighboring_rolls++;
+                if (grid.is_roll_at(r + 1, c - 1)) neighboring_rolls++;
+                if (grid.is_roll_at(r + 1, c)) neighboring_rolls++;
+                if (grid.is_roll_at(r + 1, c + 1)) neighboring_rolls++;
 
                 if (neighboring_rolls < 4)
                 {
-                    removable.push_back({r, c});
+					removable.emplace_back(r, c);
                 }
             }
         }
