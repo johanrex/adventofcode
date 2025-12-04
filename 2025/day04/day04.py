@@ -1,19 +1,11 @@
-from dataclasses import dataclass
-import time
-import math
-import re
-import copy
-from collections import Counter
 import sys
 import os
-from collections import defaultdict
-import itertools
+
 
 # silly python path manipulation
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from utils.grid import Grid
-import utils.parse_utils as parse_utils
 
 
 def parse(filename) -> Grid:
