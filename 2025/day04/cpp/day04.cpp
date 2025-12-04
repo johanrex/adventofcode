@@ -26,31 +26,34 @@ struct PairHash
 class Grid
 {
     private:
-        unordered_map<pair<int, int>, char, PairHash> map;
 		char defaultValue;
+        vector<char> vect;
 
     public:
-        int RowCnt = -1;
-        int ColCnt = -1;
+        size_t row_cnt = -1;
+        size_t col_cnt = -1;
 
-        Grid(char defaultValue)
+        Grid(size_t rowCnt, size_t colCnt, char defaultValue)
         {
+			this->row_cnt = rowCnt;
+			this->col_cnt = colCnt;
 			this->defaultValue = defaultValue;
-        }
 
-        void Set(int row, int col, char value)
+            vect.resize(rowCnt * colCnt, defaultValue);
+        }   
+
+        void set_at(int row, int col, char value)
         {
-            map[{row, col}] = value;
+			vect[row * col_cnt + col] = value;
 		}
 
-        char GetOrDefault(int row, int col)
+        char get_or_default(int row, int col)
         {
-            auto it = map.find({row, col});
-            if (it != map.end())
+            if (row < 0 || row >= row_cnt || col < 0 || col >= col_cnt)
             {
-                return it->second;
+                return this->defaultValue;
             }
-            return this->defaultValue;
+            return vect[row * col_cnt + col];
         }
 };
 
@@ -71,26 +74,32 @@ static Grid parse(const string& filename)
 
     ifstream f(filename);
 
-    Grid grid('.');
-
-    int row = 0;
-    int col = 0;
-
+	vector<string> lines;
     string line;
 
     while (getline(f, line))
     {
+        lines.emplace_back(line);
+    }
+
+	size_t rowCnt = lines.size();
+	size_t colCnt = lines[0].size();
+
+    Grid grid(rowCnt, colCnt, '.');
+
+    int row = 0;
+    int col = 0;
+
+    for (auto line : lines)
+    {
         col = 0;
         for (char c : line)
         {
-            grid.Set(row, col, c);
+            grid.set_at(row, col, c);
             col++;
         }
         row++;
     }
-
-	grid.RowCnt = row;
-	grid.ColCnt = col;
 
     return grid;
 }
@@ -100,23 +109,23 @@ vector<pair<int, int>> find_removable(Grid& grid)
 {
     vector<pair<int, int>> removable;
 
-    for (int r = 0; r < grid.RowCnt; r++)
+    for (int r = 0; r < grid.row_cnt; r++)
     {
-        for (int c = 0; c < grid.ColCnt; c++)
+        for (int c = 0; c < grid.col_cnt; c++)
         {
-            char curr_val = grid.GetOrDefault(r, c);
+            char curr_val = grid.get_or_default(r, c);
             if (curr_val == '@')
             {
 				int rolls = 0;
-                if (grid.GetOrDefault(r - 1, c - 1) == '@') rolls++;
-                if (grid.GetOrDefault(r - 1, c) == '@') rolls++;
-                if (grid.GetOrDefault(r - 1, c + 1) == '@') rolls++;
-                if (grid.GetOrDefault(r, c - 1) == '@') rolls++;
-                if (grid.GetOrDefault(r, c + 1) == '@') rolls++;
-                if (grid.GetOrDefault(r + 1, c - 1) == '@') rolls++;
-                if (grid.GetOrDefault(r + 1, c) == '@') rolls++;
-                if (grid.GetOrDefault(r + 1, c + 1) == '@') rolls++;
-                
+                if (grid.get_or_default(r - 1, c - 1) == '@') rolls++;
+                if (grid.get_or_default(r - 1, c) == '@') rolls++;
+                if (grid.get_or_default(r - 1, c + 1) == '@') rolls++;
+                if (grid.get_or_default(r, c - 1) == '@') rolls++;
+                if (grid.get_or_default(r, c + 1) == '@') rolls++;
+                if (grid.get_or_default(r + 1, c - 1) == '@') rolls++;
+                if (grid.get_or_default(r + 1, c) == '@') rolls++;
+                if (grid.get_or_default(r + 1, c + 1) == '@') rolls++;
+
                 if (rolls < 4)
                 {
                     removable.push_back({r, c});
@@ -146,7 +155,7 @@ void part2(Grid& grid)
         }
         for (const auto& pos : removable)
         {
-            grid.Set(pos.first, pos.second, ' ');
+            grid.set_at(pos.first, pos.second, '.');
         }
         total_removed += removable.size();
     }
