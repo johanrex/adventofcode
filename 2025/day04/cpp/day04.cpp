@@ -6,14 +6,19 @@
 
 using namespace std;
 
+static_assert(sizeof(int) == 4, "int is expected to be 32 bits");
+static_assert(sizeof(size_t) == 8, "size_t is expected to be 64 bits");
 
 struct PairHash
 {
     size_t operator()(const pair<int, int>& p) const noexcept
     {
-        // combine two 32-bit ints into a 64-bit value, then hash
-        return std::hash<unsigned long long>()(
-            (static_cast<unsigned long long>(static_cast<unsigned int>(p.first)) << 32) ^ static_cast<unsigned int>(p.second));
+		//This works since we have asserted that int is 32 bits and size_t is 64 bits earlier.
+        auto hi = static_cast<size_t>(p.first);
+        auto lo = static_cast<size_t>(p.second);
+        auto packed = (hi << 32) + lo;
+
+        return packed;
     }
 };
 
