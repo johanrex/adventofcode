@@ -32,8 +32,8 @@ def parse(filename) -> Grid:
     return grid
 
 
-def part1(grid: Grid):
-    can_move_cnt = 0
+def find_removable(grid: Grid) -> list[tuple[int, int]]:
+    removable = []
     for r in range(grid.rows):
         for c in range(grid.cols):
             curr_val = grid.get(r, c)
@@ -52,13 +52,35 @@ def part1(grid: Grid):
 
                 cnt = neighbor_vals.count("@")
                 if cnt < 4:
-                    can_move_cnt += 1
+                    removable.append((r, c))
 
-    print("Part 1:", can_move_cnt)
+    return removable
 
 
-def part2(data):
-    print("Part 2:", -1)
+def remove(grid: Grid, positions: list[tuple[int, int]]):
+    for pos in positions:
+        r, c = pos
+        grid.set(r, c, ".")
+
+
+def part1(grid: Grid):
+    removable = find_removable(grid)
+
+    print("Part 1:", len(removable))
+
+
+def part2(grid: Grid):
+    total_removed = 0
+
+    while True:
+        removable = find_removable(grid)
+        if len(removable) == 0:
+            break
+
+        remove(grid, removable)
+        total_removed += len(removable)
+
+    print("Part 2:", total_removed)
 
 
 filename = "day04/example"
@@ -67,4 +89,4 @@ filename = "day04/input"
 grid = parse(filename)
 
 part1(grid)
-# part2(grid)
+part2(grid)
