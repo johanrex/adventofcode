@@ -30,8 +30,8 @@ class Grid
 		char defaultValue;
 
     public:
-        int RowCnt;
-        int ColCnt;
+        int RowCnt = -1;
+        int ColCnt = -1;
 
         Grid(char defaultValue)
         {
@@ -43,14 +43,14 @@ class Grid
             map[{row, col}] = value;
 		}
 
-        char GetOrDefault(int row, int col, char defaultValue)
+        char GetOrDefault(int row, int col)
         {
             auto it = map.find({row, col});
             if (it != map.end())
             {
                 return it->second;
             }
-            return defaultValue;
+            return this->defaultValue;
         }
 };
 
@@ -71,7 +71,7 @@ static Grid parse(const string& filename)
 
     ifstream f(filename);
 
-    Grid grid('@');
+    Grid grid('.');
 
     int row = 0;
     int col = 0;
@@ -96,7 +96,6 @@ static Grid parse(const string& filename)
 }
 
 
-
 vector<pair<int, int>> find_removable(Grid& grid)
 {
     vector<pair<int, int>> removable;
@@ -105,22 +104,20 @@ vector<pair<int, int>> find_removable(Grid& grid)
     {
         for (int c = 0; c < grid.ColCnt; c++)
         {
-            char curr_val = grid.GetOrDefault(r, c, ' ');
+            char curr_val = grid.GetOrDefault(r, c);
             if (curr_val == '@')
             {
-                // get neighbors in all 8 directions
-                vector<char> neighbor_vals = {
-                    grid.GetOrDefault(r - 1, c - 1, ' '),
-                    grid.GetOrDefault(r - 1, c, ' '),
-                    grid.GetOrDefault(r - 1, c + 1, ' '),
-                    grid.GetOrDefault(r, c - 1, ' '),
-                    grid.GetOrDefault(r, c + 1, ' '),
-                    grid.GetOrDefault(r + 1, c - 1, ' '),
-                    grid.GetOrDefault(r + 1, c, ' '),
-                    grid.GetOrDefault(r + 1, c + 1, ' ')
-                };
-                auto cnt = count(neighbor_vals.begin(), neighbor_vals.end(), '@');
-                if (cnt < 4)
+				int rolls = 0;
+                if (grid.GetOrDefault(r - 1, c - 1) == '@') rolls++;
+                if (grid.GetOrDefault(r - 1, c) == '@') rolls++;
+                if (grid.GetOrDefault(r - 1, c + 1) == '@') rolls++;
+                if (grid.GetOrDefault(r, c - 1) == '@') rolls++;
+                if (grid.GetOrDefault(r, c + 1) == '@') rolls++;
+                if (grid.GetOrDefault(r + 1, c - 1) == '@') rolls++;
+                if (grid.GetOrDefault(r + 1, c) == '@') rolls++;
+                if (grid.GetOrDefault(r + 1, c + 1) == '@') rolls++;
+                
+                if (rolls < 4)
                 {
                     removable.push_back({r, c});
                 }
@@ -134,7 +131,7 @@ vector<pair<int, int>> find_removable(Grid& grid)
 void part1(Grid& grid)
 {
     auto removable = find_removable(grid);
-    cout << "Part 1:" << removable.size() << endl;
+    cout << "Part 1: " << removable.size() << endl;
 }
 
 void part2(Grid& grid)
