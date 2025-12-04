@@ -1,45 +1,47 @@
-import sys
-import os
+from collections import defaultdict
 
 
-# silly python path manipulation
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from utils.grid import Grid
+Grid = defaultdict
+grid_row_cnt = 0
+grid_col_cnt = 0
 
 
 def parse(filename) -> Grid:
+    global grid_row_cnt, grid_col_cnt
+
     with open(filename) as f:
         lines = [line.strip() for line in f.readlines()]
 
-    rows = len(lines)
-    cols = len(lines[0])
+    grid_row_cnt = len(lines)
+    grid_col_cnt = len(lines[0])
 
-    grid = Grid(rows, cols)
+    grid = Grid(lambda: ".")
 
-    for r in range(rows):
-        for c in range(cols):
-            grid.set(r, c, lines[r][c])
+    for r in range(grid_row_cnt):
+        for c in range(grid_col_cnt):
+            grid[(r, c)] = lines[r][c]
 
     return grid
 
 
 def find_removable(grid: Grid) -> list[tuple[int, int]]:
+    global grid_row_cnt, grid_col_cnt
+
     removable = []
-    for r in range(grid.rows):
-        for c in range(grid.cols):
-            curr_val = grid.get(r, c)
+    for r in range(grid_row_cnt):
+        for c in range(grid_col_cnt):
+            curr_val = grid[(r, c)]
             if curr_val == "@":
                 # get neighbors in all 8 directions
                 neighbor_vals = [
-                    grid.get(r - 1, c - 1, default_value="."),
-                    grid.get(r - 1, c, default_value="."),
-                    grid.get(r - 1, c + 1, default_value="."),
-                    grid.get(r, c - 1, default_value="."),
-                    grid.get(r, c + 1, default_value="."),
-                    grid.get(r + 1, c - 1, default_value="."),
-                    grid.get(r + 1, c, default_value="."),
-                    grid.get(r + 1, c + 1, default_value="."),
+                    grid[(r - 1, c - 1)],
+                    grid[(r - 1, c)],
+                    grid[(r - 1, c + 1)],
+                    grid[(r, c - 1)],
+                    grid[(r, c + 1)],
+                    grid[(r + 1, c - 1)],
+                    grid[(r + 1, c)],
+                    grid[(r + 1, c + 1)],
                 ]
 
                 cnt = neighbor_vals.count("@")
@@ -51,8 +53,7 @@ def find_removable(grid: Grid) -> list[tuple[int, int]]:
 
 def remove(grid: Grid, positions: list[tuple[int, int]]):
     for pos in positions:
-        r, c = pos
-        grid.set(r, c, ".")
+        grid[pos] = "."
 
 
 def part1(grid: Grid):
