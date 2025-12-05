@@ -31,10 +31,9 @@ def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
         if len(ans) == 0:
             ans.append(range)
         else:
-            prev_end = ans[-1][1]
+            _, prev_end = ans[-1]
 
-            curr_start = range[0]
-            curr_end = range[1]
+            curr_start, curr_end = range
 
             # start new range
             if curr_start > prev_end:
