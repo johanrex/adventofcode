@@ -1,15 +1,3 @@
-from dataclasses import dataclass
-import time
-import math
-import re
-import copy
-from collections import Counter
-import sys
-import os
-from collections import defaultdict
-import itertools
-
-
 def parse(filename) -> tuple[list[tuple[int, int]], list[int]]:
     ranges = []
     ingredients = []
@@ -32,6 +20,36 @@ def parse(filename) -> tuple[list[tuple[int, int]], list[int]]:
     return ranges, ingredients
 
 
+# this is the same as leetcode 56. merge intervals: https://leetcode.com/problems/merge-intervals/description/
+def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    # sort input on start
+    ranges.sort()
+
+    ans = []
+
+    for range in ranges:
+        if len(ans) == 0:
+            ans.append(range)
+        else:
+            prev_end = ans[-1][1]
+
+            curr_start = range[0]
+            curr_end = range[1]
+
+            # start new range
+            if curr_start > prev_end:
+                ans.append(range)
+
+            # extend prev range
+            else:
+                if curr_end > prev_end:
+                    last_range = ans[-1]
+                    start, _ = last_range
+                    ans[-1] = (start, curr_end)
+
+    return ans
+
+
 def part1(ranges: list[tuple[int, int]], ingredients: list[int]):
     fresh_cnt = 0
 
@@ -44,37 +62,8 @@ def part1(ranges: list[tuple[int, int]], ingredients: list[int]):
     print("Part 1:", fresh_cnt)
 
 
-def merge(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:
-    # sort input on start
-    intervals.sort()
-
-    ans = []
-
-    for interval in intervals:
-        if len(ans) == 0:
-            ans.append(interval)
-        else:
-            prev_end = ans[-1][1]
-
-            curr_start = interval[0]
-            curr_end = interval[1]
-
-            # start new interval
-            if curr_start > prev_end:
-                ans.append(interval)
-
-            # extend prev interval
-            else:
-                if curr_end > prev_end:
-                    last_interval = ans[-1]
-                    start, _ = last_interval
-                    ans[-1] = (start, curr_end)
-
-    return ans
-
-
 def part2(ranges: list[tuple[int, int]]):
-    ranges = merge(ranges)
+    ranges = merge_ranges(ranges)
 
     total_span = 0
     for start, end in ranges:
