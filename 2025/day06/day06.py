@@ -1,43 +1,24 @@
 import math
-import operator as op
 
 
-OP_MAPPER = {
-    "+": op.add,
-    "*": op.mul,
-}
-
-
-def parse1(filename: str) -> tuple[list[list[int]], list[callable]]:
-    with open(filename) as f:
-        lines = [[c for c in line.strip().split()] for line in f.readlines()]
-
-    operators = lines.pop()
-
-    operators = [OP_MAPPER[op_str] for op_str in operators]
-
-    int_lines = [[int(c) for c in line] for line in lines]
-
-    return int_lines, operators
-
-
-def parse2(filename: str) -> tuple[list[list[str]], list[callable]]:
+def parse2(filename: str) -> tuple[list[list[str]], list[str]]:
     print("Parsing for part 2")
 
     with open(filename) as f:
         lines = [line.strip("\n") for line in f.readlines()]
 
+    # parse operators from last line
     operator_line = lines[-1]
     operator_idxs = []
     operators = []
     for i in range(len(operator_line)):
         if operator_line[i] != " ":
             operator_idxs.append(i)
-            operators.append(OP_MAPPER[operator_line[i]])
-
+            operators.append(operator_line[i])
     lines.pop()
 
-    lines_toks = []
+    # build grid of values
+    val_grid = []
     col_start = 0
     for line in lines:
         new_line = []
@@ -51,36 +32,34 @@ def parse2(filename: str) -> tuple[list[list[str]], list[callable]]:
 
             val = line[col_start:col_end]
             new_line.append(val)
-        lines_toks.append(new_line)
+        val_grid.append(new_line)
 
-    return lines_toks, operators
+    return val_grid, operators
 
 
-def part1(int_lines: list[list[int]], operators: list[callable]):
+def part1(val_grid: list[list[str]], operators: list[str]):
     ret = 0
 
-    for col_idx in range(len(int_lines[0])):
+    for col_idx in range(len(val_grid[0])):
         operator = operators[col_idx]
         vals = []
 
-        for row_idx in range(len(int_lines)):
-            val = int_lines[row_idx][col_idx]
-            vals.append(val)
+        for row_idx in range(len(val_grid)):
+            val = val_grid[row_idx][col_idx]
+            vals.append(int(val))
 
-        if operator == op.add:
+        if operator == "+":
             ans = sum(vals)
-        elif operator == op.mul:
+        elif operator == "*":
             ans = math.prod(vals)
 
         ret += ans
+
+    # assert ret == 3261038365331
     print("Part 1:", ret)
 
 
 def p2_calc(vals: list[str], operator: callable) -> int:
-    global col_width
-
-    # print(vals, operator)
-
     new_vals = []
     for col_idx in range(len(vals[0])):
         new_val = ""
@@ -89,34 +68,36 @@ def p2_calc(vals: list[str], operator: callable) -> int:
         new_val = int(new_val)
         new_vals.append(new_val)
 
-    if operator == op.add:
+    if operator == "+":
         ans = sum(new_vals)
-    elif operator == op.mul:
+    elif operator == "*":
         ans = math.prod(new_vals)
+
     return ans
 
 
-def part2(lines_toks: list[list[str]], operators: list[callable]):
+def part2(val_grid: list[list[str]], operators: list[str]):
     ret = 0
-    for col_idx in range(len(lines_toks[0])):
+    for col_idx in range(len(val_grid[0])):
         operator = operators[col_idx]
         vals = []
 
-        for row_idx in range(len(lines_toks)):
-            val = lines_toks[row_idx][col_idx]
+        for row_idx in range(len(val_grid)):
+            val = val_grid[row_idx][col_idx]
             vals.append(val)
 
         ans = p2_calc(vals, operator)
         ret += ans
-
+    # assert ret == 8342588849093
     print("Part 2:", ret)
 
 
 filename = "day06/example"
-filename = "day06/input"
+# filename = "day06/input"
 
-int_lines, operators = parse1(filename)
-part1(int_lines, operators)
+val_grid, operators = parse2(filename)
 
-lines_toks, operators = parse2(filename)
-part2(lines_toks, operators)
+# int_lines, operators = parse1(filename)
+part1(val_grid, operators)
+
+part2(val_grid, operators)
