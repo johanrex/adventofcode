@@ -1,4 +1,5 @@
 import math
+import re
 
 
 def parse(filename: str) -> tuple[list[list[str]], list[str]]:
@@ -7,12 +8,8 @@ def parse(filename: str) -> tuple[list[list[str]], list[str]]:
 
     # parse operators from last line
     operator_line = lines[-1]
-    operator_idxs = []
-    operators = []
-    for i in range(len(operator_line)):
-        if operator_line[i] != " ":
-            operator_idxs.append(i)
-            operators.append(operator_line[i])
+    operator_idxs = [m.start() for m in re.finditer(r"[+*]", operator_line)]
+    operators = [operator_line[idx] for idx in operator_idxs]
     lines.pop()
 
     # build grid of values
