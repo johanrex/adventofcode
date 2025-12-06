@@ -35,18 +35,12 @@ def parse(filename: str) -> tuple[list[list[str]], list[str]]:
     return val_grid, operators
 
 
-def p1_calc(vals: list[str], operator: str) -> int:
+def parse_p1_vals(vals: list[str]) -> list[int]:
     vals = list(map(int, vals))
-
-    if operator == "+":
-        ans = sum(vals)
-    elif operator == "*":
-        ans = math.prod(vals)
-
-    return ans
+    return vals
 
 
-def p2_calc(vals: list[str], operator: str) -> int:
+def parse_p2_vals(vals: list[str]) -> list[int]:
     new_vals = []
     for col_idx in range(len(vals[0])):
         new_val = ""
@@ -55,12 +49,7 @@ def p2_calc(vals: list[str], operator: str) -> int:
         new_val = int(new_val)
         new_vals.append(new_val)
 
-    if operator == "+":
-        ans = sum(new_vals)
-    elif operator == "*":
-        ans = math.prod(new_vals)
-
-    return ans
+    return new_vals
 
 
 def walk_column_wise(val_grid: list[list[str]], operators: list[str]):
@@ -75,8 +64,15 @@ def walk_column_wise(val_grid: list[list[str]], operators: list[str]):
             val = val_grid[row_idx][col_idx]
             vals.append(val)
 
-        p1_ans += p1_calc(vals, operator)
-        p2_ans += p2_calc(vals, operator)
+        p1_vals = parse_p1_vals(vals)
+        p2_vals = parse_p2_vals(vals)
+
+        if operator == "+":
+            p1_ans += sum(p1_vals)
+            p2_ans += sum(p2_vals)
+        elif operator == "*":
+            p1_ans += math.prod(p1_vals)
+            p2_ans += math.prod(p2_vals)
 
     assert p1_ans == 3261038365331
     assert p2_ans == 8342588849093
