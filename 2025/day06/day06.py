@@ -10,7 +10,7 @@ def parse(filename: str) -> tuple[list[list[str]], list[str]]:
     operator_line = lines[-1]
     operator_idxs = [m.start() for m in re.finditer(r"[+*]", operator_line)]
     operators = [operator_line[idx] for idx in operator_idxs]
-    lines.pop()
+    lines.pop()  # remove operator line
 
     # build grid of values
     val_grid = []
