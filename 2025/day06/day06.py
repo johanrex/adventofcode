@@ -1,9 +1,7 @@
 import math
 
 
-def parse2(filename: str) -> tuple[list[list[str]], list[str]]:
-    print("Parsing for part 2")
-
+def parse(filename: str) -> tuple[list[list[str]], list[str]]:
     with open(filename) as f:
         lines = [line.strip("\n") for line in f.readlines()]
 
@@ -37,29 +35,18 @@ def parse2(filename: str) -> tuple[list[list[str]], list[str]]:
     return val_grid, operators
 
 
-def part1(val_grid: list[list[str]], operators: list[str]):
-    ret = 0
+def p1_calc(vals: list[str], operator: str) -> int:
+    vals = list(map(int, vals))
 
-    for col_idx in range(len(val_grid[0])):
-        operator = operators[col_idx]
-        vals = []
+    if operator == "+":
+        ans = sum(vals)
+    elif operator == "*":
+        ans = math.prod(vals)
 
-        for row_idx in range(len(val_grid)):
-            val = val_grid[row_idx][col_idx]
-            vals.append(int(val))
-
-        if operator == "+":
-            ans = sum(vals)
-        elif operator == "*":
-            ans = math.prod(vals)
-
-        ret += ans
-
-    # assert ret == 3261038365331
-    print("Part 1:", ret)
+    return ans
 
 
-def p2_calc(vals: list[str], operator: callable) -> int:
+def p2_calc(vals: list[str], operator: str) -> int:
     new_vals = []
     for col_idx in range(len(vals[0])):
         new_val = ""
@@ -76,8 +63,10 @@ def p2_calc(vals: list[str], operator: callable) -> int:
     return ans
 
 
-def part2(val_grid: list[list[str]], operators: list[str]):
-    ret = 0
+def walk_column_wise(val_grid: list[list[str]], operators: list[str]):
+    p1_ans = 0
+    p2_ans = 0
+
     for col_idx in range(len(val_grid[0])):
         operator = operators[col_idx]
         vals = []
@@ -86,18 +75,18 @@ def part2(val_grid: list[list[str]], operators: list[str]):
             val = val_grid[row_idx][col_idx]
             vals.append(val)
 
-        ans = p2_calc(vals, operator)
-        ret += ans
-    # assert ret == 8342588849093
-    print("Part 2:", ret)
+        p1_ans += p1_calc(vals, operator)
+        p2_ans += p2_calc(vals, operator)
+
+    assert p1_ans == 3261038365331
+    assert p2_ans == 8342588849093
+
+    print("Part 1:", p1_ans)
+    print("Part 2:", p2_ans)
 
 
 filename = "day06/example"
-# filename = "day06/input"
+filename = "day06/input"
 
-val_grid, operators = parse2(filename)
-
-# int_lines, operators = parse1(filename)
-part1(val_grid, operators)
-
-part2(val_grid, operators)
+val_grid, operators = parse(filename)
+walk_column_wise(val_grid, operators)
