@@ -16,7 +16,7 @@ def parse(filename: str) -> tuple[list[list[str]], list[str]]:
     val_grid = []
     col_start = 0
     for line in lines:
-        new_line = []
+        line_vals = []
         for i in range(len(operator_idxs)):
             col_start = operator_idxs[i]
 
@@ -26,8 +26,8 @@ def parse(filename: str) -> tuple[list[list[str]], list[str]]:
                 col_end = operator_idxs[i + 1] - 1
 
             val = line[col_start:col_end]
-            new_line.append(val)
-        val_grid.append(new_line)
+            line_vals.append(val)
+        val_grid.append(line_vals)
 
     return val_grid, operators
 
