@@ -81,7 +81,7 @@ def walk_column_wise(val_grid: list[list[str]], operators: list[str]):
     print("Part 2:", p2_ans)
 
 
-filename = "day06/example"
+# filename = "day06/example"
 filename = "day06/input"
 
 val_grid, operators = parse(filename)
