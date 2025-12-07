@@ -5,7 +5,8 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
-#include "defaultgrid.h"
+#include "default_grid.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -13,21 +14,10 @@ using ll = long long;
 using range = pair<ll, ll>;
 using Grid = DefaultGrid<char, '.'>;
 
-// Hash function for pair<int, int>
-struct PairHash
-{
-	size_t operator()(const pair<int, int>& p) const
-	{
-		size_t h1 = hash<int>{}(p.first);
-		size_t h2 = hash<int>{}(p.second);
-		return h1 ^ (h2 << 1);
-	}
-};
+unordered_set<pair<int, int>, IntPairPackerFunctor> splitters_reached;
+unordered_map<pair<int, int>, ll, IntPairPackerFunctor> memo;
 
-unordered_set<pair<int, int>, PairHash> splitters_reached;
-unordered_map<pair<int, int>, ll, PairHash> memo;
-
-Grid parse(const string& filename)
+void parse(const string& filename, Grid& grid, pair<int, int>& s_pos)
 {
 	if (!filesystem::exists(filename))
 	{
@@ -48,7 +38,6 @@ Grid parse(const string& filename)
 		throw runtime_error("error opening file");
 	}
 
-	Grid grid;
 	string line;
 	int row_idx = 0;
 	int col_idx = 0;
@@ -58,30 +47,16 @@ Grid parse(const string& filename)
 		for (char c : line)
 		{
 			grid.set_at(row_idx, col_idx, c);
+
+			if (c == 'S')
+			{
+				s_pos = {row_idx, col_idx};
+			}
 			col_idx++;
 		}
 
 		row_idx++;
 	}
-	return grid;
-}
-
-int find_s(const Grid& grid)
-{
-	int s_col = -1;
-	for (int col_idx = 0; col_idx < grid.cols(); col_idx++)
-	{
-		if (grid.get_at(0, col_idx) == 'S')
-		{
-			s_col = col_idx;
-			break;
-		}
-	}
-
-	if (s_col == -1)
-		throw runtime_error("'S' not found in grid");
-	
-	return s_col;
 }
 
 void beam_from_point_p1(Grid& grid, int start_row, int start_col)
@@ -129,22 +104,22 @@ ll beam_from_point_p2(Grid& grid, int start_row, int start_col)
 	return timelines;
 }
 
-void part1(Grid grid)
+void part1(Grid grid, const pair<int, int>& s_pos)
 {
 	splitters_reached.clear();
 	
-	int s_col = find_s(grid);
+	int s_col = s_pos.second;
 	beam_from_point_p1(grid, 1, s_col);
 
 	auto ans = splitters_reached.size();
 	cout << "Part 1: " << ans << endl;
 }
 
-void part2(Grid grid)
+void part2(Grid grid, const pair<int, int>& s_pos)
 {
 	memo.clear();
 	
-	int s_col = find_s(grid);
+	int s_col = s_pos.second;
 	auto timelines = beam_from_point_p2(grid, 1, s_col);
 
 	cout << "Part 2: " << timelines << endl;
@@ -155,9 +130,12 @@ int main()
 	//string filename = "../../../../example";
 	string filename = "../../../../input";
 
-	auto grid = parse(filename);
-	part1(Grid(grid)); // make a copy to reset state
-	part2(grid); 
+	Grid grid;
+	pair<int, int> s_pos;
+	parse(filename, grid, s_pos);
+
+	part1(Grid(grid), s_pos); // copy constructor so we don't modify original grid
+	part2(grid, s_pos);
 
 	return 0;
 }

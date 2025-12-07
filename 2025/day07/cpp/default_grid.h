@@ -4,26 +4,15 @@
 #include <utility>
 #include <functional>
 #include <algorithm>
+#include "utils.h"
 
 using namespace std;
-
-static_assert(sizeof(size_t) == 2 * sizeof(int), "we need to pack two ints in one size_t for PairHash to work.");
 
 template<typename T, T default_value>
 class DefaultGrid
 {
 private:
-	struct PairHash
-	{
-		size_t operator()(const pair<int, int>& p) const
-		{
-			size_t h1 = p.first;
-			size_t h2 = p.second;
-			return (h1 << 32) + h2;
-		}
-	};
-
-	unordered_map<pair<int, int>, T, PairHash> nodes;
+	unordered_map<pair<int, int>, T, IntPairPackerFunctor> nodes;
 	int max_row = -1;
 	int max_col = -1;
 
