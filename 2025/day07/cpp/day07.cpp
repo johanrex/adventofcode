@@ -80,11 +80,11 @@ void beam_from_point_p1(Grid& grid, int start_row, int start_col)
 
 ll beam_from_point_p2(Grid& grid, int start_row, int start_col)
 {
+	if (memo.contains({ start_row, start_col }))
+		return memo[{start_row, start_col}];
+
 	if (start_row >= grid.rows() || start_col < 0 || start_col >= grid.cols())
 		return 1;
-
-	if (memo.contains({start_row, start_col}))
-		return memo[{start_row, start_col}];
 
 	char curr_val = grid.get_at(start_row, start_col);
 
