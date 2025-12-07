@@ -11,7 +11,6 @@
 using namespace std;
 
 using ll = long long;
-using range = pair<ll, ll>;
 using Grid = DefaultGrid<char, '.'>;
 
 unordered_set<pair<int, int>, IntPairPackerFunctor> splitters_reached;
