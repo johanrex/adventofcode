@@ -2,7 +2,7 @@ import sys
 import os
 
 # silly python path manipulation
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from utils.grid import Grid
 
@@ -27,18 +27,15 @@ def beam_from_point_p1(grid: Grid, start_row: int, start_col: int):
     if start_row >= grid.rows or start_col < 0 or start_col >= grid.cols:
         return
 
-    row_idx = start_row
-    col_idx = start_col
-
-    curr_val = grid.get(row_idx, col_idx)
+    curr_val = grid.get(start_row, start_col)
 
     if curr_val == ".":
-        grid.set(row_idx, col_idx, "|")
-        beam_from_point_p1(grid, row_idx + 1, col_idx)
+        grid.set(start_row, start_col, "|")
+        beam_from_point_p1(grid, start_row + 1, start_col)
     elif curr_val == "^":
-        splitters_reached.add((row_idx, col_idx))
-        beam_from_point_p1(grid, row_idx, col_idx - 1)
-        beam_from_point_p1(grid, row_idx, col_idx + 1)
+        splitters_reached.add((start_row, start_col))
+        beam_from_point_p1(grid, start_row, start_col - 1)
+        beam_from_point_p1(grid, start_row, start_col + 1)
 
     return
 
@@ -50,17 +47,14 @@ def beam_from_point_p2(grid: Grid, start_row: int, start_col: int) -> int:
     if (start_row, start_col) in memo:
         return memo[(start_row, start_col)]
 
-    row_idx = start_row
-    col_idx = start_col
-
-    curr_val = grid.get(row_idx, col_idx)
+    curr_val = grid.get(start_row, start_col)
 
     timelines = 0
     if curr_val == ".":
-        timelines += beam_from_point_p2(grid, row_idx + 1, col_idx)
+        timelines += beam_from_point_p2(grid, start_row + 1, start_col)
     elif curr_val == "^":
-        timelines += beam_from_point_p2(grid, row_idx, col_idx - 1)
-        timelines += beam_from_point_p2(grid, row_idx, col_idx + 1)
+        timelines += beam_from_point_p2(grid, start_row, start_col - 1)
+        timelines += beam_from_point_p2(grid, start_row, start_col + 1)
 
     memo[(start_row, start_col)] = timelines
     return timelines
