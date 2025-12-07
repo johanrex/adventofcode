@@ -1,7 +1,7 @@
 #pragma once
 
-#include <utility>  // for std::pair
-#include <cstddef>  // for size_t
+#include <utility>  // std::pair
+#include <cstddef>  // size_t
 
 static_assert(sizeof(int) == 4, "we need to pack two ints in one size_t for PairHash to work.");
 static_assert(sizeof(size_t) == 8, "we need to pack two ints in one size_t for PairHash to work.");
