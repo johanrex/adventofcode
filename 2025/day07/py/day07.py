@@ -41,11 +41,11 @@ def beam_from_point_p1(grid: Grid, start_row: int, start_col: int):
 
 
 def beam_from_point_p2(grid: Grid, start_row: int, start_col: int) -> int:
-    if start_row >= grid.rows or start_col < 0 or start_col >= grid.cols:
-        return 1
-
     if (start_row, start_col) in memo:
         return memo[(start_row, start_col)]
+
+    if start_row >= grid.rows or start_col < 0 or start_col >= grid.cols:
+        return 1
 
     curr_val = grid.get(start_row, start_col)
 
