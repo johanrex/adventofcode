@@ -89,8 +89,62 @@ def part1(points: list[Point]):
     print("Part 1:", ans)
 
 
-def part2(points):
-    print("Part 2:", -1)
+def part2(points: list[Point]):
+    dists = []
+    for i in range(len(points)):
+        p1 = points[i]
+        for j in range(i + 1, len(points)):
+            p2 = points[j]
+
+            d = dist(p1, p2)
+            dists.append((d, (p1, p2)))
+
+    dists.sort()
+
+    # cliques, init with all points separate
+    cliques = []
+    for p in points:
+        c = set()
+        c.add(p)
+        cliques.append(c)
+
+    x_prod = 0
+
+    # make connections
+    for i in range(len(dists)):
+        d, (p1, p2) = dists[i]
+
+        # find clique for p1
+        for j, c1 in enumerate(cliques):
+            if p1 in c1:
+                break
+
+        # find clique for p2
+        for k, c2 in enumerate(cliques):
+            if p2 in c2:
+                break
+
+        if j == k:
+            continue  # already in same clique. Nothing to do
+
+        min_idx = min(j, k)
+        max_idx = max(j, k)
+
+        # let's merge the cliques
+
+        # pop the later clique to keep indices valid
+        later_clique = cliques.pop(max_idx)
+
+        # merge into the other clique
+        cliques[min_idx] = cliques[min_idx] | later_clique
+
+        x_prod = p1.x * p2.x
+        pass
+
+    sizes = [len(c) for c in cliques]
+    sizes.sort(reverse=True)
+
+    print("Part 2:", x_prod)
 
 
 filename = "day08/example"
