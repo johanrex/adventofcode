@@ -44,39 +44,39 @@ def solve(points: list[Point]):
     p1_ans = 0
     p2_ans = 0
 
-    # cliques, init with all points separate
-    cliques = [set([p]) for p in points]
+    # disjoint sets, init with all points separate
+    disjoint_sets = [set([p]) for p in points]
 
     # make connections
     for i in range(len(dists)):
         d, (p1, p2) = dists[i]
 
-        # find clique for p1
-        for j, c1 in enumerate(cliques):
-            if p1 in c1:
+        # find set for p1
+        for j, s1 in enumerate(disjoint_sets):
+            if p1 in s1:
                 break
 
-        # find clique for p2
-        for k, c2 in enumerate(cliques):
-            if p2 in c2:
+        # find set for p2
+        for k, s2 in enumerate(disjoint_sets):
+            if p2 in s2:
                 break
 
         if j != k:
-            # we have two cliques that should be merged.
+            # we have two disjoint sets that should be merged.
 
             min_idx = min(j, k)
             max_idx = max(j, k)
 
-            # pop the later clique to keep indices valid
-            later_clique = cliques.pop(max_idx)
+            # pop the later set to keep indices valid
+            later_set = disjoint_sets.pop(max_idx)
 
-            # merge into the other clique
-            cliques[min_idx] = cliques[min_idx] | later_clique
+            # merge into the other set
+            disjoint_sets[min_idx] = disjoint_sets[min_idx] | later_set
 
             p2_ans = p1.x * p2.x
 
         if i + 1 == connections_to_make:
-            sizes = [len(c) for c in cliques]
+            sizes = [len(c) for c in disjoint_sets]
             sizes.sort(reverse=True)
             p1_ans = math.prod(sizes[:3])
 
