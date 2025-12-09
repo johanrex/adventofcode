@@ -80,8 +80,6 @@ def show_grid(grid: Grid, min_row: int, max_row: int, min_col: int, max_col: int
     plt.imshow(np.transpose(data), cmap="gray", origin="lower", interpolation="nearest")
     plt.title("Grid view")
     plt.axis("off")
-    # plt.gca().invert_yaxis()
-
     plt.show()
 
 
@@ -89,8 +87,6 @@ def part2(coords):
     start = time.perf_counter()
 
     max_area = -1
-    max_c1 = None
-    max_c2 = None
 
     for coord1, coord2 in itertools.combinations(coords, 2):
         rect = [
@@ -99,32 +95,25 @@ def part2(coords):
             (coord2[0], coord2[1]),
             (coord2[0], coord1[1]),
         ]
-        perimeter = coords.copy()  # TODO necessary?
 
         poly_rect = Polygon(rect)
-        poly_perimeter = Polygon(perimeter)
+        poly_perimeter = Polygon(coords)
 
         if poly_rect.intersection(poly_perimeter).area != poly_rect.area:
             continue
         else:
-            area = (abs(coord1[0] - coord2[0]) + 1) * (abs(coord1[1] - coord2[1]) + 1)
-            if area > max_area:
-                max_area = area
-                max_c1 = coord1
-                max_c2 = coord2
+            max_area = poly_rect.area
 
     end = time.perf_counter()
-    print(f"part2 elapsed: {end - start:.4f}s")
-
-    print("Max area coords:", max_c1, max_c2)
 
     assert max_area == 1473551379
     print("Part 2:", max_area)
+    print(f"Part 2 time elapsed: {end - start:.4f}s")
 
 
 filename = "day09/example"
 filename = "day09/input"
 
 coords = parse(filename)
-# part1(coords)
+part1(coords)
 part2(coords)
