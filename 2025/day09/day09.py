@@ -93,21 +93,21 @@ def part2(coords):
     max_c2 = None
 
     for coord1, coord2 in itertools.combinations(coords, 2):
-        rect = [
-            (coord1[0], coord1[1]),
-            (coord1[0], coord2[1]),
-            (coord2[0], coord2[1]),
-            (coord2[0], coord1[1]),
-        ]
+        area = (abs(coord1[0] - coord2[0]) + 1) * (abs(coord1[1] - coord2[1]) + 1)
+        if area > max_area:
+            rect = [
+                (coord1[0], coord1[1]),
+                (coord1[0], coord2[1]),
+                (coord2[0], coord2[1]),
+                (coord2[0], coord1[1]),
+            ]
 
-        poly_rect = Polygon(rect)
-        poly_perimeter = Polygon(coords)
+            poly_rect = Polygon(rect)
+            poly_perimeter = Polygon(coords)
 
-        if poly_rect.intersection(poly_perimeter).area != poly_rect.area:
-            continue
-        else:
-            area = (abs(coord1[0] - coord2[0]) + 1) * (abs(coord1[1] - coord2[1]) + 1)
-            if area > max_area:
+            if poly_rect.intersection(poly_perimeter).area != poly_rect.area:
+                continue
+            else:
                 max_area = area
                 max_c1 = coord1
                 max_c2 = coord2
