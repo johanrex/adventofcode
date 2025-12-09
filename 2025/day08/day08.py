@@ -37,9 +37,9 @@ def solve(points: list[Point]):
 
     # how many connections to make
     if len(points) == 20:  # is example
-        connection_cnt = 10
+        connections_to_make = 10
     else:  # is real input
-        connection_cnt = 1000
+        connections_to_make = 1000
 
     p1_ans = 0
     p2_ans = 0
@@ -61,26 +61,24 @@ def solve(points: list[Point]):
             if p2 in c2:
                 break
 
-        if j == k:
-            continue  # already in same clique. Nothing to do
+        if j != k:
+            # we have two cliques that should be merged.
 
-        # we have two cliques that should be merged.
+            min_idx = min(j, k)
+            max_idx = max(j, k)
 
-        min_idx = min(j, k)
-        max_idx = max(j, k)
+            # pop the later clique to keep indices valid
+            later_clique = cliques.pop(max_idx)
 
-        # pop the later clique to keep indices valid
-        later_clique = cliques.pop(max_idx)
+            # merge into the other clique
+            cliques[min_idx] = cliques[min_idx] | later_clique
 
-        # merge into the other clique
-        cliques[min_idx] = cliques[min_idx] | later_clique
+            p2_ans = p1.x * p2.x
 
-        if i == connection_cnt:
+        if i + 1 == connections_to_make:
             sizes = [len(c) for c in cliques]
             sizes.sort(reverse=True)
             p1_ans = math.prod(sizes[:3])
-
-        p2_ans = p1.x * p2.x
 
     assert p1_ans == 97384
     print("Part 1:", p1_ans)
