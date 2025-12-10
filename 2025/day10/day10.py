@@ -73,7 +73,7 @@ def bfs(diagram: int, buttons: list[int]) -> int:
         if curr_state == diagram:
             return depth
 
-        for i, b in enumerate(buttons):
+        for b in buttons:
             new_state = curr_state ^ b
             if new_state in visited:
                 continue
