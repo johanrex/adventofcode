@@ -105,28 +105,21 @@ def part2(manual: list[Instruction]):
     total_min_presses = 0
 
     for idx, instruction in enumerate(manual, 1):
-        buttons = (
-            instruction.buttons
-        )  # list[int] bitmask per button; bit j means counter j affected
-        joltages = instruction.joltages  # list[int] target values per counter
+        buttons = instruction.buttons
+        joltages = instruction.joltages
 
         solver = z3.Optimize()
 
-        # Create non-negative Int variables, one per button
+        # one parameter per button
         p = [z3.Int(f"p_{i}") for i in range(len(buttons))]
         for pi in p:
             solver.add(pi >= 0)
 
-        # For each counter k, sum presses of buttons that affect k equals joltages[k]
-        # A button affects counter k if its bit k is 1 in the button mask.
         num_counters = len(joltages)
         for k in range(num_counters):
             pos = num_counters - 1 - k
             affected = [p_i for p_i, b in zip(p, buttons) if (b >> pos) & 1]
-            if affected:
-                solver.add(z3.Sum(affected) == joltages[k])
-            else:
-                solver.add(joltages[k] == 0)
+            solver.add(z3.Sum(affected) == joltages[k])
 
         total_presses_expr = z3.Sum(p)
         solver.minimize(total_presses_expr)
@@ -140,10 +133,10 @@ def part2(manual: list[Instruction]):
         min_presses = model.evaluate(total_presses_expr).as_long()
         total_min_presses += min_presses
 
-        presses_detail = [model.evaluate(pi).as_long() for pi in p]
-        print(
-            f"Machine {idx}: min presses = {min_presses}, per-button = {presses_detail}"
-        )
+        # presses_detail = [model.evaluate(pi).as_long() for pi in p]
+        # print(
+        #     f"Machine {idx}: min presses = {min_presses}, per-button = {presses_detail}"
+        # )
 
     print("Part 2:", total_min_presses)
 
