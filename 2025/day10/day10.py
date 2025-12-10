@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-import time
 import re
 from collections import deque
 import z3
 
-pat = re.compile(r"^\[([^\]]*)\]\s*(.*?)\s*\{([0-9,]+)\}$")
+input_pat = re.compile(r"^\[([^\]]*)\]\s*(.*?)\s*\{([0-9,]+)\}$")
 
-
+# for part2,
 # download and extract z3.
 # Set end variable for z3:
 # set PATH=C:\z3-4.15.4-x64-win\bin;%PATH%
@@ -25,7 +24,7 @@ def parse(filename: str) -> list[Instruction]:
     manual = []
     with open(filename) as f:
         for line in f:
-            m = re.match(pat, line)
+            m = re.match(input_pat, line)
             diagram = m.group(1)
             diagram = diagram.replace(".", "0")
             diagram = diagram.replace("#", "1")
