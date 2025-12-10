@@ -86,18 +86,18 @@ def part1(manual: list[Instruction]):
         diagram = instruction.diagram
         buttons = instruction.buttons
 
-        print(
-            f"({i + 1}/{len(manual)})",
-            "Diagram:",
-            bin(diagram),
-            "\tButtons:",
-            [bin(b) for b in buttons],
-            ". ",
-            end="",
-        )
+        # print(
+        #     f"({i + 1}/{len(manual)})",
+        #     "Diagram:",
+        #     bin(diagram),
+        #     "\tButtons:",
+        #     [bin(b) for b in buttons],
+        #     ". ",
+        #     end="",
+        # )
 
         btn_presses = bfs(diagram, buttons)
-        print("Button presses:", btn_presses)
+        # print("Button presses:", btn_presses)
 
         total_btn_presses += btn_presses
 
