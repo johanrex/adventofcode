@@ -11,6 +11,7 @@ pat = re.compile(r"^\[([^\]]*)\]\s*(.*?)\s*\{([0-9,]+)\}$")
 # Set end variable for z3:
 # set PATH=C:\z3-4.15.4-x64-win\bin;%PATH%
 # uv pip install z3-solver
+# The two first machines have z3 input files in day10/z3input folder. I used them as a starting point for the code in part2.
 
 
 @dataclass()
@@ -109,7 +110,6 @@ def part2(manual: list[Instruction]):
         )  # list[int] bitmask per button; bit j means counter j affected
         joltages = instruction.joltages  # list[int] target values per counter
 
-        # Build z3 model
         solver = z3.Optimize()
 
         # Create non-negative Int variables, one per button
@@ -128,7 +128,6 @@ def part2(manual: list[Instruction]):
             else:
                 solver.add(joltages[k] == 0)
 
-        # Objective: minimize total presses
         total_presses_expr = z3.Sum(p)
         solver.minimize(total_presses_expr)
 
@@ -141,7 +140,6 @@ def part2(manual: list[Instruction]):
         min_presses = model.evaluate(total_presses_expr).as_long()
         total_min_presses += min_presses
 
-        # Optional per-machine printout
         presses_detail = [model.evaluate(pi).as_long() for pi in p]
         print(
             f"Machine {idx}: min presses = {min_presses}, per-button = {presses_detail}"
@@ -150,7 +148,7 @@ def part2(manual: list[Instruction]):
     print("Part 2:", total_min_presses)
 
 
-filename = "day10/example"
+# filename = "day10/example"
 filename = "day10/input"
 
 manual = parse(filename)
