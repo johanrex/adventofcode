@@ -63,39 +63,31 @@ def parse(filename: str) -> list[Instruction]:
 
 def bfs(diagram: int, buttons: list[int]) -> int:
     curr_state = 0
-    prev_btn_idx = -1
     depth = 0
 
-    q = deque([(curr_state, prev_btn_idx, depth)])
+    q = deque([(curr_state, depth)])
     visited = {(curr_state, -1)}
 
     while q:
-        curr_state, prev_btn_idx, depth = q.popleft()
+        curr_state, depth = q.popleft()
         if curr_state == diagram:
             return depth
 
         for i, b in enumerate(buttons):
-            # don't press the same button twice in a row
-            if i == prev_btn_idx:
-                continue
-
             new_state = curr_state ^ b
-            key = (new_state, i)
-            if key in visited:
+            if new_state in visited:
                 continue
 
-            visited.add(key)
-            q.append((new_state, i, depth + 1))
+            visited.add(new_state)
+            q.append((new_state, depth + 1))
 
     return -1
 
 
 def part1(manual: list[Instruction]):
     total_btn_presses = 0
-    for i, instruction in enumerate(manual):
-        diagram = instruction.diagram
-        buttons = instruction.buttons
-        btn_presses = bfs(diagram, buttons)
+    for instruction in manual:
+        btn_presses = bfs(instruction.diagram, instruction.buttons)
         total_btn_presses += btn_presses
 
     print("Part 1:", total_btn_presses)
