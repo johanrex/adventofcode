@@ -1,16 +1,23 @@
 from dataclasses import dataclass
 import time
 import re
-import copy
 from collections import deque
+import z3
 
 pat = re.compile(r"^\[([^\]]*)\]\s*(.*?)\s*\{([0-9,]+)\}$")
+
+
+# download and extract z3.
+# Set end variable for z3:
+# set PATH=C:\z3-4.15.4-x64-win\bin;%PATH%
+# uv pip install z3-solver
 
 
 @dataclass()
 class Instruction:
     diagram: int
     buttons: list[int]
+    joltages: list[int]
 
 
 def parse(filename: str) -> list[Instruction]:
@@ -43,11 +50,13 @@ def parse(filename: str) -> list[Instruction]:
             diagram = int("".join(diagram), 2)
             buttons = [int("".join(b), 2) for b in buttons]
 
-            manual.append(Instruction(diagram, buttons))
-
             # print(bin(diagram), [bin(b) for b in buttons])
 
             joltage = m.group(3)
+            joltage = joltage.split(",")
+            joltage = [int(j) for j in joltage]
+
+            manual.append(Instruction(diagram, buttons, joltage))
     return manual
 
 
@@ -85,27 +94,60 @@ def part1(manual: list[Instruction]):
     for i, instruction in enumerate(manual):
         diagram = instruction.diagram
         buttons = instruction.buttons
-
-        # print(
-        #     f"({i + 1}/{len(manual)})",
-        #     "Diagram:",
-        #     bin(diagram),
-        #     "\tButtons:",
-        #     [bin(b) for b in buttons],
-        #     ". ",
-        #     end="",
-        # )
-
         btn_presses = bfs(diagram, buttons)
-        # print("Button presses:", btn_presses)
-
         total_btn_presses += btn_presses
 
     print("Part 1:", total_btn_presses)
 
 
 def part2(manual: list[Instruction]):
-    print("Part 2:", -1)
+    total_min_presses = 0
+
+    for idx, instruction in enumerate(manual, 1):
+        buttons = (
+            instruction.buttons
+        )  # list[int] bitmask per button; bit j means counter j affected
+        joltages = instruction.joltages  # list[int] target values per counter
+
+        # Build z3 model
+        solver = z3.Optimize()
+
+        # Create non-negative Int variables, one per button
+        p = [z3.Int(f"p_{i}") for i in range(len(buttons))]
+        for pi in p:
+            solver.add(pi >= 0)
+
+        # For each counter k, sum presses of buttons that affect k equals joltages[k]
+        # A button affects counter k if its bit k is 1 in the button mask.
+        num_counters = len(joltages)
+        for k in range(num_counters):
+            pos = num_counters - 1 - k
+            affected = [p_i for p_i, b in zip(p, buttons) if (b >> pos) & 1]
+            if affected:
+                solver.add(z3.Sum(affected) == joltages[k])
+            else:
+                solver.add(joltages[k] == 0)
+
+        # Objective: minimize total presses
+        total_presses_expr = z3.Sum(p)
+        solver.minimize(total_presses_expr)
+
+        # Solve
+        result = solver.check()
+        if result != z3.sat:
+            raise RuntimeError(f"Machine {idx} is unsatisfiable (result: {result})")
+
+        model = solver.model()
+        min_presses = model.evaluate(total_presses_expr).as_long()
+        total_min_presses += min_presses
+
+        # Optional per-machine printout
+        presses_detail = [model.evaluate(pi).as_long() for pi in p]
+        print(
+            f"Machine {idx}: min presses = {min_presses}, per-button = {presses_detail}"
+        )
+
+    print("Part 2:", total_min_presses)
 
 
 filename = "day10/example"
