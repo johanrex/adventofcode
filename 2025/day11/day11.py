@@ -7,9 +7,9 @@ def parse(filename: str) -> Graph:
     graph = defaultdict(set)
     with open(filename) as f:
         for line in f:
-            line = line.strip()
-            toks = [x.replace(":", "") for x in line.split(" ")]
-            graph[toks[0]] = set(toks[1:])
+            node, successors = line.strip().split(": ")
+            successors = successors.split(" ")
+            graph[node] = set(successors)
     return graph
 
 
@@ -20,12 +20,12 @@ def dfs(graph: Graph, curr: str, target: str, memo: dict[str:int]) -> int:
     if curr in memo:
         return memo[curr]
 
-    neighbor_paths = 0
-    for neighbor in graph[curr]:
-        neighbor_paths += dfs(graph, neighbor, target, memo)
+    successor_paths = 0
+    for successor in graph[curr]:
+        successor_paths += dfs(graph, successor, target, memo)
 
-    memo[curr] = neighbor_paths
-    return neighbor_paths
+    memo[curr] = successor_paths
+    return successor_paths
 
 
 def part1(graph: Graph):
@@ -41,7 +41,7 @@ def part2(graph: Graph):
     print("Part 2:", nr_paths)
 
 
-filename = "day11/example"
+# filename = "day11/example"
 filename = "day11/input"
 
 graph = parse(filename)
