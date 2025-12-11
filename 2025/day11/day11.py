@@ -1,13 +1,4 @@
-from dataclasses import dataclass
-import time
-import math
-import re
-import copy
-from collections import Counter
-import sys
-import os
 from collections import defaultdict
-import itertools
 
 Graph = dict[set[str]]
 
@@ -22,43 +13,32 @@ def parse(filename: str) -> Graph:
     return graph
 
 
+def dfs(graph: Graph, curr: str, target: str, memo: dict[str:int]) -> int:
+    if curr == target:
+        return 1
+
+    if curr in memo:
+        return memo[curr]
+
+    neighbor_paths = 0
+    for neighbor in graph[curr]:
+        neighbor_paths += dfs(graph, neighbor, target, memo)
+
+    memo[curr] = neighbor_paths
+    return neighbor_paths
+
+
 def part1(graph: Graph):
-    def dfs(graph: Graph, start: str, goal: str, path: list[str]):
-        path = path + [start]
-
-        if start == goal:
-            nonlocal total_paths
-            total_paths.append(path)
-            return
-
-        for neighbor in graph[start]:
-            if neighbor not in path:
-                dfs(graph, neighbor, goal, path)
-
-    total_paths = []
-    dfs(graph, "you", "out", [])
-
-    print("Part 1:", len(total_paths))
+    nr_paths = dfs(graph, "you", "out", {})
+    print("Part 1:", nr_paths)
 
 
 def part2(graph: Graph):
-    def dfs(graph: Graph, start: str, goal: str, path: set[str]):
-        path = path | {start}
-
-        if start == goal:
-            nonlocal dac_fft_paths
-            if "dac" in path and "fft" in path:
-                dac_fft_paths += 1
-            return
-
-        for neighbor in graph[start]:
-            if neighbor not in path:
-                dfs(graph, neighbor, goal, path)
-
-    dac_fft_paths = 0
-    dfs(graph, "svr", "out", set())
-
-    print("Part 2:", dac_fft_paths)
+    a = dfs(graph, "svr", "fft", {})
+    b = dfs(graph, "fft", "dac", {})
+    c = dfs(graph, "dac", "out", {})
+    nr_paths = a * b * c
+    print("Part 2:", nr_paths)
 
 
 filename = "day11/example"
