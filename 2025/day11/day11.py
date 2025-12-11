@@ -9,16 +9,16 @@ import os
 from collections import defaultdict
 import itertools
 
-Graph = dict[list[str]]
+Graph = dict[set[str]]
 
 
 def parse(filename: str) -> Graph:
-    graph = defaultdict(list)
+    graph = defaultdict(set)
     with open(filename) as f:
         for line in f:
             line = line.strip()
             toks = [x.replace(":", "") for x in line.split(" ")]
-            graph[toks[0]] = toks[1:]
+            graph[toks[0]] = set(toks[1:])
     return graph
 
 
@@ -42,36 +42,23 @@ def part1(graph: Graph):
 
 
 def part2(graph: Graph):
-    def dfs(graph: Graph, start: str, goal: str, path: list[str]):
-        path = path + [start]
+    def dfs(graph: Graph, start: str, goal: str, path: set[str]):
+        path = path | {start}
 
         if start == goal:
-            nonlocal total_paths
-            total_paths.append(path)
+            nonlocal dac_fft_paths
+            if "dac" in path and "fft" in path:
+                dac_fft_paths += 1
             return
 
         for neighbor in graph[start]:
             if neighbor not in path:
                 dfs(graph, neighbor, goal, path)
 
-    total_paths = []
-    dfs(graph, "svr", "out", [])
+    dac_fft_paths = 0
+    dfs(graph, "svr", "out", set())
 
-    ans = 0
-
-    for path in total_paths:
-        found_dac = False
-        found_fft = False
-        for node in path:
-            if node == "dac":
-                found_dac = True
-            if node == "fft":
-                found_fft = True
-
-        if found_dac and found_fft:
-            ans += 1
-
-    print("Part 2:", ans)
+    print("Part 2:", dac_fft_paths)
 
 
 filename = "day11/example"
