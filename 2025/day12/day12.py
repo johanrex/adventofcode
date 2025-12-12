@@ -2,8 +2,8 @@ def solve(filename):
     with open(filename) as f:
         lines = f.read().strip().splitlines()
 
-    yes_cnt = 0
-    no_cnt = 0
+    certain_fit = 0
+    uncertain_fit = 0
 
     i = 0
     while i < len(lines):
@@ -17,18 +17,18 @@ def solve(filename):
             cols, rows = map(int, first.split("x"))
             quantities = list(map(int, second.split(" ")))
 
+            region_area = cols * rows
             area_needed = sum([9 * q for q in quantities])
-            area_present = cols * rows
 
-            if area_present >= area_needed:
-                yes_cnt += 1
+            if region_area >= area_needed:
+                certain_fit += 1
             else:
-                no_cnt += 1
+                uncertain_fit += 1
 
             i += 1
 
-    print(f"Yes: {yes_cnt}, No: {no_cnt}")
-    print("Answer:", yes_cnt)
+    print(f"Certain fit: {certain_fit}, Uncertain fit: {uncertain_fit}")
+    print("Answer:", certain_fit)
 
 
 # filename = "day12/example"
