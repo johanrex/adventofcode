@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import math
 import os
 import sys
+from itertools import combinations
 
 # silly python path manipulation
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -32,21 +33,14 @@ def parse(filename: str) -> list[Point]:
 
 
 def solve(points: list[Point]):
-    # sort points so we can translate to 0-based indeces for union-find
-    points.sort()
-
     # need to translate point to idx for union-find
     point_to_idx = {points[i]: i for i in range(len(points))}
 
     # calculate all pairwise distances
-    dists = []
-    for i in range(len(points)):
-        p1 = points[i]
-        for j in range(i + 1, len(points)):
-            p2 = points[j]
-
-            d = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2
-            dists.append((d, (p1, p2)))
+    dists = [
+        ((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2, (p1, p2))
+        for p1, p2 in combinations(points, 2)
+    ]
     dists.sort()
 
     # how many connections to make
@@ -61,7 +55,7 @@ def solve(points: list[Point]):
     # let's make connections
     uf = UnionFind(len(points))
     for i in range(len(dists)):
-        d, (p1, p2) = dists[i]
+        _, (p1, p2) = dists[i]
 
         p1_idx = point_to_idx[p1]
         p2_idx = point_to_idx[p2]
