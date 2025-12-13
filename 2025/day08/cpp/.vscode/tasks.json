@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "CMake: Configure (Ninja)",
+            "label": "CMake: Configure (Ninja, Release)",
             "type": "shell",
             "command": "cmake",
             "args": [
@@ -11,7 +11,8 @@
                 "-B",
                 "build",
                 "-G",
-                "Ninja"
+                "Ninja",
+                "-DCMAKE_BUILD_TYPE=Release"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -50,17 +51,17 @@
             "problemMatcher": []
         },
         {
-            "label": "CMake: Configure + Build (Ninja)",
+            "label": "CMake: Configure + Build (Ninja, Release)",
             "dependsOn": [
-                "CMake: Configure (Ninja)",
+                "CMake: Configure (Ninja, Release)",
                 "CMake: Build (Ninja)"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             }
-        }
-    {
+        },
+        {
             "label": "CMake: Configure + Build (Ninja, Debug)",
             "dependsOn": [
                 "CMake: Configure (Ninja, Debug)",

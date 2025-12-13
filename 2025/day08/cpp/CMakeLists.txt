@@ -8,6 +8,20 @@ set(CMAKE_CXX_COMPILER clang-cl)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Single-config output layout for Ninja: put build artifacts under build/<CONFIG>
+if(NOT CMAKE_CONFIGURATION_TYPES)
+  if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+  endif()
+
+  string(TOUPPER "${CMAKE_BUILD_TYPE}" _BUILD_TYPE_UPPER)
+  set(_out_dir "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${_out_dir})
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${_out_dir})
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${_out_dir})
+endif()
+
 # Export compile commands for tools like clang-tidy/clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

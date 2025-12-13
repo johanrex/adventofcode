@@ -5,10 +5,10 @@
             "name": "Run day08 (Debug, Ninja)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/day08.exe",
+            "program": "${workspaceFolder}/build/Debug/day08.exe",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
-            "preLaunchTask": "CMake: Configure + Build (Ninja)",
+            "preLaunchTask": "CMake: Configure (Ninja, Debug)",
             "args": []
         },
         {
@@ -18,7 +18,7 @@
             "program": "${workspaceFolder}/build/Release/day08.exe",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
-            "preLaunchTask": "CMake: Configure + Build (Ninja)",
+            "preLaunchTask": "CMake: Configure (Ninja, Release)",
             "args": []
         }
     ]
