@@ -15,18 +15,17 @@ struct Point
     ll x = 0;
     ll y = 0;
     ll z = 0;
-    bool operator==(Point const &o) const noexcept = default; // TODO wtf is this.
+    bool operator==(Point const &o) const noexcept = default;
 };
 
-template <>
-struct hash<Point>
+struct PointHash
 {
     size_t operator()(Point const &p) const noexcept
     {
         // combine hashes of components (boost::hash_combine style)
-        size_t h1 = std::hash<size_t>{}(p.x);
-        size_t h2 = std::hash<size_t>{}(p.y);
-        size_t h3 = std::hash<size_t>{}(p.z);
+        size_t h1 = std::hash<ll>{}(p.x);
+        size_t h2 = std::hash<ll>{}(p.y);
+        size_t h3 = std::hash<ll>{}(p.z);
 
         size_t seed = h1;
         seed ^= h2 + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
@@ -38,8 +37,8 @@ struct hash<Point>
 struct DistInfo
 {
     double dist;
-    size_t i;
-    size_t j;
+    size_t idx_a;
+    size_t idx_b;
 };
 
 vector<Point> parse(const string &filename)
@@ -64,7 +63,7 @@ void solve(vector<Point> &points)
 {
     const size_t n = points.size();
 
-    unordered_map<Point, size_t> point_to_idx;
+    unordered_map<Point, size_t, PointHash> point_to_idx;
     point_to_idx.reserve(n);
     for (size_t i = 0; i < n; ++i)
         point_to_idx[points[i]] = i;
@@ -86,8 +85,8 @@ void solve(vector<Point> &points)
 
             DistInfo info;
             info.dist = dist;
-            info.i = i;
-            info.j = j;
+            info.idx_a = i;
+            info.idx_b = j;
             dists.push_back(info);
         }
     }
@@ -108,13 +107,13 @@ void solve(vector<Point> &points)
     for (size_t i = 0; i < dists.size(); ++i)
     {
         const auto &distinfo = dists[i];
-        if (uf.merge(distinfo.i, distinfo.j))
-            p2_ans = points[distinfo.i].x * points[distinfo.j].x;
+        if (uf.merge(distinfo.idx_a, distinfo.idx_b))
+            p2_ans = points[distinfo.idx_a].x * points[distinfo.idx_b].x;
 
         if (i + 1 == connections_to_make)
         {
             auto sizes = uf.component_sizes();
-            sort(sizes.begin(), sizes.end(), greater<size_t>());
+            std::partial_sort(sizes.begin(), sizes.begin() + 3, sizes.end(), std::greater<>());
             p1_ans = sizes[0] * sizes[1] * sizes[2];
         }
     }
