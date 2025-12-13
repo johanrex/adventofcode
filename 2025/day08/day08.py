@@ -5,8 +5,8 @@ import sys
 from itertools import combinations
 
 # silly python path manipulation
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
+# program is expected to be invoked from the repo year root dir
+sys.path.insert(0, os.getcwd())
 
 from utils.union_find import UnionFind
 
