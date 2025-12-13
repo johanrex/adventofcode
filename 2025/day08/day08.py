@@ -1,5 +1,13 @@
 from dataclasses import dataclass
 import math
+import os
+import sys
+
+# silly python path manipulation
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+
+from utils.union_find import UnionFind
 
 
 @dataclass(frozen=True)
@@ -24,6 +32,13 @@ def parse(filename: str) -> list[Point]:
 
 
 def solve(points: list[Point]):
+    # sort points so we can translate to 0-based indeces for union-find
+    points.sort()
+
+    # need to translate point to idx for union-find
+    point_to_idx = {points[i]: i for i in range(len(points))}
+
+    # calculate all pairwise distances
     dists = []
     for i in range(len(points)):
         p1 = points[i]
@@ -32,7 +47,6 @@ def solve(points: list[Point]):
 
             d = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2
             dists.append((d, (p1, p2)))
-
     dists.sort()
 
     # how many connections to make
@@ -44,41 +58,25 @@ def solve(points: list[Point]):
     p1_ans = 0
     p2_ans = 0
 
-    # disjoint sets, init with all points separate
-    disjoint_sets = [set([p]) for p in points]
-
-    # make connections
+    # let's make connections
+    uf = UnionFind(len(points))
     for i in range(len(dists)):
         d, (p1, p2) = dists[i]
 
-        # find set for p1
-        for j, s1 in enumerate(disjoint_sets):
-            if p1 in s1:
-                break
+        p1_idx = point_to_idx[p1]
+        p2_idx = point_to_idx[p2]
 
-        # find set for p2
-        for k, s2 in enumerate(disjoint_sets):
-            if p2 in s2:
-                break
+        # find the representative roots
+        r1 = uf.find(p1_idx)
+        r2 = uf.find(p2_idx)
 
-        if j != k:
-            # we have two disjoint sets that should be merged.
-
-            min_idx = min(j, k)
-            max_idx = max(j, k)
-
-            # pop the later set to keep indices valid
-            later_set = disjoint_sets.pop(max_idx)
-
-            # merge into the other set
-            disjoint_sets[min_idx] = disjoint_sets[min_idx] | later_set
-
+        # union sets, if they are disjoint
+        union_performed = uf.union(r1, r2)
+        if union_performed:
             p2_ans = p1.x * p2.x
 
         if i + 1 == connections_to_make:
-            sizes = [len(c) for c in disjoint_sets]
-            sizes.sort(reverse=True)
-            p1_ans = math.prod(sizes[:3])
+            p1_ans = math.prod(sorted(uf.size, reverse=True)[:3])
 
     assert p1_ans == 97384
     print("Part 1:", p1_ans)
