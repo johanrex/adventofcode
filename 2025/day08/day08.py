@@ -17,9 +17,6 @@ class Point:
     y: int
     z: int
 
-    def __lt__(self, other):
-        return (self.x, self.y, self.z) < (other.x, other.y, other.z)
-
 
 def parse(filename: str) -> list[Point]:
     points = []

@@ -1,0 +1,28 @@
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: Latest
+
+# Use Allman-style braces
+BreakBeforeBraces: Allman
+
+# Fine-grained brace wrapping
+# BraceWrapping:
+#   AfterClass: true
+#   AfterControlStatement: true
+#   AfterEnum: true
+#   AfterFunction: true
+#   AfterNamespace: true
+#   AfterStruct: true
+#   AfterUnion: true
+#   BeforeCatch: true
+#   BeforeElse: true
+#   IndentBraces: false
+
+# Optional style niceties
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+ColumnLimit: 0

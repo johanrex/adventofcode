@@ -1,0 +1,65 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "LLDB: Launch day08 (Debug)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/day08.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "terminal": "integrated",
+            "stopOnEntry": false,
+            "preLaunchTask": "CMake: Configure + Build (Ninja, Debug)",
+            "sourceLanguages": [
+                "cpp"
+            ]
+        }
+    ]
+}
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "LLDB: Launch day08 (Debug)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/day08.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "terminal": "integrated",
+            "stopOnEntry": false,
+            "preLaunchTask": "CMake: Configure + Build (Ninja)",
+            "sourceLanguages": [
+                "cpp"
+            ]
+        }
+    ]
+}
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run day08 (Debug, Ninja)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/day08.exe",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "preLaunchTask": "CMake: Configure + Build (Ninja)",
+            "environment": [],
+            "args": []
+        },
+        {
+            "name": "Run day08 (Release, Ninja)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Release/day08.exe",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "preLaunchTask": "CMake: Configure + Build (Ninja)",
+            "environment": [],
+            "args": []
+        }
+    ]
+}
