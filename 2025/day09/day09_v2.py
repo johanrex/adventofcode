@@ -1,25 +1,13 @@
 import plotly.graph_objects as go
 
 
-def parse(filename: str) -> list[tuple[int, int]]:
-    polygon = []
-    with open(filename) as f:
-        for line in f:
-            line = line.strip()
-            row, col = line.split(",")
-            polygon.append((int(row), int(col)))
-
-    return polygon
-
-
 def plot_polygon(polygon) -> go.Figure:
     texts = [f"({r}, {c})" for r, c in polygon]
     texts_closed = texts + [texts[0]]
 
     fig = go.Figure()
-    # when building traces
-    x = [c for (r, c) in polygon]  # cols
-    y = [r for (r, c) in polygon]  # rows
+    x = [c for r, c in polygon]  # cols
+    y = [r for r, c in polygon]  # rows
 
     fig.add_trace(
         go.Scatter(
@@ -63,6 +51,17 @@ def plot_rectangle(fig: go.Figure, p1, p2) -> go.Figure:
         )
     )
     return fig
+
+
+def parse(filename: str) -> list[tuple[int, int]]:
+    polygon = []
+    with open(filename) as f:
+        for line in f:
+            line = line.strip()
+            row, col = line.split(",")
+            polygon.append((int(row), int(col)))
+
+    return polygon
 
 
 def is_point_inside_polygon(row, col, vertical_lines) -> bool:
