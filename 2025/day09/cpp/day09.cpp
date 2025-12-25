@@ -125,7 +125,6 @@ int main()
     auto polygon = parse("../input");
     part1(polygon);
     part2(polygon);
-    // cin.get();
 
     return 0;
 }
